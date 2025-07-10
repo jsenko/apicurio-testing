@@ -17,6 +17,8 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "us-east-1"
+      OPENSHIFT_VERSION: "4.19"
+      CLUSTER_NAME: ci419
 
     steps:
       - name: Checkout Code
@@ -29,11 +31,7 @@ jobs:
 
       - name: Install OpenShift cluster
         run: |
-          echo "TBD: install the cluster!"
-          cat install-cluster.sh
-          mkdir -p clusters/cluster-foo
-          echo "Testing" > clusters/cluster-foo/testing.output
-          find clusters
+          ./install-cluster.sh --name $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION
 
       - name: Package up the "clusters" directory
         run: |
@@ -51,6 +49,12 @@ jobs:
     name: Apicurio Registry (in-memory)
     runs-on: ubuntu-22.04
     needs: openshift-419
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: inmemory
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
 
     steps:
       - name: Checkout Code
@@ -71,13 +75,19 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          echo "TBD: install the app!"
+          ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION
 
 
   openshift-419_postgresql:
     name: Apicurio Registry (postgresql)
     runs-on: ubuntu-22.04
     needs: openshift-419
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: postgresql
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
 
     steps:
       - name: Checkout Code
@@ -106,6 +116,12 @@ jobs:
     runs-on: ubuntu-22.04
     needs: openshift-419
 
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: mysql
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -133,6 +149,12 @@ jobs:
     runs-on: ubuntu-22.04
     needs: openshift-419_inmemory
 
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: inmemory
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -151,6 +173,12 @@ jobs:
     name: Integration Tests (in mem)
     runs-on: ubuntu-22.04
     needs: openshift-419_inmemory
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: inmemory
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
 
     steps:
       - name: Checkout Code
@@ -171,6 +199,12 @@ jobs:
     runs-on: ubuntu-22.04
     needs: openshift-419_postgresql
 
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: postgresql
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -189,6 +223,12 @@ jobs:
     name: Integration Tests (postgresql)
     runs-on: ubuntu-22.04
     needs: openshift-419_postgresql
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: postgresql
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
 
     steps:
       - name: Checkout Code
@@ -209,6 +249,12 @@ jobs:
     runs-on: ubuntu-22.04
     needs: openshift-419_mysql
 
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: mysql
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -227,6 +273,12 @@ jobs:
     name: Integration Tests (mysql)
     runs-on: ubuntu-22.04
     needs: openshift-419_mysql
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: mysql
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: "3.0.9"
 
     steps:
       - name: Checkout Code
@@ -255,6 +307,9 @@ jobs:
     if: always()
 
     env:
+      CLUSTER_NAME: ci419
+
+    env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
       SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -272,4 +327,4 @@ jobs:
 
       - name: Destroy OpenShift cluster
         run: |
-          echo "TBD: destroy the cluster!"
+          ./destroy-cluster.sh --name $CLUSTER_NAME
