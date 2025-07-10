@@ -94,6 +94,8 @@ git clone --branch $APICURIO_REGISTRY_VERSION --depth 1 https://github.com/Apicu
 # Prepare to run the UI tests
 echo "Preparing to run tests (npm install)."
 cd apicurio-registry/ui/tests
+npm install
+npx playwright install --with-deps
 
 # Display some diagnostic info and run the tests.
 echo ""
@@ -119,6 +121,6 @@ echo "---------------------------"
 echo "Running Playwright tests..."
 echo "---------------------------"
 
-npm install
-npx playwright install --with-deps
+# Run the tests
+export REGISTRY_UI_URL="http://$UI_INGRESS_URL"
 npm run test
