@@ -47,7 +47,7 @@ jobs:
           path: ${{ github.job }}-clusters.zip
 
 
-  openshift-419/inmemory:
+  openshift-419_inmemory:
     name: Install Apicurio Registry (in-memory)
     runs-on: ubuntu-22.04
     needs: openshift-419
@@ -74,7 +74,7 @@ jobs:
           echo "TBD: install the app!"
 
 
-  openshift-419/postgresql:
+  openshift-419_postgresql:
     name: Install Apicurio Registry (postgresql)
     runs-on: ubuntu-22.04
     needs: openshift-419
@@ -101,7 +101,7 @@ jobs:
           echo "TBD: install the app!"
 
 
-  openshift-419/mysql:
+  openshift-419_mysql:
     name: Install Apicurio Registry (mysql)
     runs-on: ubuntu-22.04
     needs: openshift-419
@@ -131,7 +131,7 @@ jobs:
   openshift-419-teardown:
     name: Destroy OpenShift 4.19
     runs-on: ubuntu-22.04
-    needs: [openshift-419/inmemory, openshift-419/postgresql, openshift-419/mysql]
+    needs: [openshift-419_inmemory, openshift-419_postgresql, openshift-419_mysql]
     if: always()
 
     env:
