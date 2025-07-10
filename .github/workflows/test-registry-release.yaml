@@ -148,7 +148,7 @@ jobs:
 
 
   openshift-419_inmemory_integrationtests:
-    name: Integration Tests 0
+    name: Integration Tests
     runs-on: ubuntu-22.04
     needs: openshift-419_inmemory
 
@@ -186,7 +186,7 @@ jobs:
 
 
   openshift-419_postgresql_integrationtests:
-    name: Integration Tests 1
+    name: Integration Tests
     runs-on: ubuntu-22.04
     needs: openshift-419_postgresql
 
@@ -224,7 +224,7 @@ jobs:
 
 
   openshift-419_mysql_integrationtests:
-    name: Integration Tests 2
+    name: Integration Tests
     runs-on: ubuntu-22.04
     needs: openshift-419_mysql
 
@@ -247,11 +247,11 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - openshift-419_inmemory_uitests
-      - openshift-419_inmemory_integrationtests,
+      - openshift-419_inmemory_integrationtests
       - openshift-419_postgresql_uitests
-      - openshift-419_postgresql_integrationtests,
+      - openshift-419_postgresql_integrationtests
       - openshift-419_mysql_uitests
-      - openshift-419_mysql_integrationtests,
+      - openshift-419_mysql_integrationtests
     if: always()
 
     env:
