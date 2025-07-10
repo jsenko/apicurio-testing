@@ -1,0 +1,13 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry3
+metadata:
+  name: $APPLICATION_NAME
+spec:
+  app:
+    ingress:
+      host: $APP_INGRESS_URL
+    features:
+      resourceDeleteEnabled: true
+  ui:
+    ingress:
+      host: $UI_INGRESS_URL
