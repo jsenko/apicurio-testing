@@ -67,13 +67,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: install-openshift-cluster-419-clusters.zip
-          path: clusters.zip
 
       - name: Install Apicurio Registry (in-memory)
         run: |
           echo "TBD: install the app!"
-          pwd
-          find .
-          unzip clusters.zip
-          find .
+          unzip install-openshift-cluster-419-clusters.zip
+          find clusters
           cat clusters/cluster-foo/testing.output
