@@ -7,7 +7,7 @@ on:
         required: true
 
 jobs:
-  install-openshift-cluster-419:
+  openshift-419:
     name: Install OpenShift 4.19
     runs-on: ubuntu-22.04
 
@@ -47,10 +47,10 @@ jobs:
           path: ${{ github.job }}-clusters.zip
 
 
-  install-apicurio-registry-inmem:
+  openshift-419/inmemory:
     name: Install Apicurio Registry (in-memory)
     runs-on: ubuntu-22.04
-    needs: install-openshift-cluster-419
+    needs: openshift-419
 
     steps:
       - name: Checkout Code
@@ -67,17 +67,17 @@ jobs:
       - name: Download cluster state
         uses: actions/download-artifact@v4
         with:
-          name: install-openshift-cluster-419-clusters.zip
+          name: openshift-419-clusters.zip
 
       - name: Install Apicurio Registry
         run: |
           echo "TBD: install the app!"
 
 
-  install-apicurio-registry-postgresql:
+  openshift-419/postgresql:
     name: Install Apicurio Registry (postgresql)
     runs-on: ubuntu-22.04
-    needs: install-openshift-cluster-419
+    needs: openshift-419
 
     steps:
       - name: Checkout Code
@@ -94,17 +94,17 @@ jobs:
       - name: Download cluster state
         uses: actions/download-artifact@v4
         with:
-          name: install-openshift-cluster-419-clusters.zip
+          name: openshift-419-clusters.zip
 
       - name: Install Apicurio Registry
         run: |
           echo "TBD: install the app!"
 
 
-  install-apicurio-registry-mysql:
+  openshift-419/mysql:
     name: Install Apicurio Registry (mysql)
     runs-on: ubuntu-22.04
-    needs: install-openshift-cluster-419
+    needs: openshift-419
 
     steps:
       - name: Checkout Code
@@ -121,17 +121,17 @@ jobs:
       - name: Download cluster state
         uses: actions/download-artifact@v4
         with:
-          name: install-openshift-cluster-419-clusters.zip
+          name: openshift-419-clusters.zip
 
       - name: Install Apicurio Registry
         run: |
           echo "TBD: install the app!"
 
 
-  destroy-openshift-cluster-419:
+  openshift-419-teardown:
     name: Destroy OpenShift 4.19
     runs-on: ubuntu-22.04
-    needs: [install-apicurio-registry-inmem, install-apicurio-registry-postgresql, install-apicurio-registry-mysql]
+    needs: [openshift-419/inmemory, openshift-419/postgresql, openshift-419/mysql]
     if: always()
 
     env:
@@ -148,7 +148,7 @@ jobs:
       - name: Download cluster state
         uses: actions/download-artifact@v4
         with:
-          name: install-openshift-cluster-419-clusters.zip
+          name: openshift-419-clusters.zip
 
       - name: Destroy OpenShift cluster
         run: |
