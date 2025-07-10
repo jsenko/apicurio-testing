@@ -1,0 +1,55 @@
+name: Test Apicurio Registry Release
+on:
+  workflow_dispatch:
+    inputs:
+      release-version:
+        description: Released version to test
+        required: true
+
+jobs:
+  install-openshift-cluster-419:
+    name: Install OpenShift 4.19
+    runs-on: ubuntu-22.04
+
+    env:
+      OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Check Required tools
+        run: |
+          curl --version
+          jq --version
+
+      - name: Install OpenShift cluster
+        run: |
+          echo "TBD: install the cluster!"
+          cat install-cluster.sh
+
+  install-apicurio-registry-inmem:
+    name: Install Apicurio Registry (in-memory)
+    needs: install-openshift-cluster-419
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest' # or pin to a specific version like '1.30.1'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Install Apicurio Registry (in-memory)
+        run: |
+          echo "TBD: install the app!"
+          cat install-apicurio-registry.sh
