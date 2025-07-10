@@ -49,8 +49,8 @@ jobs:
 
   install-apicurio-registry-inmem:
     name: Install Apicurio Registry (in-memory)
-    needs: install-openshift-cluster-419
     runs-on: ubuntu-22.04
+    needs: install-openshift-cluster-419
 
     steps:
       - name: Checkout Code
@@ -76,8 +76,8 @@ jobs:
 
   install-apicurio-registry-postgresql:
     name: Install Apicurio Registry (postgresql)
-    needs: install-openshift-cluster-419
     runs-on: ubuntu-22.04
+    needs: install-openshift-cluster-419
 
     steps:
       - name: Checkout Code
@@ -103,8 +103,8 @@ jobs:
 
   install-apicurio-registry-mysql:
     name: Install Apicurio Registry (mysql)
-    needs: install-openshift-cluster-419
     runs-on: ubuntu-22.04
+    needs: install-openshift-cluster-419
 
     steps:
       - name: Checkout Code
@@ -126,3 +126,30 @@ jobs:
       - name: Install Apicurio Registry
         run: |
           echo "TBD: install the app!"
+
+
+  destroy-openshift-cluster-419:
+    name: Destroy OpenShift 4.19
+    runs-on: ubuntu-22.04
+    needs: [install-apicurio-registry-inmem, install-apicurio-registry-postgresql, install-apicurio-registry-mysql]
+    if: always()
+
+    env:
+      OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: install-openshift-cluster-419-clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          echo "TBD: destroy the cluster!"
