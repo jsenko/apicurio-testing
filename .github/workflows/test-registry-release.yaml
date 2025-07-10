@@ -31,6 +31,20 @@ jobs:
         run: |
           echo "TBD: install the cluster!"
           cat install-cluster.sh
+          mkdir -p clusters/cluster-foo
+          echo "Testing" > clusters/cluster-foo/testing.output
+          find clusters
+
+      - name: Package up the "clusters" directory
+        run: |
+          zip -r ${{ github.job }}-clusters.zip clusters/
+
+      - name: Upload cluster state
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-clusters.zip
+          path: ${{ github.job }}-clusters.zip
 
   install-apicurio-registry-inmem:
     name: Install Apicurio Registry (in-memory)
@@ -49,7 +63,15 @@ jobs:
       - name: Verify kubectl
         run: kubectl version --client
 
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: install-openshift-cluster-419-clusters.zip
+          path: clusters.zip
+
       - name: Install Apicurio Registry (in-memory)
         run: |
           echo "TBD: install the app!"
-          cat install-apicurio-registry.sh
+          unzip clusters.zip
+          find .
+          cat clusters/cluster-foo/testing.output
