@@ -72,6 +72,8 @@ jobs:
       - name: Install Apicurio Registry (in-memory)
         run: |
           echo "TBD: install the app!"
+          pwd
+          find .
           unzip clusters.zip
           find .
           cat clusters/cluster-foo/testing.output
