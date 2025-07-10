@@ -8,7 +8,7 @@ on:
 
 jobs:
   openshift-419:
-    name: Install OpenShift 4.19
+    name: OpenShift 4.19
     runs-on: ubuntu-22.04
 
     env:
@@ -48,7 +48,7 @@ jobs:
 
 
   openshift-419_inmemory:
-    name: Install Apicurio Registry (in-memory)
+    name: Apicurio Registry (in-memory)
     runs-on: ubuntu-22.04
     needs: openshift-419
 
@@ -75,7 +75,7 @@ jobs:
 
 
   openshift-419_postgresql:
-    name: Install Apicurio Registry (postgresql)
+    name: Apicurio Registry (postgresql)
     runs-on: ubuntu-22.04
     needs: openshift-419
 
@@ -102,7 +102,7 @@ jobs:
 
 
   openshift-419_mysql:
-    name: Install Apicurio Registry (mysql)
+    name: Apicurio Registry (mysql)
     runs-on: ubuntu-22.04
     needs: openshift-419
 
@@ -128,10 +128,130 @@ jobs:
           echo "TBD: install the app!"
 
 
+  openshift-419_inmemory_uitests:
+    name: UI Tests
+    runs-on: ubuntu-22.04
+    needs: openshift-419_inmemory
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Run UI Tests
+        run: |
+          echo "TBD: run UI tests!"
+
+
+  openshift-419_inmemory_integrationtests:
+    name: Integration Tests
+    runs-on: ubuntu-22.04
+    needs: openshift-419_inmemory
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Run Integration Tests
+        run: |
+          echo "TBD: run integration tests!"
+
+
+  openshift-419_postgresql_uitests:
+    name: UI Tests
+    runs-on: ubuntu-22.04
+    needs: openshift-419_postgresql
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Run UI Tests
+        run: |
+          echo "TBD: run UI tests!"
+
+
+  openshift-419_postgresql_integrationtests:
+    name: Integration Tests
+    runs-on: ubuntu-22.04
+    needs: openshift-419_postgresql
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Run Integration Tests
+        run: |
+          echo "TBD: run integration tests!"
+
+
+  openshift-419_mysql_uitests:
+    name: UI Tests
+    runs-on: ubuntu-22.04
+    needs: openshift-419_mysql
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Run UI Tests
+        run: |
+          echo "TBD: run UI tests!"
+
+
+  openshift-419_mysql_integrationtests:
+    name: Integration Tests
+    runs-on: ubuntu-22.04
+    needs: openshift-419_mysql
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Run Integration Tests
+        run: |
+          echo "TBD: run integration tests!"
+
+
   openshift-419-teardown:
     name: Destroy OpenShift 4.19
     runs-on: ubuntu-22.04
-    needs: [openshift-419_inmemory, openshift-419_postgresql, openshift-419_mysql]
+    needs:
+      - openshift-419_inmemory_uitests
+      - openshift-419_inmemory_integrationtests,
+      - openshift-419_postgresql_uitests
+      - openshift-419_postgresql_integrationtests,
+      - openshift-419_mysql_uitests
+      - openshift-419_mysql_integrationtests,
     if: always()
 
     env:
