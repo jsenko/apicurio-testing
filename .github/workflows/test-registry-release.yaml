@@ -55,6 +55,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
       APP_NAME: registry
+      PROFILE: inmemory
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -80,7 +81,7 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION
+          ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION --profile $PROFILE
 
 
   openshift-419_postgresql:
@@ -92,6 +93,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: postgresql
       APP_NAME: registry
+      PROFILE: postgresql
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -117,7 +119,7 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          echo "TBD: install the app!"
+          ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION --profile $PROFILE
 
 
   openshift-419_mysql:
