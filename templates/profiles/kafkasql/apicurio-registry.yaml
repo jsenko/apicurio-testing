@@ -1,0 +1,20 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry3
+metadata:
+  name: $APPLICATION_NAME
+spec:
+  app:
+    storage:
+      type: kafkasql
+      kafkasql:
+        bootstrapServers: kafka-cluster-kafka-bootstrap:9092
+        topic: storage-topic
+        globalIdTopic: global-id-topic
+        snapshotTopic: snapshot-topic
+    ingress:
+      host: $APP_INGRESS_URL
+    features:
+      resourceDeleteEnabled: true
+  ui:
+    ingress:
+      host: $UI_INGRESS_URL

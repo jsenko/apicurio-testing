@@ -13,7 +13,7 @@ controlPlane:
   architecture: amd64
   hyperthreading: Enabled
   name: master
-  replicas: 3
+  replicas: 6
   platform:
     aws:
       type: m5.xlarge

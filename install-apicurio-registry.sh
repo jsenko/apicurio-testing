@@ -4,13 +4,95 @@
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AVAILABLE_PROFILES=$(ls -1 "$BASE_DIR/templates/profiles" 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
 
+# ##################################################
 # Function to display usage information
+# ##################################################
 show_usage() {
-    echo "Usage: $0 [--appName <application_name>] --clusterName <cluster_name> --namespace <namespace> --version <registry_version> --profile <profile>"
+    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> --version <registry_version>  [--strimziVersion <strimzi_version>] [--appName <application_name>] --profile <profile>"
     echo "    Available profiles: $AVAILABLE_PROFILES"
-    echo "    Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9 --profile inmemory"
-    echo "    Note: --appName is optional and defaults to 'registry'"
+    echo "    Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9 --profile inmemory --strimziVersion 0.43.0"
+    echo "    Note: --appName and --strimziVersion are optional"
+    echo "    Note: --appName defaults to 'registry'"
 }
+
+
+# ##################################################
+# Function to kubectl apply -f on every file in a
+# particular folder.
+# ##################################################
+apply_strimzi_yaml_files() {
+  local yaml_dir="$1"
+  local namespace="$2"
+
+  if [[ -z "$yaml_dir" || ! -d "$yaml_dir" ]]; then
+    echo "Error: '$yaml_dir' is not a valid directory"
+    return 1
+  fi
+
+  if [[ -z "$namespace" ]]; then
+    echo "Error: namespace parameter is required"
+    return 1
+  fi
+
+  # Build a list of files sorted by filename only
+  mapfile -t yaml_files < <(find "$yaml_dir" -maxdepth 1 -type f \( -name "*.yaml" -o -name "*.yml" \) \
+    -exec bash -c 'for f; do echo "$(basename "$f")|$f"; done' _ {} + | \
+    sort -t '|' -k1,1 | cut -d '|' -f2)
+
+  for yaml_file in "${yaml_files[@]}"; do
+    echo "Applying: $yaml_file (with namespace: $namespace)"
+    kubectl apply -f <(sed "s/myproject/$namespace/g" "$yaml_file")
+  done
+}
+
+
+# ##################################################
+# Function to poll a Microprofile Health readiness 
+# endpoint until it becomes UP.
+# ##################################################
+wait_for_health_endpoint() {
+    local url="$1"
+    local timeout="${2:-600}"  # Default timeout of 10 minutes (600 seconds)
+    local interval="${3:-5}"   # Default polling interval of 5 seconds
+    
+    echo "Polling health endpoint: $url"
+    echo "Timeout: ${timeout}s, Polling interval: ${interval}s"
+    
+    local start_time=$(date +%s)
+    local end_time=$((start_time + timeout))
+    
+    # Initial wait period
+    echo "Waiting 60 seconds before starting health endpoint polling..."
+    sleep 60
+    
+    while [ $(date +%s) -lt $end_time ]; do
+        # Use curl to get the JSON response from the health endpoint
+        local response=$(curl -s --max-time 10 "$url" 2>/dev/null)
+        local curl_exit_code=$?
+        
+        # Check if curl succeeded and we got a response
+        if [ $curl_exit_code -eq 0 ] && [ -n "$response" ]; then
+            # Parse JSON to check if status is "UP" using jq
+            local status=$(echo "$response" | jq -r '.status // empty' 2>/dev/null)
+            
+            if [ "$status" = "UP" ]; then
+                echo "Health endpoint is ready! Status: UP"
+                return 0
+            else
+                echo "Health endpoint responded but status is not UP (status: $status), waiting ${interval}s..."
+            fi
+        else
+            echo "Health endpoint not reachable yet, waiting ${interval}s..."
+        fi
+        
+        sleep $interval
+    done
+    
+    echo "ERROR: Health endpoint did not become ready within ${timeout} seconds"
+    return 1
+}
+
+
 
 # Parse command line arguments
 APPLICATION_NAME=""
@@ -18,6 +100,7 @@ CLUSTER_NAME=""
 NAMESPACE=""
 APICURIO_REGISTRY_VERSION=""
 PROFILE=""
+STRIMZI_VERSION=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -39,6 +122,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --profile)
             PROFILE="$2"
+            shift 2
+            ;;
+        --strimziVersion)
+            STRIMZI_VERSION="$2"
             shift 2
             ;;
         -h|--help)
@@ -92,55 +179,13 @@ if [ ! -d "$BASE_DIR/templates/profiles/$PROFILE" ]; then
 fi
 
 
-# Function to poll a Microprofile Health readiness endpoint
-wait_for_health_endpoint() {
-    local url="$1"
-    local timeout="${2:-600}"  # Default timeout of 10 minutes (600 seconds)
-    local interval="${3:-5}"   # Default polling interval of 5 seconds
-    
-    echo "Polling health endpoint: $url"
-    echo "Timeout: ${timeout}s, Polling interval: ${interval}s"
-    
-    local start_time=$(date +%s)
-    local end_time=$((start_time + timeout))
-    
-    # Initial wait period
-    echo "Waiting 60 seconds before starting health endpoint polling..."
-    sleep 60
-    
-    while [ $(date +%s) -lt $end_time ]; do
-        # Use curl to get the JSON response from the health endpoint
-        local response=$(curl -s --max-time 10 "$url" 2>/dev/null)
-        local curl_exit_code=$?
-        
-        # Check if curl succeeded and we got a response
-        if [ $curl_exit_code -eq 0 ] && [ -n "$response" ]; then
-            # Parse JSON to check if status is "UP" using jq
-            local status=$(echo "$response" | jq -r '.status // empty' 2>/dev/null)
-            
-            if [ "$status" = "UP" ]; then
-                echo "Health endpoint is ready! Status: UP"
-                return 0
-            else
-                echo "Health endpoint responded but status is not UP (status: $status), waiting ${interval}s..."
-            fi
-        else
-            echo "Health endpoint not reachable yet, waiting ${interval}s..."
-        fi
-        
-        sleep $interval
-    done
-    
-    echo "ERROR: Health endpoint did not become ready within ${timeout} seconds"
-    return 1
-}
-
 export APPLICATION_NAME
 export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export APICURIO_REGISTRY_VERSION
 export NAMESPACE
 export PROFILE
+export STRIMZI_VERSION
 export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
 export APP_DIR="$APPS_DIR/$APPLICATION_NAME"
@@ -174,7 +219,34 @@ export KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig
 echo "Creating namespace: $NAMESPACE"
 kubectl create namespace $NAMESPACE
 
-# Deploy the operator to the namespace
+# Deploy Strimzi operator if strimziVersion is specified
+if [ -n "$STRIMZI_VERSION" ]; then
+    echo "Installing Strimzi Operator version: $STRIMZI_VERSION"
+    STRIMZI_OPERATOR_URL="https://github.com/strimzi/strimzi-kafka-operator/releases/download/$STRIMZI_VERSION/strimzi-$STRIMZI_VERSION.zip"
+    echo "Downloading Strimzi Operator ZIP from: $STRIMZI_OPERATOR_URL"
+    curl -sSL -o $APP_DIR/strimzi-$STRIMZI_VERSION.zip $STRIMZI_OPERATOR_URL
+    echo "Unpacking Strimzi operator ZIP"
+    unzip $APP_DIR/strimzi-$STRIMZI_VERSION.zip -d $APP_DIR
+    echo "Installing Strimzi Operator into namespace $NAMESPACE"
+    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/strimzi-admin $NAMESPACE
+    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/cluster-operator $NAMESPACE
+    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/topic-operator $NAMESPACE
+    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/user-operator $NAMESPACE
+
+    # Wait for Strimzi operator to be ready
+    echo "Waiting for Strimzi operator to be ready..."
+    kubectl wait --for=condition=Ready pod -l name=strimzi-cluster-operator -n $NAMESPACE --timeout=600s
+    if [ $? -eq 0 ]; then
+        echo "Strimzi operator is ready"
+    else
+        echo "ERROR: Strimzi operator not yet ready"
+        exit 1
+    fi
+else
+    echo "No Strimzi version specified, skipping Strimzi operator installation"
+fi
+
+# Deploy the Apicurio Registry operator to the namespace
 echo "Downloading Apicurio Registry Operator YAML from: $APICURIO_OPERATOR_URL"
 curl -sSL $APICURIO_OPERATOR_URL | sed "s/PLACEHOLDER_NAMESPACE/$NAMESPACE/g" > $APP_DIR/apicurio-registry-operator.yaml
 echo "Installing Apicurio Registry Operator into namespace $NAMESPACE"
