@@ -1,10 +1,23 @@
 #!/bin/bash
 
+# Get the directory where this script is located
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+AVAILABLE_PROFILES=$(ls -1 "$BASE_DIR/templates/profiles" 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+
+# Function to display usage information
+show_usage() {
+    echo "Usage: $0 [--appName <application_name>] --clusterName <cluster_name> --namespace <namespace> --version <registry_version> --profile <profile>"
+    echo "    Available profiles: $AVAILABLE_PROFILES"
+    echo "    Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9 --profile inmemory"
+    echo "    Note: --appName is optional and defaults to 'registry'"
+}
+
 # Parse command line arguments
 APPLICATION_NAME=""
 CLUSTER_NAME=""
 NAMESPACE=""
 APICURIO_REGISTRY_VERSION=""
+PROFILE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -24,45 +37,57 @@ while [[ $# -gt 0 ]]; do
             APICURIO_REGISTRY_VERSION="$2"
             shift 2
             ;;
+        --profile)
+            PROFILE="$2"
+            shift 2
+            ;;
         -h|--help)
-            echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-            echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
+            show_usage
             exit 0
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
+            show_usage
             exit 1
             ;;
     esac
 done
 
-# Check if required arguments are provided
+# Set default application name if not provided
 if [ -z "$APPLICATION_NAME" ]; then
-    echo "Error: --appName argument is required"
-    echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-    echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
-    exit 1
+    APPLICATION_NAME="registry"
+    echo "No application name specified, using default: $APPLICATION_NAME"
 fi
 
+# Check if required arguments are provided
 if [ -z "$CLUSTER_NAME" ]; then
     echo "Error: --clusterName argument is required"
-    echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-    echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
+    show_usage
     exit 1
 fi
 
 if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
-    echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-    echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
+    show_usage
     exit 1
 fi
 
 if [ -z "$APICURIO_REGISTRY_VERSION" ]; then
     echo "Error: --version argument is required"
-    echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-    echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
+    show_usage
+    exit 1
+fi
+
+# Set default profile if not provided
+if [ -z "$PROFILE" ]; then
+    PROFILE="inmemory"
+    echo "No profile specified, using default: $PROFILE"
+fi
+
+# Validate profile
+if [ ! -d "$BASE_DIR/templates/profiles/$PROFILE" ]; then
+    echo "Error: Invalid profile '$PROFILE'. Available profiles: $AVAILABLE_PROFILES"
+    show_usage
     exit 1
 fi
 
@@ -78,6 +103,10 @@ wait_for_health_endpoint() {
     
     local start_time=$(date +%s)
     local end_time=$((start_time + timeout))
+    
+    # Initial wait period
+    echo "Waiting 60 seconds before starting health endpoint polling..."
+    sleep 60
     
     while [ $(date +%s) -lt $end_time ]; do
         # Use curl to get the JSON response from the health endpoint
@@ -106,14 +135,12 @@ wait_for_health_endpoint() {
     return 1
 }
 
-# Get the directory where this script is located
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 export APPLICATION_NAME
 export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export APICURIO_REGISTRY_VERSION
 export NAMESPACE
+export PROFILE
 export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
 export APP_DIR="$APPS_DIR/$APPLICATION_NAME"
@@ -153,26 +180,28 @@ curl -sSL $APICURIO_OPERATOR_URL | sed "s/PLACEHOLDER_NAMESPACE/$NAMESPACE/g" > 
 echo "Installing Apicurio Registry Operator into namespace $NAMESPACE"
 kubectl apply -f $APP_DIR/apicurio-registry-operator.yaml -n $NAMESPACE
 
-# Create the application custom resource (deploys the Registry app)
-echo "Creating the Apicurio Registry instance CR"
-envsubst < $BASE_DIR/templates/apicurio-registry/in-memory.yaml > $APP_DIR/apicurio-registry.yaml
-kubectl apply -f $APP_DIR/apicurio-registry.yaml -n $NAMESPACE
-
-# Wait for the application to be available (max 10 mins)
-# echo "Waiting for Apicurio Registry instance to start..."
-# kubectl wait --for=condition=Ready apicurioregistry3/$APPLICATION_NAME --namespace $NAMESPACE --timeout=600s
-# if [[ $? -ne 0 ]]; then
-#   echo ""
-#   echo "--"
-#   echo "ERROR: Apicurio Registry instance did not become ready in time."
-#   echo "--"
-#   exit 1
-# fi
+# Deploy profile-specific resources
+echo "Using profile: $PROFILE"
+PROFILE_DIR="$BASE_DIR/templates/profiles/$PROFILE"
+YAML_FILES=$(find "$PROFILE_DIR" -name "*.yaml" -o -name "*.yml" | sort)
+if [ -n "$YAML_FILES" ]; then
+    echo "$YAML_FILES" | while read -r YAML_FILE; do
+        YAML_FILE_NAME=$(basename "$YAML_FILE")
+        FROM_TEMPLATE="$YAML_FILE"
+        TO_CLUSTER=$APP_DIR/$YAML_FILE_NAME
+        echo "Applying configuration from: $FROM_TEMPLATE"
+        envsubst < $FROM_TEMPLATE > $TO_CLUSTER
+        kubectl apply -f $TO_CLUSTER -n $NAMESPACE
+    done
+else
+    echo "ERROR: No YAML files found in profile directory!"
+    exit 1
+fi
 
 # Wait for the health endpoint to be ready
 echo "Waiting for Apicurio Registry health endpoint to be ready..."
 HEALTH_URL="http://$APP_INGRESS_URL/health/ready"
-wait_for_health_endpoint "$HEALTH_URL" 300 5
+wait_for_health_endpoint "$HEALTH_URL"
 if [[ $? -ne 0 ]]; then
   echo ""
   echo "--"

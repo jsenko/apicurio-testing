@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql-database-password
+type: Opaque
+data:
+  password: cGdwYXNzd29yZA==
+---
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry3
+metadata:
+  name: $APPLICATION_NAME
+spec:
+  app:
+    storage:
+      type: postgresql
+      sql:
+        dataSource:
+          url: jdbc:postgresql://postgresql:5432/apicuriodb
+          username: pguser
+          password:
+            name: postgresql-database-password
+    ingress:
+      host: $APP_INGRESS_URL
+    features:
+      resourceDeleteEnabled: true
+  ui:
+    ingress:
+      host: $UI_INGRESS_URL
