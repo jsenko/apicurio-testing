@@ -35,6 +35,7 @@ jobs:
 
       - name: Package up the "clusters" directory
         run: |
+          rm clusters/$CLUSTER_NAME/openshift-install.tar.gz
           zip -r ${{ github.job }}-clusters.zip clusters/
 
       - name: Upload cluster state
@@ -73,6 +74,10 @@ jobs:
         with:
           name: openshift-419-clusters.zip
 
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
       - name: Install Apicurio Registry
         run: |
           ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION
@@ -105,6 +110,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
 
       - name: Install Apicurio Registry
         run: |
@@ -139,6 +148,10 @@ jobs:
         with:
           name: openshift-419-clusters.zip
 
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
       - name: Install Apicurio Registry
         run: |
           echo "TBD: install the app!"
@@ -164,9 +177,25 @@ jobs:
         with:
           name: openshift-419-clusters.zip
 
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
       - name: Run UI Tests
         run: |
-          echo "TBD: run UI tests!"
+          ./run-ui-tests.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
 
 
   openshift-419_inmemory_integrationtests:
@@ -189,9 +218,25 @@ jobs:
         with:
           name: openshift-419-clusters.zip
 
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
       - name: Run Integration Tests
         run: |
           echo "TBD: run integration tests!"
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
 
 
   openshift-419_postgresql_uitests:
@@ -214,9 +259,25 @@ jobs:
         with:
           name: openshift-419-clusters.zip
 
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
       - name: Run UI Tests
         run: |
           echo "TBD: run UI tests!"
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
 
 
   openshift-419_postgresql_integrationtests:
@@ -239,9 +300,25 @@ jobs:
         with:
           name: openshift-419-clusters.zip
 
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
       - name: Run Integration Tests
         run: |
           echo "TBD: run integration tests!"
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
 
 
   openshift-419_mysql_uitests:
@@ -264,9 +341,25 @@ jobs:
         with:
           name: openshift-419-clusters.zip
 
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
       - name: Run UI Tests
         run: |
           echo "TBD: run UI tests!"
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
 
 
   openshift-419_mysql_integrationtests:
@@ -289,9 +382,25 @@ jobs:
         with:
           name: openshift-419-clusters.zip
 
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
       - name: Run Integration Tests
         run: |
           echo "TBD: run integration tests!"
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
 
 
   openshift-419-teardown:
@@ -322,6 +431,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
 
       - name: Destroy OpenShift cluster
         run: |

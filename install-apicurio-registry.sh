@@ -122,6 +122,20 @@ export APP_INGRESS_URL="registry-app.$NAMESPACE.$APPS_URL"
 export UI_INGRESS_URL="registry-ui.$NAMESPACE.$APPS_URL"
 export APICURIO_OPERATOR_URL="https://raw.githubusercontent.com/Apicurio/apicurio-registry/refs/heads/main/operator/install/apicurio-registry-operator-$APICURIO_REGISTRY_VERSION.yaml"
 
+# Check if cluster directory exists
+if [ ! -d "$CLUSTER_DIR" ]; then
+    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
+    echo "Make sure the cluster '$CLUSTER_NAME' has been created"
+    exit 1
+fi
+
+# Check if kubeconfig exists
+if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
+    echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
+    echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
+    exit 1
+fi
+
 mkdir -p $APP_DIR
 
 cd $CLUSTER_DIR
