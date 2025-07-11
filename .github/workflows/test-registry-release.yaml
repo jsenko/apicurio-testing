@@ -55,7 +55,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -92,7 +92,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: postgresql
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -129,7 +129,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -166,7 +166,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -207,7 +207,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -248,7 +248,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: postgresql
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -289,7 +289,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: postgresql
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -330,7 +330,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -371,7 +371,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
       APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: "3.0.9"
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
