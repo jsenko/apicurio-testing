@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-database-password
+type: Opaque
+data:
+  password: bXlzcWxwYXNzd29yZA==
+---
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry3
+metadata:
+  name: $APPLICATION_NAME
+spec:
+  app:
+    storage:
+      type: mysql
+      sql:
+        dataSource:
+          url: jdbc:mysql://mysql:3306/apicuriodb
+          username: mysqluser
+          password:
+            name: mysql-database-password
+    ingress:
+      host: $APP_INGRESS_URL
+    features:
+      resourceDeleteEnabled: true
+  ui:
+    ingress:
+      host: $UI_INGRESS_URL
