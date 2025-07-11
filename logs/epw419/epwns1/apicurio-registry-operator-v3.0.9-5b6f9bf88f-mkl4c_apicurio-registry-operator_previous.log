@@ -1,4 +1,0 @@
-INFO exec -a "java" java -XX:MaxRAMPercentage=80.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -cp "." -jar /deployments/quarkus-run.jar 
-INFO running in /deployments
-Jul 10, 2025 8:26:56 PM io.apicurio.registry.operator.ConfigMapConfigSource
-INFO: No operator ConfigMap found. You have to restart the operator pod if you create one.
