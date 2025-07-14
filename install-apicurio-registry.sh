@@ -8,11 +8,36 @@ AVAILABLE_PROFILES=$(ls -1 "$BASE_DIR/templates/profiles" 2>/dev/null | tr '\n' 
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> --version <registry_version>  [--strimziVersion <strimzi_version>] [--appName <application_name>] --profile <profile>"
-    echo "    Available profiles: $AVAILABLE_PROFILES"
-    echo "    Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9 --profile inmemory --strimziVersion 0.43.0"
-    echo "    Note: --appName and --strimziVersion are optional"
-    echo "    Note: --appName defaults to 'registry'"
+    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> --version <registry_version> [OPTIONS]"
+    echo ""
+    echo "REQUIRED PARAMETERS:"
+    echo "  --clusterName <name>     Name of the OpenShift cluster where Apicurio Registry will be installed"
+    echo "  --namespace <namespace>  Kubernetes namespace to deploy Apicurio Registry into"
+    echo "  --version <version>      Version of Apicurio Registry to install (e.g., 3.0.9)"
+    echo ""
+    echo "OPTIONAL PARAMETERS:"
+    echo "  --appName <name>         Name of the application deployment (default: 'registry')"
+    echo "  --profile <profile>      Profile to use for Apicurio Registry (default: 'inmemory')"
+    echo "                           Available profiles: $AVAILABLE_PROFILES"
+    echo "  --strimziVersion <ver>   Version of Strimzi Kafka operator to install (optional)"
+    echo "                           Only needed for profiles that require Kafka (e.g., kafkasql)"
+    echo "  -h, --help               Display this help message and exit"
+    echo ""
+    echo "EXAMPLES:"
+    echo "  # Basic installation with inmemory profile:"
+    echo "  $0 --clusterName okd419 --namespace simplens1 --version 3.0.9"
+    echo ""
+    echo "  # Installation with custom app name and kafkasql profile:"
+    echo "  $0 --appName my-registry --clusterName okd419 --namespace kafkans1 --version 3.0.9 --profile kafkasql --strimziVersion 0.43.0"
+    echo ""
+    echo "  # Installation with PostgreSQL profile:"
+    echo "  $0 --clusterName okd419 --namespace pgns1 --version 3.0.9 --profile postgresql"
+    echo ""
+    echo "NOTES:"
+    echo "  - The cluster must already exist and be properly configured"
+    echo "  - Kubeconfig file must be present at clusters/<cluster_name>/auth/kubeconfig"
+    echo "  - Different profiles provide different storage backends and dependencies (e.g. Keycloak)"
+    echo "  - Strimzi version is only required when using Kafka-based profiles"
 }
 
 
@@ -41,7 +66,7 @@ apply_strimzi_yaml_files() {
 
   for yaml_file in "${yaml_files[@]}"; do
     echo "Applying: $yaml_file (with namespace: $namespace)"
-    kubectl apply -f <(sed "s/myproject/$namespace/g" "$yaml_file")
+    kubectl apply -f <(sed "s/myproject/$namespace/g" "$yaml_file") -n $NAMESPACE
   done
 }
 
@@ -230,18 +255,8 @@ if [ -n "$STRIMZI_VERSION" ]; then
     echo "Installing Strimzi Operator into namespace $NAMESPACE"
     apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/strimzi-admin $NAMESPACE
     apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/cluster-operator $NAMESPACE
-    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/topic-operator $NAMESPACE
-    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/user-operator $NAMESPACE
-
-    # Wait for Strimzi operator to be ready
-    echo "Waiting for Strimzi operator to be ready..."
-    kubectl wait --for=condition=Ready pod -l name=strimzi-cluster-operator -n $NAMESPACE --timeout=600s
-    if [ $? -eq 0 ]; then
-        echo "Strimzi operator is ready"
-    else
-        echo "ERROR: Strimzi operator not yet ready"
-        exit 1
-    fi
+#    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/topic-operator $NAMESPACE
+#    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/user-operator $NAMESPACE
 else
     echo "No Strimzi version specified, skipping Strimzi operator installation"
 fi

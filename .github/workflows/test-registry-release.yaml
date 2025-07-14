@@ -158,6 +158,42 @@ jobs:
         run: |
           echo "TBD: install the app!"
 
+  openshift-419_authn:
+    name: Apicurio Registry (authn)
+    runs-on: ubuntu-22.04
+    needs: openshift-419
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: authn
+      APP_NAME: registry
+      PROFILE: authn
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest' # or pin to a specific version like '1.30.1'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION --profile $PROFILE
 
   openshift-419_inmemory_uitests:
     name: UI Tests (in mem)
@@ -404,6 +440,46 @@ jobs:
           name: ${{ github.job }}-logs.zip
           path: ${{ github.job }}-logs.zip
 
+  openshift-419_authn_integrationtests:
+    name: Integration Tests (authn)
+    runs-on: ubuntu-22.04
+    needs: openshift-419_authn
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: authn
+      APP_NAME: registry
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Run Integration Tests
+        run: |
+          echo "TBD: run AUTH integration tests!"
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
+
 
   openshift-419-teardown:
     name: Destroy OpenShift 4.19
@@ -415,6 +491,7 @@ jobs:
       - openshift-419_postgresql_integrationtests
       - openshift-419_mysql_uitests
       - openshift-419_mysql_integrationtests
+      - openshift-419_authn_integrationtests
     if: always()
 
     env:

@@ -7,10 +7,7 @@ spec:
     storage:
       type: kafkasql
       kafkasql:
-        bootstrapServers: kafka-cluster-kafka-bootstrap:9092
-        topic: storage-topic
-        globalIdTopic: global-id-topic
-        snapshotTopic: snapshot-topic
+        bootstrapServers: my-cluster-kafka-bootstrap:9092
     ingress:
       host: $APP_INGRESS_URL
     features:

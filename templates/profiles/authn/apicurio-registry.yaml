@@ -1,0 +1,26 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry3
+metadata:
+  name: $APPLICATION_NAME
+spec:
+  app:
+    ingress:
+      host: $APP_INGRESS_URL
+    auth:
+      enabled: true
+      appClientId: registry-api
+      uiClientId: apicurio-registry
+      authServerUrl: http://keycloak.$APPS_URL/realms/registry
+      redirectUri: $UI_INGRESS_URL
+      logoutUrl: $UI_INGRESS_URL
+      anonymousReadsEnabled: true
+      basicAuth:
+        enabled: true
+        cacheExpiration: 25m
+      tls:
+        tlsVerificationType: none
+    features:
+      resourceDeleteEnabled: true
+  ui:
+    ingress:
+      host: $UI_INGRESS_URL
