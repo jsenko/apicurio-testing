@@ -45,7 +45,7 @@ show_usage() {
 # Function to kubectl apply -f on every file in a
 # particular folder.
 # ##################################################
-apply_strimzi_yaml_files() {
+apply_all_yaml_files() {
   local yaml_dir="$1"
   local namespace="$2"
 
@@ -207,6 +207,7 @@ fi
 export APPLICATION_NAME
 export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
+export CERT_DIR="$BASE_DIR/certificates"
 export APICURIO_REGISTRY_VERSION
 export NAMESPACE
 export PROFILE
@@ -233,6 +234,11 @@ if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
     exit 1
 fi
 
+# Load SSL certificates (may be needed by profile)
+export CERT_PRIVKEY=$(sed 's/^/      /' $CERT_DIR/privkey.pem)
+export CERT_FULL_CHAIN=$(sed 's/^/      /' $CERT_DIR/fullchain.pem)
+
+
 mkdir -p $APP_DIR
 
 cd $CLUSTER_DIR
@@ -253,10 +259,10 @@ if [ -n "$STRIMZI_VERSION" ]; then
     echo "Unpacking Strimzi operator ZIP"
     unzip $APP_DIR/strimzi-$STRIMZI_VERSION.zip -d $APP_DIR
     echo "Installing Strimzi Operator into namespace $NAMESPACE"
-    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/strimzi-admin $NAMESPACE
-    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/cluster-operator $NAMESPACE
-#    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/topic-operator $NAMESPACE
-#    apply_strimzi_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/user-operator $NAMESPACE
+    apply_all_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/strimzi-admin $NAMESPACE
+    apply_all_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/cluster-operator $NAMESPACE
+#    apply_all_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/topic-operator $NAMESPACE
+#    apply_all_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/user-operator $NAMESPACE
 else
     echo "No Strimzi version specified, skipping Strimzi operator installation"
 fi

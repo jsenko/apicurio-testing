@@ -79,3 +79,10 @@ spec:
     name: keycloak
     weight: 100
   wildcardPolicy: None
+  tls:
+    termination: edge
+    certificate: |
+$CERT_FULL_CHAIN
+    key: |
+$CERT_PRIVKEY
+    insecureEdgeTerminationPolicy: Redirect
