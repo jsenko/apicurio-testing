@@ -10,7 +10,7 @@ spec:
       enabled: true
       appClientId: registry-api
       uiClientId: apicurio-registry
-      authServerUrl: https://keycloak-$NAMESPACE.$APPS_URL/realms/registry
+      authServerUrl: https://$KEYCLOAK_INGRESS_URL/realms/registry
       redirectUri: $UI_INGRESS_URL
       logoutUrl: $UI_INGRESS_URL
       anonymousReadsEnabled: true

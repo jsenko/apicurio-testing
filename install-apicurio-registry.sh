@@ -225,6 +225,7 @@ export APP_DIR="$APPS_DIR/$APPLICATION_NAME"
 export APPS_URL="apps.$CLUSTER_NAME.$BASE_DOMAIN"
 export APP_INGRESS_URL="registry-app-$NAMESPACE.$APPS_URL"
 export UI_INGRESS_URL="registry-ui-$NAMESPACE.$APPS_URL"
+export KEYCLOAK_INGRESS_URL="keycloak-$NAMESPACE.$APPS_URL"
 export APICURIO_OPERATOR_URL="https://raw.githubusercontent.com/Apicurio/apicurio-registry/refs/heads/main/operator/install/apicurio-registry-operator-$APICURIO_REGISTRY_VERSION.yaml"
 
 # Check if cluster directory exists

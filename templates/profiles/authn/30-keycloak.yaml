@@ -81,7 +81,7 @@ metadata:
   labels:
     app: keycloak
 spec:
-  host: keycloak-$NAMESPACE.$APPS_URL
+  host: $KEYCLOAK_INGRESS_URL
   to:
     kind: Service
     name: keycloak
