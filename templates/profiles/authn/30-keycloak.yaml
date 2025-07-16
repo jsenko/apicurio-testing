@@ -31,6 +31,14 @@ spec:
               value: "8080"
             - name: PROXY_ADDRESS_FORWARDING
               value: "true"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "false"
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
           ports:
             - name: http
               containerPort: 8080
@@ -73,7 +81,7 @@ metadata:
   labels:
     app: keycloak
 spec:
-  host: keycloak.$APPS_URL
+  host: keycloak-$NAMESPACE.$APPS_URL
   to:
     kind: Service
     name: keycloak
@@ -81,8 +89,4 @@ spec:
   wildcardPolicy: None
   tls:
     termination: edge
-    certificate: |
-$CERT_FULL_CHAIN
-    key: |
-$CERT_PRIVKEY
     insecureEdgeTerminationPolicy: Redirect

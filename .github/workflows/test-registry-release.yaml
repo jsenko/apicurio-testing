@@ -31,7 +31,7 @@ jobs:
 
       - name: Install OpenShift cluster
         run: |
-          ./install-cluster.sh --name $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION
+          ./install-cluster.sh --clusterName $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION
 
       - name: Package up the "clusters" directory
         run: |
@@ -517,4 +517,4 @@ jobs:
 
       - name: Destroy OpenShift cluster
         run: |
-          ./destroy-cluster.sh --name $CLUSTER_NAME
+          ./destroy-cluster.sh --clusterName $CLUSTER_NAME

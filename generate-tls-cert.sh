@@ -42,7 +42,7 @@ show_usage() {
     echo "  --clusterName <name>     Name of the OpenShift cluster to use for certificate generation"
     echo ""
     echo "OPTIONAL PARAMETERS:"
-    echo "  --domain <domain>        Domain to generate certificate for (default: '*.apicurio-testing.org')"
+    echo "  --domain <domain>        Domain to generate certificate for (default: '*.apps.<cluster_name>.apicurio-testing.org')"
     echo "  --email <email>          Email address for Let's Encrypt registration (default: 'ewittman@ibm.com')"
     echo "  --outputDir <dir>        Local directory to save certificates (default: './certificates')"
     echo "  --namespace <namespace>  Kubernetes namespace to use for certbot pod (default: 'certbot')"
@@ -164,26 +164,12 @@ extract_certificates() {
     echo ""
     echo "File copying failed. Outputting certificates as base64 encoded strings:"
     echo ""
-    
-    echo "=== privkey.pem (base64 encoded) ==="
-    kubectl exec "$pod_name" -n "$namespace" -- cat "$cert_path/privkey.pem" 2>/dev/null | base64 -w 0
-    echo ""
-    echo ""
-    
-    echo "=== fullchain.pem (base64 encoded) ==="
-    kubectl exec "$pod_name" -n "$namespace" -- cat "$cert_path/fullchain.pem" 2>/dev/null | base64 -w 0
-    echo ""
-    echo ""
-    
-    echo "To decode these files, save each base64 string to a file and run:"
-    echo "  base64 -d <base64_file> > <output_file>"
-    
     return 1
 }
 
 # Parse command line arguments
 CLUSTER_NAME=""
-DOMAIN="*.apicurio-testing.org"
+DOMAIN=""  # Will be set after CLUSTER_NAME is parsed
 EMAIL="ewittman@ibm.com"
 OUTPUT_DIR="./certificates"
 NAMESPACE="certbot"
@@ -229,6 +215,11 @@ if [ -z "$CLUSTER_NAME" ]; then
     exit 1
 fi
 
+# Set default domain if not provided
+if [ -z "$DOMAIN" ]; then
+    DOMAIN="*.apps.$CLUSTER_NAME.apicurio-testing.org"
+fi
+
 # Validate required environment variables
 validate_env_vars
 
@@ -237,7 +228,6 @@ export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export DOMAIN
 export EMAIL
-export OUTPUT_DIR
 export NAMESPACE
 export CREATED_NAMESPACE="false"
 
@@ -255,11 +245,51 @@ if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
     exit 1
 fi
 
-# Create output directory if it doesn't exist
-mkdir -p "$OUTPUT_DIR"
+# Resolve output directory to absolute path and include cluster subdirectory
+CERT_DIR="$OUTPUT_DIR/$CLUSTER_NAME"
 
-# Resolve output directory to absolute path
-OUTPUT_DIR=$(cd "$OUTPUT_DIR" && pwd)
+# Create certificate directory if it doesn't exist
+mkdir -p "$CERT_DIR"
+
+# Convert CERT_DIR to absolute path
+CERT_DIR=$(cd "$OUTPUT_DIR/$CLUSTER_NAME" && pwd)
+
+# Check if certificate already exists and is still valid (less than 60 days old)
+PRIVKEY_FILE="$CERT_DIR/privkey.pem"
+if [ -f "$PRIVKEY_FILE" ]; then
+    # Get the creation/modification time of the file in seconds since epoch
+    if command -v stat >/dev/null 2>&1; then
+        # Use stat command (works on most Linux systems)
+        if stat --version 2>/dev/null | grep -q GNU; then
+            # GNU stat (Linux)
+            FILE_TIME=$(stat -c %Y "$PRIVKEY_FILE" 2>/dev/null)
+        else
+            # BSD stat (macOS)
+            FILE_TIME=$(stat -f %m "$PRIVKEY_FILE" 2>/dev/null)
+        fi
+    else
+        FILE_TIME=""
+    fi
+    
+    if [ -n "$FILE_TIME" ]; then
+        CURRENT_TIME=$(date +%s)
+        SIXTY_DAYS_IN_SECONDS=$((60 * 24 * 60 * 60))  # 60 days * 24 hours * 60 minutes * 60 seconds
+        AGE_IN_SECONDS=$((CURRENT_TIME - FILE_TIME))
+        
+        if [ $AGE_IN_SECONDS -lt $SIXTY_DAYS_IN_SECONDS ]; then
+            DAYS_OLD=$((AGE_IN_SECONDS / 86400))  # Convert seconds to days
+            echo "Certificate already exists and is only $DAYS_OLD days old (less than 60 days)."
+            echo "Certificate location: $PRIVKEY_FILE"
+            echo "Skipping certificate generation. Use --domain flag to generate for a different domain."
+            exit 0
+        else
+            DAYS_OLD=$((AGE_IN_SECONDS / 86400))
+            echo "Existing certificate is $DAYS_OLD days old (more than 60 days). Generating new certificate..."
+        fi
+    else
+        echo "Warning: Could not determine age of existing certificate. Proceeding with generation..."
+    fi
+fi
 
 cd "$CLUSTER_DIR"
 
@@ -270,12 +300,12 @@ echo "Generating Let's Encrypt TLS certificate using certbot"
 echo "Cluster: $CLUSTER_NAME"
 echo "Domain: $DOMAIN"
 echo "Email: $EMAIL"
-echo "Output Directory: $OUTPUT_DIR"
+echo "Output Directory: $CERT_DIR"
 echo "Namespace: $NAMESPACE"
 echo ""
 
 # Set up cleanup trap
-#trap 'cleanup_resources "$NAMESPACE"' EXIT
+trap 'cleanup_resources "$NAMESPACE"' EXIT
 
 # Create or ensure namespace exists
 if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
@@ -316,9 +346,9 @@ if kubectl exec certbot-pod -n "$NAMESPACE" -- sh -c "$CERTBOT_CMD"; then
     echo "Certbot completed successfully!"
     
     # Extract certificates
-    if extract_certificates "certbot-pod" "$NAMESPACE" "$DOMAIN" "$OUTPUT_DIR"; then
+    if extract_certificates "certbot-pod" "$NAMESPACE" "$DOMAIN" "$CERT_DIR"; then
         echo ""
-        echo "SUCCESS: TLS certificates have been generated and saved to: $OUTPUT_DIR"
+        echo "SUCCESS: TLS certificates have been generated and saved to: $CERT_DIR"
         echo ""
         echo "Generated files:"
         echo "  - cert.pem      (certificate)"
@@ -326,11 +356,10 @@ if kubectl exec certbot-pod -n "$NAMESPACE" -- sh -c "$CERTBOT_CMD"; then
         echo "  - fullchain.pem (certificate + intermediate chain)"
         echo ""
         echo "These certificates are valid for 90 days."
-        echo "You can now use these certificates to enable TLS in your clusters."
     else
         echo ""
         echo "Certificates were generated but could not be copied to local filesystem."
-        echo "Base64 encoded certificate content has been displayed above."
+        exit 1
     fi
 else
     echo "ERROR: Certbot failed to generate certificate"

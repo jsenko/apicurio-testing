@@ -184,6 +184,13 @@ if [ -z "$NAMESPACE" ]; then
     exit 1
 fi
 
+# Validate namespace contains only letters and numbers
+if [[ ! "$NAMESPACE" =~ ^[a-zA-Z0-9]+$ ]]; then
+    echo "Error: Namespace '$NAMESPACE' is invalid. It must contain only letters and numbers."
+    show_usage
+    exit 1
+fi
+
 if [ -z "$APICURIO_REGISTRY_VERSION" ]; then
     echo "Error: --version argument is required"
     show_usage
@@ -216,8 +223,8 @@ export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
 export APP_DIR="$APPS_DIR/$APPLICATION_NAME"
 export APPS_URL="apps.$CLUSTER_NAME.$BASE_DOMAIN"
-export APP_INGRESS_URL="registry-app.$NAMESPACE.$APPS_URL"
-export UI_INGRESS_URL="registry-ui.$NAMESPACE.$APPS_URL"
+export APP_INGRESS_URL="registry-app-$NAMESPACE.$APPS_URL"
+export UI_INGRESS_URL="registry-ui-$NAMESPACE.$APPS_URL"
 export APICURIO_OPERATOR_URL="https://raw.githubusercontent.com/Apicurio/apicurio-registry/refs/heads/main/operator/install/apicurio-registry-operator-$APICURIO_REGISTRY_VERSION.yaml"
 
 # Check if cluster directory exists

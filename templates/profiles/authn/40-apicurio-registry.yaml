@@ -5,12 +5,12 @@ metadata:
 spec:
   app:
     ingress:
-      host: $APP_INGRESS_URL
+      enabled: false
     auth:
       enabled: true
       appClientId: registry-api
       uiClientId: apicurio-registry
-      authServerUrl: https://keycloak.$APPS_URL/realms/registry
+      authServerUrl: https://keycloak-$NAMESPACE.$APPS_URL/realms/registry
       redirectUri: $UI_INGRESS_URL
       logoutUrl: $UI_INGRESS_URL
       anonymousReadsEnabled: true
@@ -23,4 +23,42 @@ spec:
       resourceDeleteEnabled: true
   ui:
     ingress:
-      host: $UI_INGRESS_URL
+      enabled: false
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apicurio-registry-app
+  annotations:
+    kubernetes.io/tls-acme: "true"
+  labels:
+    app: $APPLICATION_NAME
+spec:
+  host: $APP_INGRESS_URL
+  to:
+    kind: Service
+    name: registry-app
+    weight: 100
+  wildcardPolicy: None
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apicurio-registry-ui
+  annotations:
+    kubernetes.io/tls-acme: "true"
+  labels:
+    app: $APPLICATION_NAME
+spec:
+  host: $UI_INGRESS_URL
+  to:
+    kind: Service
+    name: registry-ui
+    weight: 100
+  wildcardPolicy: None
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

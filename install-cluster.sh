@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to install OKD cluster
-# Usage: ./install-cluster.sh --name <cluster-name>
+# Usage: ./install-cluster.sh --clusterName <cluster-name>
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -170,20 +170,26 @@ get_okd_installer_url() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --name <cluster-name> --okdVersion <okd-version>"
-    echo "  --name       Name of the cluster to install"
-    echo "  --okdVersion    OKD version to install"
+    echo "Usage: $0 --clusterName <cluster-name> [--okdVersion <okd-version>]"
+    echo ""
+    echo "Required Parameters:"
+    echo "  --clusterName <cluster-name>    Name of the cluster to install"
+    echo "                           Must contain only letters and numbers"
+    echo ""
+    echo "Optional Parameters:"
+    echo "  --okdVersion <version>   OKD version to install (default: 4.19)"
+    echo "  -h, --help               Show this help message"
     exit 1
 }
 
 # Initialize variables
 CLUSTER_NAME=""
-OKD_VERSION=""
+OKD_VERSION="4.19"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --name)
+        --clusterName)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -203,13 +209,15 @@ done
 
 # Validate required parameters
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: --name parameter is required"
+    echo "Error: --clusterName parameter is required"
     usage
 fi
 
-if [[ -z "$OKD_VERSION" ]]; then
-    echo "Error: --okdVersion parameter is required"
-    usage
+# Validate cluster name format (only letters and numbers allowed)
+if [[ ! "$CLUSTER_NAME" =~ ^[a-zA-Z0-9]+$ ]]; then
+    echo "Error: Cluster name '$CLUSTER_NAME' is invalid"
+    echo "Cluster name must contain only letters and numbers (no spaces, hyphens, or special characters)"
+    exit 1
 fi
 
 # Validate required environment variables
@@ -239,3 +247,18 @@ envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $BASE_DIR/
 
 # Install the cluster
 ./openshift-install create cluster --log-level=info
+
+# Generate a TLS cert for the cluster
+cd $BASE_DIR
+./generate-tls-cert.sh --clusterName $CLUSTER_NAME
+
+# Update the cluster's default ingress to use the cert
+CERT_DIR=./certificates/$CLUSTER_NAME
+kubectl create secret tls apicurio-tls-cert \
+  --cert=$CERT_DIR/fullchain.pem \
+  --key=$CERT_DIR/privkey.pem \
+  -n openshift-ingress
+kubectl patch ingresscontroller default \
+  -n openshift-ingress-operator \
+  --type=merge \
+  -p '{"spec":{"defaultCertificate":{"name":"apicurio-tls-cert"}}}'
