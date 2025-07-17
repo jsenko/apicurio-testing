@@ -117,6 +117,73 @@ wait_for_health_endpoint() {
 }
 
 
+# ##################################################
+# Function to output debugging information when 
+# application fails to become ready
+# ##################################################
+output_debug_info() {
+    local namespace="$1"
+    
+    echo ""
+    echo "=========================================="
+    echo "DEBUGGING INFORMATION"
+    echo "=========================================="
+    echo ""
+    
+    echo "==================== DEPLOYMENTS ===================="
+    kubectl get deployments -n "$namespace" -o wide || echo "Failed to get deployments"
+    echo ""
+    kubectl describe deployments -n "$namespace" || echo "Failed to describe deployments"
+    echo ""
+    
+    echo "==================== PODS ===================="
+    kubectl get pods -n "$namespace" -o wide || echo "Failed to get pods"
+    echo ""
+    kubectl describe pods -n "$namespace" || echo "Failed to describe pods"
+    echo ""
+    
+    echo "==================== SERVICES ===================="
+    kubectl get services -n "$namespace" -o wide || echo "Failed to get services"
+    echo ""
+    kubectl describe services -n "$namespace" || echo "Failed to describe services"
+    echo ""
+    
+    echo "==================== ROUTES ===================="
+    kubectl get routes -n "$namespace" -o wide 2>/dev/null || echo "No routes found or routes not supported"
+    echo ""
+    kubectl describe routes -n "$namespace" 2>/dev/null || echo "No routes found or routes not supported"
+    echo ""
+    
+    echo "==================== INGRESSES ===================="
+    kubectl get ingresses -n "$namespace" -o wide || echo "Failed to get ingresses"
+    echo ""
+    kubectl describe ingresses -n "$namespace" || echo "Failed to describe ingresses"
+    echo ""
+    
+    echo "==================== EVENTS ===================="
+    kubectl get events -n "$namespace" --sort-by='.lastTimestamp' || echo "Failed to get events"
+    echo ""
+    
+    echo "==================== POD LOGS ===================="
+    # Get logs from all pods in the namespace
+    local pods=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+    if [ -n "$pods" ]; then
+        for pod in $pods; do
+            echo "--- Logs for pod: $pod ---"
+            kubectl logs "$pod" -n "$namespace" --tail=50 2>/dev/null || echo "Failed to get logs for pod $pod"
+            echo ""
+        done
+    else
+        echo "No pods found in namespace $namespace"
+    fi
+    
+    echo "=========================================="
+    echo "END DEBUGGING INFORMATION"
+    echo "=========================================="
+    echo ""
+}
+
+
 
 # Parse command line arguments
 APPLICATION_NAME=""
@@ -294,6 +361,9 @@ if [[ $? -ne 0 ]]; then
   echo "--"
   echo "ERROR: Apicurio Registry health endpoint did not become ready in time."
   echo "--"
+  echo ""
+  echo "Collecting debugging information..."
+  output_debug_info "$NAMESPACE"
   exit 1
 fi
 
