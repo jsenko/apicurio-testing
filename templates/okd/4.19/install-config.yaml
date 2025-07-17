@@ -20,18 +20,9 @@ controlPlane:
 metadata:
   creationTimestamp: null
   name: $CLUSTER_NAME
-networking:
-  clusterNetwork:
-  - cidr: 10.128.0.0/14
-    hostPrefix: 23
-  machineNetwork:
-  - cidr: 10.0.0.0/16
-  networkType: OVNKubernetes
-  serviceNetwork:
-  - 172.30.0.0/16
 platform:
   aws:
-    region: us-east-1
+    region: $REGION
     userTags:
       apicurio/Environment: TEST
       apicurio/ForCleanup: "true"

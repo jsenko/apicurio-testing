@@ -170,7 +170,7 @@ get_okd_installer_url() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --clusterName <cluster-name> [--okdVersion <okd-version>]"
+    echo "Usage: $0 --clusterName <cluster-name> [--okdVersion <okd-version>] [--region <aws-region>]"
     echo ""
     echo "Required Parameters:"
     echo "  --clusterName <cluster-name>    Name of the cluster to install"
@@ -178,6 +178,7 @@ usage() {
     echo ""
     echo "Optional Parameters:"
     echo "  --okdVersion <version>   OKD version to install (default: 4.19)"
+    echo "  --region <aws-region>    AWS region to deploy to (overrides AWS_DEFAULT_REGION)"
     echo "  -h, --help               Show this help message"
     exit 1
 }
@@ -185,6 +186,7 @@ usage() {
 # Initialize variables
 CLUSTER_NAME=""
 OKD_VERSION="4.19"
+REGION=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -195,6 +197,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --okdVersion)
             OKD_VERSION="$2"
+            shift 2
+            ;;
+        --region)
+            REGION="$2"
             shift 2
             ;;
         -h|--help)
@@ -218,6 +224,12 @@ if [[ ! "$CLUSTER_NAME" =~ ^[a-zA-Z0-9]+$ ]]; then
     echo "Error: Cluster name '$CLUSTER_NAME' is invalid"
     echo "Cluster name must contain only letters and numbers (no spaces, hyphens, or special characters)"
     exit 1
+fi
+
+# Set AWS_DEFAULT_REGION if --region was provided
+if [[ -n "$REGION" ]]; then
+    export AWS_DEFAULT_REGION="$REGION"
+    echo "Using AWS region: $REGION"
 fi
 
 # Validate required environment variables
@@ -244,6 +256,7 @@ tar xfz openshift-install.tar.gz
 # Create the install-config.yaml file (from template)
 echo "Creating install-config.yaml from template with environment variable substitution"
 export CLUSTER_NAME
+export REGION
 envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
 
 # Install the cluster

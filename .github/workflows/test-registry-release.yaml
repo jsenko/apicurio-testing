@@ -38,6 +38,12 @@ jobs:
         run: |
           ./install-operator.sh --clusterName $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
 
+      - name: Commit TLS Certs (optional)
+        run: |
+          git add certificates
+          git commit -m 'Generated TLS certificate for cluster $CLUSTER_NAME'
+          git push origin main
+
       - name: Package up the "clusters" directory
         run: |
           rm clusters/$CLUSTER_NAME/openshift-install.tar.gz
@@ -86,6 +92,20 @@ jobs:
         run: |
           ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
+      - name: Package up the pod logs
+        if: error()
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
+        if: error()
+
 
   openshift-419_postgresql:
     name: Apicurio Registry (postgresql)
@@ -122,6 +142,20 @@ jobs:
         run: |
           ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
+      - name: Package up the pod logs
+        if: error()
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
+        if: error()
+
 
   openshift-419_mysql:
     name: Apicurio Registry (mysql)
@@ -157,6 +191,20 @@ jobs:
       - name: Install Apicurio Registry
         run: |
           ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+      - name: Package up the pod logs
+        if: error()
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
+        if: error()
 
 
   openshift-419_kafkasql:
@@ -195,6 +243,20 @@ jobs:
         run: |
           ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --strimziVersion $STRIMZI_VERSION
 
+      - name: Package up the pod logs
+        if: error()
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
+        if: error()
+
 
   openshift-419_authn:
     name: Apicurio Registry (authn)
@@ -230,6 +292,21 @@ jobs:
       - name: Install Apicurio Registry
         run: |
           ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+      - name: Package up the pod logs
+        if: error()
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
+        if: error()
+
 
   openshift-419_inmemory_uitests:
     name: UI Tests (in mem)
