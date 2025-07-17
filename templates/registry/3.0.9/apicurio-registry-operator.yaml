@@ -6703,7 +6703,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: apicurio-registry-operator
-  namespace: $NAMESPACE
+  namespace: $OPERATOR_NAMESPACE
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -6715,7 +6715,7 @@ metadata:
     app.kubernetes.io/part-of: apicurio-registry
     app.kubernetes.io/version: 3.0.9
   name: apicurio-registry-operator-v3.0.9
-  namespace: $NAMESPACE
+  namespace: $OPERATOR_NAMESPACE
 spec:
   replicas: 1
   selector:
@@ -6745,9 +6745,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: APICURIO_OPERATOR_WATCHED_NAMESPACES
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.annotations['olm.targetNamespaces']
+          value: "inmemory"
         - name: QUARKUS_PROFILE
           value: prod
         - name: REGISTRY_APP_IMAGE

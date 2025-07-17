@@ -13,7 +13,6 @@ spec:
       authServerUrl: https://$KEYCLOAK_INGRESS_URL/realms/registry
       redirectUri: $UI_INGRESS_URL
       logoutUrl: $UI_INGRESS_URL
-      anonymousReadsEnabled: true
       basicAuth:
         enabled: true
         cacheExpiration: 25m
@@ -24,6 +23,9 @@ spec:
   ui:
     ingress:
       enabled: false
+    env:
+      - name: REGISTRY_API_URL
+        value: https://$APP_INGRESS_URL/apis/registry/v3
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
@@ -37,7 +39,7 @@ spec:
   host: $APP_INGRESS_URL
   to:
     kind: Service
-    name: registry-app
+    name: registry-app-service
     weight: 100
   wildcardPolicy: None
   tls:
@@ -56,7 +58,7 @@ spec:
   host: $UI_INGRESS_URL
   to:
     kind: Service
-    name: registry-ui
+    name: registry-ui-service
     weight: 100
   wildcardPolicy: None
   tls:

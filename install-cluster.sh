@@ -224,11 +224,12 @@ fi
 validate_env_vars
 
 echo "Installing OKD cluster with name: $CLUSTER_NAME (OKD version: $OKD_VERSION)"
+CLUSTER_DIR=$BASE_DIR/clusters/$CLUSTER_NAME
 
 # Create a work directory for installing the OKD cluster
-rm -rf $BASE_DIR/clusters/$CLUSTER_NAME
-mkdir -p $BASE_DIR/clusters/$CLUSTER_NAME
-cd $BASE_DIR/clusters/$CLUSTER_NAME
+rm -rf $CLUSTER_DIR
+mkdir -p $CLUSTER_DIR
+cd $CLUSTER_DIR
 
 # Download the OKD installer
 INSTALLER_URL=$(get_okd_installer_url "$OKD_VERSION")
@@ -243,7 +244,7 @@ tar xfz openshift-install.tar.gz
 # Create the install-config.yaml file (from template)
 echo "Creating install-config.yaml from template with environment variable substitution"
 export CLUSTER_NAME
-envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $BASE_DIR/clusters/$CLUSTER_NAME/install-config.yaml
+envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
 
 # Install the cluster
 ./openshift-install create cluster --log-level=info
@@ -253,6 +254,7 @@ cd $BASE_DIR
 ./generate-tls-cert.sh --clusterName $CLUSTER_NAME
 
 # Update the cluster's default ingress to use the cert
+export KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig
 CERT_DIR=./certificates/$CLUSTER_NAME
 kubectl create secret tls apicurio-tls-cert \
   --cert=$CERT_DIR/fullchain.pem \

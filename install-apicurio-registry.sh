@@ -8,12 +8,11 @@ AVAILABLE_PROFILES=$(ls -1 "$BASE_DIR/templates/profiles" 2>/dev/null | tr '\n' 
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> --version <registry_version> [OPTIONS]"
+    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
     echo "  --clusterName <name>     Name of the OpenShift cluster where Apicurio Registry will be installed"
     echo "  --namespace <namespace>  Kubernetes namespace to deploy Apicurio Registry into"
-    echo "  --version <version>      Version of Apicurio Registry to install (e.g., 3.0.9)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
     echo "  --appName <name>         Name of the application deployment (default: 'registry')"
@@ -25,13 +24,13 @@ show_usage() {
     echo ""
     echo "EXAMPLES:"
     echo "  # Basic installation with inmemory profile:"
-    echo "  $0 --clusterName okd419 --namespace simplens1 --version 3.0.9"
+    echo "  $0 --clusterName okd419 --namespace simplens1"
     echo ""
     echo "  # Installation with custom app name and kafkasql profile:"
-    echo "  $0 --appName my-registry --clusterName okd419 --namespace kafkans1 --version 3.0.9 --profile kafkasql --strimziVersion 0.43.0"
+    echo "  $0 --appName my-registry --clusterName okd419 --namespace kafkans1 --profile kafkasql --strimziVersion 0.43.0"
     echo ""
     echo "  # Installation with PostgreSQL profile:"
-    echo "  $0 --clusterName okd419 --namespace pgns1 --version 3.0.9 --profile postgresql"
+    echo "  $0 --clusterName okd419 --namespace pgns1 --profile postgresql"
     echo ""
     echo "NOTES:"
     echo "  - The cluster must already exist and be properly configured"
@@ -92,7 +91,7 @@ wait_for_health_endpoint() {
     
     while [ $(date +%s) -lt $end_time ]; do
         # Use curl to get the JSON response from the health endpoint
-        local response=$(curl -s --max-time 10 "$url" 2>/dev/null)
+        local response=$(curl -sL --max-time 10 "$url" 2>/dev/null)
         local curl_exit_code=$?
         
         # Check if curl succeeded and we got a response
@@ -123,7 +122,6 @@ wait_for_health_endpoint() {
 APPLICATION_NAME=""
 CLUSTER_NAME=""
 NAMESPACE=""
-APICURIO_REGISTRY_VERSION=""
 PROFILE=""
 STRIMZI_VERSION=""
 
@@ -139,10 +137,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --namespace)
             NAMESPACE="$2"
-            shift 2
-            ;;
-        --version)
-            APICURIO_REGISTRY_VERSION="$2"
             shift 2
             ;;
         --profile)
@@ -187,12 +181,6 @@ fi
 # Validate namespace contains only letters and numbers
 if [[ ! "$NAMESPACE" =~ ^[a-zA-Z0-9]+$ ]]; then
     echo "Error: Namespace '$NAMESPACE' is invalid. It must contain only letters and numbers."
-    show_usage
-    exit 1
-fi
-
-if [ -z "$APICURIO_REGISTRY_VERSION" ]; then
-    echo "Error: --version argument is required"
     show_usage
     exit 1
 fi
@@ -275,11 +263,9 @@ else
     echo "No Strimzi version specified, skipping Strimzi operator installation"
 fi
 
-# Deploy the Apicurio Registry operator to the namespace
-echo "Downloading Apicurio Registry Operator YAML from: $APICURIO_OPERATOR_URL"
-curl -sSL $APICURIO_OPERATOR_URL | sed "s/PLACEHOLDER_NAMESPACE/$NAMESPACE/g" > $APP_DIR/apicurio-registry-operator.yaml
-echo "Installing Apicurio Registry Operator into namespace $NAMESPACE"
-kubectl apply -f $APP_DIR/apicurio-registry-operator.yaml -n $NAMESPACE
+# Note: Apicurio Registry Operator should be installed separately using install-apicurio-registry-operator.sh
+# This script assumes the operator is already deployed cluster-wide
+echo "Assuming Apicurio Registry Operator is already installed cluster-wide"
 
 # Deploy profile-specific resources
 echo "Using profile: $PROFILE"
