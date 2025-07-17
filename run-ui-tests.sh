@@ -1,17 +1,28 @@
 #!/bin/bash
 
+# Function to display usage information
+show_usage() {
+    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> --tag <registry_tag>"
+    echo ""
+    echo "This script runs the apicurio-registry UI tests against a deployed Registry instance."
+    echo "The Registry UI URL is constructed as: http://registry-ui-NAMESPACE.apps.CLUSTER_NAME.apicurio-testing.org"
+    echo ""
+    echo "Arguments:"
+    echo "  --clusterName <cluster_name>  Name of the cluster where the registry is deployed"
+    echo "  --namespace <namespace>       Kubernetes namespace where the registry is running"
+    echo "  --tag <registry_tag>         Git branch or tag of the apicurio-registry repository to test"
+    echo "  -h, --help                   Show this help message and exit"
+    echo ""
+    echo "Example: $0 --clusterName okd419 --namespace testns1 --tag 3.0.9"
+}
+
 # Parse command line arguments
 CLUSTER_NAME=""
 NAMESPACE=""
-APPLICATION_NAME=""
-APICURIO_REGISTRY_VERSION=""
+APICURIO_REGISTRY_TAG="main"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --appName)
-            APPLICATION_NAME="$2"
-            shift 2
-            ;;
         --clusterName)
             CLUSTER_NAME="$2"
             shift 2
@@ -20,76 +31,61 @@ while [[ $# -gt 0 ]]; do
             NAMESPACE="$2"
             shift 2
             ;;
-        --version)
-            APICURIO_REGISTRY_VERSION="$2"
+        --tag)
+            APICURIO_REGISTRY_TAG="$2"
             shift 2
             ;;
         -h|--help)
-            echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-            echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
+            show_usage
             exit 0
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
+            show_usage
             exit 1
             ;;
     esac
 done
 
 # Check if required arguments are provided
-if [ -z "$APPLICATION_NAME" ]; then
-    echo "Error: --appName argument is required"
-    echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-    echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
-    exit 1
-fi
-
 if [ -z "$CLUSTER_NAME" ]; then
     echo "Error: --clusterName argument is required"
-    echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-    echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
+    show_usage
     exit 1
 fi
 
 if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
-    echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-    echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
+    show_usage
     exit 1
 fi
 
-if [ -z "$APICURIO_REGISTRY_VERSION" ]; then
-    echo "Error: --version argument is required"
-    echo "Usage: $0 --appName <application_name> --clusterName <cluster_name> --namespace <namespace> --version <registry_version>"
-    echo "Example: $0 --appName my-application-name --clusterName okd419 --namespace testns1 --version 3.0.9"
+if [ -z "$APICURIO_REGISTRY_TAG" ]; then
+    echo "Error: --tag argument is required"
+    show_usage
     exit 1
 fi
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-export APPLICATION_NAME
 export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
-export APICURIO_REGISTRY_VERSION
+export APICURIO_REGISTRY_TAG
 export NAMESPACE
 export BASE_DOMAIN="apicurio-testing.org"
-export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
-export APP_DIR="$APPS_DIR/$APPLICATION_NAME"
 export APPS_URL="apps.$CLUSTER_NAME.$BASE_DOMAIN"
 export APP_INGRESS_URL="registry-app-$NAMESPACE.$APPS_URL"
 export UI_INGRESS_URL="registry-ui-$NAMESPACE.$APPS_URL"
-export TESTS_DIR="$APP_DIR/tests"
+export TESTS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/tests"
 export UI_TESTS_DIR="$TESTS_DIR/ui"
-export TOOLS_DIR="$BASE_DIR/tools"
 
 mkdir -p $UI_TESTS_DIR
 cd $UI_TESTS_DIR
 
 # Clone the apicurio-registry repository
-echo "Cloning apicurio-registry git repository at branch/tag: $APICURIO_REGISTRY_VERSION"
-git clone --branch $APICURIO_REGISTRY_VERSION --depth 1 https://github.com/Apicurio/apicurio-registry.git
+echo "Cloning apicurio-registry git repository at branch/tag: $APICURIO_REGISTRY_TAG"
+git clone --branch $APICURIO_REGISTRY_TAG --depth 1 https://github.com/Apicurio/apicurio-registry.git
 
 # Prepare to run the UI tests
 echo "Preparing to run tests (npm install)."

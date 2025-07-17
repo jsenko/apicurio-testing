@@ -19,6 +19,7 @@ jobs:
       AWS_DEFAULT_REGION: "us-east-1"
       OPENSHIFT_VERSION: "4.19"
       CLUSTER_NAME: ci419
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -32,6 +33,10 @@ jobs:
       - name: Install OpenShift cluster
         run: |
           ./install-cluster.sh --clusterName $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION
+
+      - name: Install Apicurio Registry Operator
+        run: |
+          ./install-operator.sh --clusterName $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
 
       - name: Package up the "clusters" directory
         run: |
@@ -54,9 +59,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
-      APP_NAME: registry
       PROFILE: inmemory
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -65,7 +68,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'latest' # or pin to a specific version like '1.30.1'
+          version: 'latest'
 
       - name: Verify kubectl
         run: kubectl version --client
@@ -81,7 +84,7 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION --profile $PROFILE
+          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
 
   openshift-419_postgresql:
@@ -92,9 +95,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: postgresql
-      APP_NAME: registry
       PROFILE: postgresql
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -103,7 +104,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'latest' # or pin to a specific version like '1.30.1'
+          version: 'latest'
 
       - name: Verify kubectl
         run: kubectl version --client
@@ -119,7 +120,7 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION --profile $PROFILE
+          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
 
   openshift-419_mysql:
@@ -130,8 +131,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
-      APP_NAME: registry
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      PROFILE: mysql
 
     steps:
       - name: Checkout Code
@@ -140,7 +140,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'latest' # or pin to a specific version like '1.30.1'
+          version: 'latest'
 
       - name: Verify kubectl
         run: kubectl version --client
@@ -156,7 +156,45 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          echo "TBD: install the app!"
+          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+
+  openshift-419_kafkasql:
+    name: Apicurio Registry (kafkasql)
+    runs-on: ubuntu-22.04
+    needs: openshift-419
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: kafkasql
+      PROFILE: kafkasql
+      STRIMZI_VERSION: 0.47.0
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --strimziVersion $STRIMZI_VERSION
+
 
   openshift-419_authn:
     name: Apicurio Registry (authn)
@@ -166,9 +204,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: authn
-      APP_NAME: registry
       PROFILE: authn
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
@@ -177,7 +213,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'latest' # or pin to a specific version like '1.30.1'
+          version: 'latest'
 
       - name: Verify kubectl
         run: kubectl version --client
@@ -193,7 +229,7 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION --profile $PROFILE
+          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
   openshift-419_inmemory_uitests:
     name: UI Tests (in mem)
@@ -203,7 +239,6 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
-      APP_NAME: registry
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -221,7 +256,7 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --appName $APP_NAME --clusterName $CLUSTER_NAME --namespace $NAMESPACE --version $APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
@@ -244,7 +279,6 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
-      APP_NAME: registry
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -262,7 +296,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          echo "TBD: run integration tests!"
+          ./run-integration-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
@@ -285,7 +319,6 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: postgresql
-      APP_NAME: registry
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -303,7 +336,7 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          echo "TBD: run UI tests!"
+          ./run-ui-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
@@ -326,7 +359,6 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: postgresql
-      APP_NAME: registry
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -344,7 +376,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          echo "TBD: run integration tests!"
+          ./run-integration-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
@@ -367,7 +399,6 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
-      APP_NAME: registry
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -385,7 +416,7 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          echo "TBD: run UI tests!"
+          ./run-ui-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
@@ -408,7 +439,6 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
-      APP_NAME: registry
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -426,7 +456,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          echo "TBD: run integration tests!"
+          ./run-integration-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
@@ -440,6 +470,87 @@ jobs:
           name: ${{ github.job }}-logs.zip
           path: ${{ github.job }}-logs.zip
 
+
+  openshift-419_kafkasql_uitests:
+    name: UI Tests (kafkasql)
+    runs-on: ubuntu-22.04
+    needs: openshift-419_kafkasql
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: kafkasql
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Run UI Tests
+        run: |
+          ./run-ui-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
+
+
+  openshift-419_kafkasql_integrationtests:
+    name: Integration Tests (kafkasql)
+    runs-on: ubuntu-22.04
+    needs: openshift-419_kafkasql
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: kafkasql
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Package up the pod logs
+        run: |
+          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          zip -r ${{ github.job }}-logs.zip logs/
+
+      - name: Upload pod logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.job }}-logs.zip
+          path: ${{ github.job }}-logs.zip
+
+
   openshift-419_authn_integrationtests:
     name: Integration Tests (authn)
     runs-on: ubuntu-22.04
@@ -448,7 +559,6 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: authn
-      APP_NAME: registry
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -491,6 +601,8 @@ jobs:
       - openshift-419_postgresql_integrationtests
       - openshift-419_mysql_uitests
       - openshift-419_mysql_integrationtests
+      - openshift-419_kafkasql_uitests
+      - openshift-419_kafkasql_integrationtests
       - openshift-419_authn_integrationtests
     if: always()
 

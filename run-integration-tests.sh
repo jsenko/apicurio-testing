@@ -3,7 +3,6 @@
 # Function to display usage information
 show_usage() {
     echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> [--tag <registry_tag>]"
-    echo "Example: $0 --clusterName okd419 --namespace testns1 --tag main"
     echo ""
     echo "This script runs the apicurio-registry integration tests against a deployed Registry instance."
     echo "The Registry URL is constructed as: http://registry-app-NAMESPACE.apps.CLUSTER_NAME.apicurio-testing.org"
@@ -12,6 +11,8 @@ show_usage() {
     echo "  --clusterName    Required. The OpenShift cluster name"
     echo "  --namespace      Required. The namespace where Registry is deployed"
     echo "  --tag            Optional. Git branch/tag to test against (default: main)"
+    echo ""
+    echo "Example: $0 --clusterName okd419 --namespace testns1 --tag main"
 }
 
 # Parse command line arguments
@@ -110,7 +111,7 @@ echo "------------------------------------"
 
 ./mvnw verify -am --no-transfer-progress \
     -Pintegration-tests \
-    -Pci \
+    -Pall \
     -pl integration-tests \
     -Dmaven.javadoc.skip=true \
     -Dquarkus.http.test-host=$REGISTRY_HOST \
