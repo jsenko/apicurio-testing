@@ -55,7 +55,8 @@ jobs:
       - name: Package up the "clusters" directory
         if: always()
         run: |
-          rm clusters/$CLUSTER_NAME/openshift-install.tar.gz
+          rm -f clusters/$CLUSTER_NAME/openshift-install.tar.gz
+          mkdir -p clusters
           zip -r ${{ github.job }}-clusters.zip clusters/
 
       - name: Upload cluster state
