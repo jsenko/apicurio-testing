@@ -178,7 +178,7 @@ usage() {
     echo ""
     echo "Optional Parameters:"
     echo "  --okdVersion <version>   OKD version to install (default: 4.19)"
-    echo "  --region <aws-region>    AWS region to deploy to (overrides AWS_DEFAULT_REGION)"
+    echo "  --region <aws-region>    AWS region to deploy to (default: us-east-1)"
     echo "  -h, --help               Show this help message"
     exit 1
 }
@@ -186,7 +186,7 @@ usage() {
 # Initialize variables
 CLUSTER_NAME=""
 OKD_VERSION="4.19"
-REGION=""
+REGION="us-east-1"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -226,11 +226,9 @@ if [[ ! "$CLUSTER_NAME" =~ ^[a-zA-Z0-9]+$ ]]; then
     exit 1
 fi
 
-# Set AWS_DEFAULT_REGION if --region was provided
-if [[ -n "$REGION" ]]; then
-    export AWS_DEFAULT_REGION="$REGION"
-    echo "Using AWS region: $REGION"
-fi
+# Set AWS_DEFAULT_REGION to the region (either default or provided via --region)
+export AWS_DEFAULT_REGION="$REGION"
+echo "Using AWS region: $REGION"
 
 # Validate required environment variables
 validate_env_vars
