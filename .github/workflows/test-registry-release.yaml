@@ -53,12 +53,14 @@ jobs:
           git push origin main
 
       - name: Package up the "clusters" directory
+        if: always()
         run: |
           rm clusters/$CLUSTER_NAME/openshift-install.tar.gz
           zip -r ${{ github.job }}-clusters.zip clusters/
 
       - name: Upload cluster state
         id: upload
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-clusters.zip
