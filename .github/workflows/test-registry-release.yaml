@@ -22,16 +22,16 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        run: |
-          git init
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
-          git remote add origin "https://apicurio-ci:${{ secrets.ACCESS_TOKEN }}@github.com/Apicurio/apicurio-testing.git"
-          git fetch
-          git checkout main
-          git branch --set-upstream-to=origin/main
-          git pull
+      # - name: Checkout Code
+      #   run: |
+      #     git init
+      #     git config --global user.name "apicurio-ci"
+      #     git config --global user.email "apicurio.ci@gmail.com"
+      #     git remote add origin "https://apicurio-ci:${{ secrets.ACCESS_TOKEN }}@github.com/Apicurio/apicurio-testing.git"
+      #     git fetch
+      #     git checkout main
+      #     git branch --set-upstream-to=origin/main
+      #     git pull
 
       - name: Check Required tools
         run: |
@@ -46,11 +46,11 @@ jobs:
         run: |
           ./install-operator.sh --clusterName $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
 
-      - name: Commit TLS Certs (optional)
-        run: |
-          git add certificates
-          git commit -m 'Generated TLS certificate for cluster $CLUSTER_NAME'
-          git push origin main
+      # - name: Commit TLS Certs (optional)
+      #   run: |
+      #     git add certificates
+      #     git commit -m 'Generated TLS certificate for cluster $CLUSTER_NAME'
+      #     git push origin main
 
       - name: Package up the "clusters" directory
         if: always()
