@@ -33,6 +33,9 @@ jobs:
       #     git branch --set-upstream-to=origin/main
       #     git pull
 
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
       - name: Check Required tools
         run: |
           curl --version
