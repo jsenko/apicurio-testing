@@ -124,7 +124,7 @@ jobs:
   openshift-419_postgresql:
     name: Apicurio Registry (postgresql)
     runs-on: ubuntu-22.04
-    needs: openshift-419
+    needs: openshift-419_inmemory
 
     env:
       CLUSTER_NAME: ci419
@@ -174,7 +174,7 @@ jobs:
   openshift-419_mysql:
     name: Apicurio Registry (mysql)
     runs-on: ubuntu-22.04
-    needs: openshift-419
+    needs: openshift-419_postgresql
 
     env:
       CLUSTER_NAME: ci419
@@ -224,7 +224,7 @@ jobs:
   openshift-419_kafkasql:
     name: Apicurio Registry (kafkasql)
     runs-on: ubuntu-22.04
-    needs: openshift-419
+    needs: openshift-419_mysql
 
     env:
       CLUSTER_NAME: ci419
@@ -275,7 +275,7 @@ jobs:
   openshift-419_authn:
     name: Apicurio Registry (authn)
     runs-on: ubuntu-22.04
-    needs: openshift-419
+    needs: openshift-419_kafkasql
 
     env:
       CLUSTER_NAME: ci419
