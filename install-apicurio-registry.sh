@@ -86,8 +86,8 @@ wait_for_health_endpoint() {
     local end_time=$((start_time + timeout))
     
     # Initial wait period
-    echo "Waiting 60 seconds before starting health endpoint polling..."
-    sleep 60
+    echo "Waiting 30 seconds before starting health endpoint polling..."
+    sleep 30
     
     while [ $(date +%s) -lt $end_time ]; do
         # Use curl to get the JSON response from the health endpoint
@@ -296,10 +296,6 @@ if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
     echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
     exit 1
 fi
-
-# Load SSL certificates (may be needed by profile)
-export CERT_PRIVKEY=$(sed 's/^/      /' $CERT_DIR/privkey.pem)
-export CERT_FULL_CHAIN=$(sed 's/^/      /' $CERT_DIR/fullchain.pem)
 
 
 mkdir -p $APP_DIR

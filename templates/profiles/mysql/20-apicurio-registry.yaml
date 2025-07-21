@@ -12,18 +12,19 @@ metadata:
   name: $APPLICATION_NAME
 spec:
   app:
-    storage:
-      type: mysql
-      sql:
-        dataSource:
-          url: jdbc:mysql://mysql:3306/apicuriodb
-          username: mysqluser
-          password:
-            name: mysql-database-password
     ingress:
       host: $APP_INGRESS_URL
     features:
       resourceDeleteEnabled: true
+    env:
+      - name: APICURIO_STORAGE_SQL_KIND
+        value: "mysql"
+      - name: APICURIO_DATASOURCE_URL
+        value: jdbc:mysql://mysql:3306/apicuriodb
+      - name: APICURIO_DATASOURCE_USERNAME
+        value: "mysqluser"
+      - name: APICURIO_DATASOURCE_PASSWORD
+        value: "mysqlpassword"
   ui:
     ingress:
       host: $UI_INGRESS_URL
