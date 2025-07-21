@@ -803,7 +803,6 @@ jobs:
     name: Destroy Registry (authn)
     runs-on: ubuntu-22.04
     needs:
-      - openshift-419_authn_uitests
       - openshift-419_authn_integrationtests
     if: always()
 
