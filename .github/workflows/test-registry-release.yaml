@@ -22,19 +22,16 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      # - name: Checkout Code
-      #   run: |
-      #     git init
-      #     git config --global user.name "apicurio-ci"
-      #     git config --global user.email "apicurio.ci@gmail.com"
-      #     git remote add origin "https://apicurio-ci:${{ secrets.ACCESS_TOKEN }}@github.com/Apicurio/apicurio-testing.git"
-      #     git fetch
-      #     git checkout main
-      #     git branch --set-upstream-to=origin/main
-      #     git pull
-
       - name: Checkout Code
-        uses: actions/checkout@v3
+        run: |
+          git init
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+          git remote add origin "https://apicurio-ci:${{ secrets.ACCESS_TOKEN }}@github.com/Apicurio/apicurio-testing.git"
+          git fetch
+          git checkout main
+          git branch --set-upstream-to=origin/main
+          git pull
 
       - name: Check Required tools
         run: |
@@ -49,11 +46,11 @@ jobs:
         run: |
           ./install-operator.sh --clusterName $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
 
-      # - name: Commit TLS Certs (optional)
-      #   run: |
-      #     git add certificates
-      #     git commit -m 'Generated TLS certificate for cluster $CLUSTER_NAME'
-      #     git push origin main
+      - name: Commit TLS Certs (if necessary)
+        run: |
+          git add certificates
+          git commit -m '(re)generated TLS certificate for cluster $CLUSTER_NAME'
+          git push origin main
 
       - name: Package up the "clusters" directory
         if: always()
@@ -303,9 +300,9 @@ jobs:
         run: |
           unzip openshift-419-clusters.zip
 
-      - name: Install Apicurio Registry
-        run: |
-          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+      # - name: Install Apicurio Registry
+      #   run: |
+      #     ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
       - name: Package up the pod logs
         if: failure()
@@ -682,19 +679,165 @@ jobs:
           path: ${{ github.job }}-logs.zip
 
 
-  openshift-419-teardown:
-    name: Destroy OpenShift 4.19
+  openshift-419_inmemory_teardown:
+    name: Destroy Registry (inmemory)
     runs-on: ubuntu-22.04
     needs:
       - openshift-419_inmemory_uitests
       - openshift-419_inmemory_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: inmemory
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  openshift-419_postgresql_teardown:
+    name: Destroy Registry (postgresql)
+    runs-on: ubuntu-22.04
+    needs:
       - openshift-419_postgresql_uitests
       - openshift-419_postgresql_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: postgresql
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  openshift-419_mysql_teardown:
+    name: Destroy Registry (mysql)
+    runs-on: ubuntu-22.04
+    needs:
       - openshift-419_mysql_uitests
       - openshift-419_mysql_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: mysql
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  openshift-419_kafkasql_teardown:
+    name: Destroy Registry (kafkasql)
+    runs-on: ubuntu-22.04
+    needs:
       - openshift-419_kafkasql_uitests
       - openshift-419_kafkasql_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: kafkasql
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  openshift-419_authn_teardown:
+    name: Destroy Registry (authn)
+    runs-on: ubuntu-22.04
+    needs:
+      - openshift-419_authn_uitests
       - openshift-419_authn_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: authn
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download cluster state
+        uses: actions/download-artifact@v4
+        with:
+          name: openshift-419-clusters.zip
+
+      - name: Unpack cluster state
+        run: |
+          unzip openshift-419-clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  openshift-419-teardown:
+    name: Destroy OpenShift 4.19
+    runs-on: ubuntu-22.04
+    needs:
+      - openshift-419_inmemory_teardown
+      - openshift-419_postgresql_teardown
+      - openshift-419_mysql_teardown
+      - openshift-419_kafkasql_teardown
+      - openshift-419_authn_teardown
     if: always()
 
     env:

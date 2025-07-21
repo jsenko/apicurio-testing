@@ -11,8 +11,8 @@ spec:
       appClientId: registry-api
       uiClientId: apicurio-registry
       authServerUrl: https://$KEYCLOAK_INGRESS_URL/realms/registry
-      redirectUri: $UI_INGRESS_URL
-      logoutUrl: $UI_INGRESS_URL
+      redirectUri: http://$UI_INGRESS_URL
+      logoutUrl: http://$UI_INGRESS_URL
       basicAuth:
         enabled: true
         cacheExpiration: 25m

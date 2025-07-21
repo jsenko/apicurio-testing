@@ -29,9 +29,11 @@ spec:
               value: "true"
             - name: KC_HTTP_PORT
               value: "8080"
+            - name: KC_HOSTNAME
+              value: "https://$KEYCLOAK_INGRESS_URL"
+            - name: KC_HOSTNAME_DEBUG
+              value: "true"
             - name: KC_HOSTNAME_STRICT
-              value: "false"
-            - name: KC_HOSTNAME_STRICT_HTTPS
               value: "false"
             - name: KC_HTTP_ENABLED
               value: "true"
