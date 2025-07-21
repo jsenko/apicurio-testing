@@ -49,8 +49,12 @@ jobs:
       - name: Commit TLS Certs (if necessary)
         run: |
           git add certificates
-          git commit -m '(re)generated TLS certificate for cluster $CLUSTER_NAME'
-          git push origin main
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+          else
+            git commit -m '(re)generated TLS certificate for cluster $CLUSTER_NAME'
+            git push origin main
+          fi
 
       - name: Package up the "clusters" directory
         if: always()
