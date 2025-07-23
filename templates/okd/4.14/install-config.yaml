@@ -1,0 +1,39 @@
+additionalTrustBundlePolicy: Proxyonly
+apiVersion: v1
+baseDomain: apicurio-testing.org
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  replicas: 3
+  platform:
+    aws:
+      type: m5.large
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: 3
+  platform:
+    aws:
+      type: m5.xlarge
+metadata:
+  creationTimestamp: null
+  name: $CLUSTER_NAME
+platform:
+  aws:
+    region: $REGION
+    userTags:
+      apicurio/Environment: TEST
+      apicurio/ForCleanup: "true"
+      apicurio/FromOkdInstaller: "true"
+      apicurio/ClusterName: $CLUSTER_NAME
+      app-code: SRQE-001
+      service-phase: dev
+      cost-center: 704
+    vpc: {}
+publish: External
+pullSecret: |
+  $OPENSHIFT_PULL_SECRET
+sshKey: |
+  $SSH_PUBLIC_KEY

@@ -37,6 +37,10 @@ spec:
               value: "false"
             - name: KC_HTTP_ENABLED
               value: "true"
+            - name: QUARKUS_HTTP_ACCESS_LOG_ENABLED
+              value: "true"
+            - name: QUARKUS_HTTP_ACCESS_LOG_PATTERN
+              value: "long"
           ports:
             - name: http
               containerPort: 8080

@@ -1,45 +1,10 @@
 #!/bin/bash
 
-# Script to install OKD cluster
-# Usage: ./install-cluster.sh --clusterName <cluster-name>
+# Script to generate install-config.yaml using OpenShift installer
+# Usage: ./generate-install-config.sh --okdVersion <okd-version>
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Function to validate required environment variables
-validate_env_vars() {
-    local missing_vars=()
-    
-    if [[ -z "${AWS_ACCESS_KEY_ID:-}" ]]; then
-        missing_vars+=("AWS_ACCESS_KEY_ID")
-    fi
-    
-    if [[ -z "${AWS_SECRET_ACCESS_KEY:-}" ]]; then
-        missing_vars+=("AWS_SECRET_ACCESS_KEY")
-    fi
-    
-    if [[ -z "${AWS_DEFAULT_REGION:-}" ]]; then
-        missing_vars+=("AWS_DEFAULT_REGION")
-    fi
-    
-    if [[ -z "${OPENSHIFT_PULL_SECRET:-}" ]]; then
-        missing_vars+=("OPENSHIFT_PULL_SECRET")
-    fi
-    
-    if [[ -z "${SSH_PUBLIC_KEY:-}" ]]; then
-        missing_vars+=("SSH_PUBLIC_KEY")
-    fi
-    
-    if [[ ${#missing_vars[@]} -gt 0 ]]; then
-        echo "Error: The following required environment variables are not set:"
-        for var in "${missing_vars[@]}"; do
-            echo "  - $var"
-        done
-        echo ""
-        echo "Please set these environment variables before running the script."
-        exit 1
-    fi
-}
 
 
 # Function to resolve OKD version to latest matching release
@@ -167,40 +132,26 @@ get_okd_installer_url() {
     get_okd_download_url "$full_version"
 }
 
-
 # Function to display usage
 usage() {
-    echo "Usage: $0 --clusterName <cluster-name> [--okdVersion <okd-version>] [--region <aws-region>]"
+    echo "Usage: $0 --okdVersion <okd-version>"
     echo ""
     echo "Required Parameters:"
-    echo "  --clusterName <cluster-name>    Name of the cluster to install"
-    echo "                           Must contain only letters and numbers"
+    echo "  --okdVersion <version>   OKD version to use for installer (e.g., 4.19, 4.14)"
     echo ""
     echo "Optional Parameters:"
-    echo "  --okdVersion <version>   OKD version to install (default: 4.19)"
-    echo "  --region <aws-region>    AWS region to deploy to (default: us-east-1)"
     echo "  -h, --help               Show this help message"
     exit 1
 }
 
 # Initialize variables
-CLUSTER_NAME=""
-OKD_VERSION="4.19"
-REGION="us-east-1"
+OKD_VERSION=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
-            CLUSTER_NAME="$2"
-            shift 2
-            ;;
         --okdVersion)
             OKD_VERSION="$2"
-            shift 2
-            ;;
-        --region)
-            REGION="$2"
             shift 2
             ;;
         -h|--help)
@@ -214,64 +165,66 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate required parameters
-if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: --clusterName parameter is required"
+if [[ -z "$OKD_VERSION" ]]; then
+    echo "Error: --okdVersion parameter is required"
     usage
 fi
 
-# Validate cluster name format (only letters and numbers allowed)
-if [[ ! "$CLUSTER_NAME" =~ ^[a-zA-Z0-9]+$ ]]; then
-    echo "Error: Cluster name '$CLUSTER_NAME' is invalid"
-    echo "Cluster name must contain only letters and numbers (no spaces, hyphens, or special characters)"
+# Create work directory
+WORK_DIR="$BASE_DIR/okd-installers/okd-installer-$OKD_VERSION"
+
+echo "Generating install-config.yaml for OKD version: $OKD_VERSION"
+echo "Using work directory: $WORK_DIR"
+
+# Create the work directory (remove if it exists)
+rm -rf "$WORK_DIR"
+mkdir -p "$WORK_DIR"
+
+cd "$WORK_DIR"
+
+# Download the OKD installer
+echo "Resolving OKD installer download URL..."
+INSTALLER_URL=$(get_okd_installer_url "$OKD_VERSION")
+
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to get installer URL for OKD version $OKD_VERSION"
     exit 1
 fi
 
-# Set AWS_DEFAULT_REGION to the region (either default or provided via --region)
-export AWS_DEFAULT_REGION="$REGION"
-echo "Using AWS region: $REGION"
-
-# Validate required environment variables
-validate_env_vars
-
-echo "Installing OKD cluster with name: $CLUSTER_NAME (OKD version: $OKD_VERSION)"
-CLUSTER_DIR=$BASE_DIR/clusters/$CLUSTER_NAME
-
-# Create a work directory for installing the OKD cluster
-rm -rf $CLUSTER_DIR
-mkdir -p $CLUSTER_DIR
-cd $CLUSTER_DIR
-
-# Download the OKD installer
-INSTALLER_URL=$(get_okd_installer_url "$OKD_VERSION")
-
 echo "Downloading OKD installer from: $INSTALLER_URL"
-curl -sS -L -o openshift-install.tar.gz https://github.com/okd-project/okd/releases/download/4.19.0-okd-scos.6/openshift-install-linux-4.19.0-okd-scos.6.tar.gz
+curl -sS -L -o openshift-install.tar.gz "$INSTALLER_URL"
+
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to download OKD installer"
+    exit 1
+fi
 
 # Unpack the installer
 echo "Unpacking OKD installer"
 tar xfz openshift-install.tar.gz
 
-# Create the install-config.yaml file (from template)
-echo "Creating install-config.yaml from template with environment variable substitution"
-export CLUSTER_NAME
-export REGION
-envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to unpack OKD installer"
+    exit 1
+fi
 
-# Install the cluster
-./openshift-install create cluster --log-level=info
+# Generate install-config.yaml using the OpenShift installer
+echo "Generating install-config.yaml using OpenShift installer"
+./openshift-install create install-config --dir="$WORK_DIR"
 
-# Generate a TLS cert for the cluster
-cd $BASE_DIR
-./generate-tls-cert.sh --clusterName $CLUSTER_NAME
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to generate install-config.yaml using installer"
+    exit 1
+fi
 
-# Update the cluster's default ingress to use the cert
-export KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig
-CERT_DIR=./certificates/$CLUSTER_NAME
-kubectl create secret tls apicurio-tls-cert \
-  --cert=$CERT_DIR/fullchain.pem \
-  --key=$CERT_DIR/privkey.pem \
-  -n openshift-ingress
-kubectl patch ingresscontroller default \
-  -n openshift-ingress-operator \
-  --type=merge \
-  -p '{"spec":{"defaultCertificate":{"name":"apicurio-tls-cert"}}}'
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to copy install-config.yaml to output directory"
+    exit 1
+fi
+
+echo ""
+echo "Successfully generated install-config.yaml!"
+echo "Output file: $WORK_DIR/install-config.yaml"
+echo ""
+echo "You can now use this file with the OpenShift installer:"
+echo "  ./openshift-install create cluster --dir=<cluster-directory>"
