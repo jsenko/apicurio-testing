@@ -170,7 +170,7 @@ get_okd_installer_url() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --clusterName <cluster-name> [--okdVersion <okd-version>] [--region <aws-region>]"
+    echo "Usage: $0 --clusterName <cluster-name> [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>]"
     echo ""
     echo "Required Parameters:"
     echo "  --clusterName <cluster-name>    Name of the cluster to install"
@@ -179,6 +179,9 @@ usage() {
     echo "Optional Parameters:"
     echo "  --okdVersion <version>   OKD version to install (default: 4.19)"
     echo "  --region <aws-region>    AWS region to deploy to (default: us-east-1)"
+    echo "  --computeNodes <count>   Number of compute/worker nodes (default: 3)"
+    echo "  --controlPlaneNodes <count> Number of control plane/master nodes (default: 3)"
+    echo "  --baseDomain <domain>    Base domain name for the cluster (default: apicurio-testing.org)"
     echo "  -h, --help               Show this help message"
     exit 1
 }
@@ -187,6 +190,9 @@ usage() {
 CLUSTER_NAME=""
 OKD_VERSION="4.19"
 REGION="us-east-1"
+COMPUTE_NODES="3"
+CONTROL_PLANE_NODES="3"
+BASE_DOMAIN="apicurio-testing.org"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -201,6 +207,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         --region)
             REGION="$2"
+            shift 2
+            ;;
+        --computeNodes)
+            COMPUTE_NODES="$2"
+            shift 2
+            ;;
+        --controlPlaneNodes)
+            CONTROL_PLANE_NODES="$2"
+            shift 2
+            ;;
+        --baseDomain)
+            BASE_DOMAIN="$2"
             shift 2
             ;;
         -h|--help)
@@ -226,6 +244,30 @@ if [[ ! "$CLUSTER_NAME" =~ ^[a-zA-Z0-9]+$ ]]; then
     exit 1
 fi
 
+# Validate node count parameters
+if [[ ! "$COMPUTE_NODES" =~ ^[0-9]+$ ]] || [[ "$COMPUTE_NODES" -lt 0 ]]; then
+    echo "Error: --computeNodes must be a non-negative integer"
+    exit 1
+fi
+
+if [[ ! "$CONTROL_PLANE_NODES" =~ ^[0-9]+$ ]] || [[ "$CONTROL_PLANE_NODES" -lt 1 ]]; then
+    echo "Error: --controlPlaneNodes must be a positive integer (minimum 1)"
+    exit 1
+fi
+
+# Validate that control plane nodes is odd number for HA
+if [[ "$CONTROL_PLANE_NODES" -gt 1 ]] && [[ $((CONTROL_PLANE_NODES % 2)) -eq 0 ]]; then
+    echo "Warning: Control plane nodes should be an odd number for proper HA quorum (1, 3, 5, etc.)"
+    echo "You specified $CONTROL_PLANE_NODES control plane nodes."
+fi
+
+# Validate base domain format (basic domain validation)
+if [[ ! "$BASE_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
+    echo "Error: Base domain '$BASE_DOMAIN' is not a valid domain name format"
+    echo "Domain names should contain only letters, numbers, dots, and hyphens"
+    exit 1
+fi
+
 # Set AWS_DEFAULT_REGION to the region (either default or provided via --region)
 export AWS_DEFAULT_REGION="$REGION"
 echo "Using AWS region: $REGION"
@@ -234,6 +276,8 @@ echo "Using AWS region: $REGION"
 validate_env_vars
 
 echo "Installing OKD cluster with name: $CLUSTER_NAME (OKD version: $OKD_VERSION)"
+echo "Cluster configuration: $CONTROL_PLANE_NODES control plane nodes, $COMPUTE_NODES compute nodes"
+echo "Using base domain: $BASE_DOMAIN"
 CLUSTER_DIR=$BASE_DIR/clusters/$CLUSTER_NAME
 
 # Create a work directory for installing the OKD cluster
@@ -255,6 +299,9 @@ tar xfz openshift-install.tar.gz
 echo "Creating install-config.yaml from template with environment variable substitution"
 export CLUSTER_NAME
 export REGION
+export COMPUTE_NODES
+export CONTROL_PLANE_NODES
+export BASE_DOMAIN
 envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
 
 # Install the cluster

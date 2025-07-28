@@ -1,11 +1,11 @@
 additionalTrustBundlePolicy: Proxyonly
 apiVersion: v1
-baseDomain: apicurio-testing.org
+baseDomain: $BASE_DOMAIN
 compute:
 - architecture: amd64
   hyperthreading: Enabled
   name: worker
-  replicas: 3
+  replicas: $COMPUTE_NODES
   platform:
     aws:
       type: m5.large
@@ -13,7 +13,7 @@ controlPlane:
   architecture: amd64
   hyperthreading: Enabled
   name: master
-  replicas: 3
+  replicas: $CONTROL_PLANE_NODES
   platform:
     aws:
       type: m5.xlarge

@@ -1,59 +1,63 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: postgresql-secret
+  name: mysql-secret
   namespace: ${NAMESPACE}
 type: Opaque
 data:
   # Default credentials (base64 encoded)
-  # Username: pguser (cGd1c2Vy)
-  # Password: pgpassword (cGdwYXNzd29yZA==)
+  # Username: mysqluser (bXlzcWx1c2Vy)
+  # Password: mysqlpassword (bXlzcWxwYXNzd29yZA==)
   # Database: apicuriodb (YXBpY3VyaW9kYg==)
-  POSTGRESQL_USER: cGd1c2Vy
-  POSTGRESQL_PASSWORD: cGdwYXNzd29yZA==
-  POSTGRESQL_DATABASE: YXBpY3VyaW9kYg==
+  MYSQL_USER: bXlzcWx1c2Vy
+  MYSQL_PASSWORD: bXlzcWxwYXNzd29yZA==
+  MYSQL_DATABASE: YXBpY3VyaW9kYg==
+  MYSQL_ROOT_PASSWORD: cm9vdHBhc3N3b3Jk
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgresql
+  name: mysql
   namespace: ${NAMESPACE}
   labels:
-    app: postgresql
+    app: mysql
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgresql
+      app: mysql
   template:
     metadata:
       labels:
-        app: postgresql
+        app: mysql
     spec:
       containers:
-      - name: postgresql
-        image: registry.redhat.io/rhel8/postgresql-16:latest
+      - name: mysql
+        image: mysql:${MYSQL_VERSION}
         ports:
-        - containerPort: 5432
-          name: postgresql
+        - containerPort: 3306
+          name: mysql
         env:
-        - name: POSTGRESQL_USER
+        - name: MYSQL_USER
           valueFrom:
             secretKeyRef:
-              name: postgresql-secret
-              key: POSTGRESQL_USER
-        - name: POSTGRESQL_PASSWORD
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgresql-secret
-              key: POSTGRESQL_PASSWORD
-        - name: POSTGRESQL_DATABASE
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+        - name: MYSQL_DATABASE
           valueFrom:
             secretKeyRef:
-              name: postgresql-secret
-              key: POSTGRESQL_DATABASE
-        - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
+              name: mysql-secret
+              key: MYSQL_DATABASE
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
         resources:
           requests:
             memory: "256Mi"
@@ -66,7 +70,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - pg_isready -U $POSTGRESQL_USER -d $POSTGRESQL_DATABASE
+            - "mysqladmin ping -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD"
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -76,31 +80,31 @@ spec:
             command:
             - /bin/sh
             - -c
-            - pg_isready -U $POSTGRESQL_USER -d $POSTGRESQL_DATABASE
+            - "mysqladmin ping -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD"
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3
         volumeMounts:
-        - name: postgresql-data
-          mountPath: /var/lib/postgresql/data
+        - name: mysql-data
+          mountPath: /var/lib/mysql
       volumes:
-      - name: postgresql-data
+      - name: mysql-data
         emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgresql
+  name: mysql
   namespace: ${NAMESPACE}
   labels:
-    app: postgresql
+    app: mysql
 spec:
   type: ClusterIP
   ports:
-  - port: 5432
-    targetPort: 5432
+  - port: 3306
+    targetPort: 3306
     protocol: TCP
-    name: postgresql
+    name: mysql
   selector:
-    app: postgresql
+    app: mysql

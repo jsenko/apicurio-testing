@@ -1,0 +1,159 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+metadata:
+  labels:
+    app: sso
+  name: registry-sso-realm
+  namespace: $NAMESPACE
+spec:
+  keycloakCRName: keycloak-instance
+  realm:
+    displayName: Registry
+    enabled: true
+    id: $REALM_NAME
+    realm: $REALM_NAME
+    sslRequired: none
+    registrationAllowed: true
+    verifyEmail: false
+    requiredActions:
+      - alias: VERIFY_PROFILE
+        name: Verify Profile
+        providerId: VERIFY_PROFILE
+        enabled: false
+        defaultAction: false
+        priority: 100
+        config: {}
+    clients:
+      - clientId: registry-client-ui
+        implicitFlowEnabled: true
+        publicClient: true
+        redirectUris:
+          - '*'
+        standardFlowEnabled: true
+        webOrigins:
+          - '*'
+      - clientId: registry-client-api
+        directAccessGrantsEnabled: true
+        implicitFlowEnabled: true
+        publicClient: true
+        redirectUris:
+          - '*'
+        standardFlowEnabled: true
+        webOrigins:
+          - '*'
+      - clientId: test-client-api
+        directAccessGrantsEnabled: true
+        implicitFlowEnabled: true
+        publicClient: false
+        redirectUris:
+          - '*'
+        serviceAccountsEnabled: true
+        standardFlowEnabled: true
+        webOrigins:
+          - '*'
+    roles:
+      realm:
+        - name: sr-admin
+        - name: sr-developer
+        - name: sr-readonly
+        - name: test-admin-role
+        - name: test-developer-role
+        - name: test-readonly-role
+    defaultRoles:
+      - sr-readonly
+    users:
+      - credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles:
+          - sr-admin
+        username: registry-admin
+      - credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles:
+          - sr-developer
+        username: registry-developer
+      - credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles:
+          - sr-readonly
+        username: registry-user
+      - credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles: []
+        username: registry-no-role-user
+      - credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles:
+          - test-admin-role
+        username: registry-admin-role
+      - credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles:
+          - test-developer-role
+        username: registry-developer-role
+      - credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles:
+          - test-readonly-role
+        username: registry-user-role
+      - attributes:
+          org-admin:
+            - 'true'
+        credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles: []
+        username: registry-admin-org-admin-true
+      - attributes:
+          org-admin:
+            - 'yes'
+        credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles: []
+        username: registry-admin-org-admin-yes
+      - attributes:
+          admin-role:
+            - 'true'
+        credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles: []
+        username: registry-admin-admin-role-true
+      - attributes:
+          admin-role:
+            - admin
+        credentials:
+          - temporary: false
+            type: password
+            value: secret
+        enabled: true
+        realmRoles: []
+        username: registry-admin-admin-role-admin

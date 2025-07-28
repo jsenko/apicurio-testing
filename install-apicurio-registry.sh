@@ -20,6 +20,10 @@ show_usage() {
     echo "                           Available profiles: $AVAILABLE_PROFILES"
     echo "  --strimziVersion <ver>   Version of Strimzi Kafka operator to install (optional)"
     echo "                           Only needed for profiles that require Kafka (e.g., kafkasql)"
+    echo "  --postgresqlVersion <ver> PostgreSQL version to use (default: '16')"
+    echo "                           Only used when profile is 'postgresql'"
+    echo "  --mysqlVersion <ver>     MySQL version to use (default: '8.4')"
+    echo "                           Only used when profile is 'mysql'"
     echo "  -h, --help               Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
@@ -31,6 +35,15 @@ show_usage() {
     echo ""
     echo "  # Installation with PostgreSQL profile:"
     echo "  $0 --clusterName okd419 --namespace pgns1 --profile postgresql"
+    echo ""
+    echo "  # Installation with PostgreSQL 12:"
+    echo "  $0 --clusterName okd419 --namespace pgns1 --profile postgresql --postgresqlVersion 12"
+    echo ""
+    echo "  # Installation with MySQL profile:"
+    echo "  $0 --clusterName okd419 --namespace mysqlns1 --profile mysql"
+    echo ""
+    echo "  # Installation with MySQL 5.7:"
+    echo "  $0 --clusterName okd419 --namespace mysqlns1 --profile mysql --mysqlVersion 5.7"
     echo ""
     echo "NOTES:"
     echo "  - The cluster must already exist and be properly configured"
@@ -191,6 +204,8 @@ CLUSTER_NAME=""
 NAMESPACE=""
 PROFILE=""
 STRIMZI_VERSION=""
+POSTGRESQL_VERSION=""
+MYSQL_VERSION=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -212,6 +227,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --strimziVersion)
             STRIMZI_VERSION="$2"
+            shift 2
+            ;;
+        --postgresqlVersion)
+            POSTGRESQL_VERSION="$2"
+            shift 2
+            ;;
+        --mysqlVersion)
+            MYSQL_VERSION="$2"
             shift 2
             ;;
         -h|--help)
@@ -265,6 +288,18 @@ if [ ! -d "$BASE_DIR/templates/profiles/$PROFILE" ]; then
     exit 1
 fi
 
+# Set default PostgreSQL version if not provided
+if [ -z "$POSTGRESQL_VERSION" ]; then
+    POSTGRESQL_VERSION="16"
+    echo "No PostgreSQL version specified, using default: $POSTGRESQL_VERSION"
+fi
+
+# Set default MySQL version if not provided
+if [ -z "$MYSQL_VERSION" ]; then
+    MYSQL_VERSION="8.4"
+    echo "No MySQL version specified, using default: $MYSQL_VERSION"
+fi
+
 
 export APPLICATION_NAME
 export CLUSTER_NAME
@@ -274,6 +309,8 @@ export APICURIO_REGISTRY_VERSION
 export NAMESPACE
 export PROFILE
 export STRIMZI_VERSION
+export POSTGRESQL_VERSION
+export MYSQL_VERSION
 export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
 export APP_DIR="$APPS_DIR/$APPLICATION_NAME"
@@ -305,9 +342,14 @@ cd $CLUSTER_DIR
 # Set up kubectl auth
 export KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig
 
-# Create the test namespace
-echo "Creating namespace: $NAMESPACE"
-kubectl create namespace $NAMESPACE
+# Create the namespace if it doesn't exist
+echo "Checking if namespace '$NAMESPACE' exists..."
+if kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
+    echo "Namespace '$NAMESPACE' already exists, skipping creation"
+else
+    echo "Creating namespace: $NAMESPACE"
+    kubectl create namespace "$NAMESPACE"
+fi
 
 # Deploy Strimzi operator if strimziVersion is specified
 if [ -n "$STRIMZI_VERSION" ]; then
