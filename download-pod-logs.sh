@@ -6,7 +6,7 @@ NAMESPACE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -15,8 +15,8 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -h|--help)
-            echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace>"
-            echo "Example: $0 --clusterName okd419 --namespace testns1"
+            echo "Usage: $0 --cluster <cluster_name> --namespace <namespace>"
+            echo "Example: $0 --cluster okd419 --namespace testns1"
             echo ""
             echo "This script downloads logs from all running pods in the specified namespace."
             echo "Logs are saved to a 'logs' directory organized by cluster and namespace."
@@ -24,7 +24,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace>"
+            echo "Usage: $0 --cluster <cluster_name> --namespace <namespace>"
             exit 1
             ;;
     esac
@@ -32,16 +32,16 @@ done
 
 # Check if required arguments are provided
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --clusterName argument is required"
-    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace>"
-    echo "Example: $0 --clusterName okd419 --namespace testns1"
+    echo "Error: --cluster argument is required"
+    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace>"
+    echo "Example: $0 --cluster okd419 --namespace testns1"
     exit 1
 fi
 
 if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
-    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace>"
-    echo "Example: $0 --clusterName okd419 --namespace testns1"
+    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace>"
+    echo "Example: $0 --cluster okd419 --namespace testns1"
     exit 1
 fi
 

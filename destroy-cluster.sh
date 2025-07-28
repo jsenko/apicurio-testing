@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to destroy OKD cluster
-# Usage: ./destroy-cluster.sh --clusterName <cluster-name>
+# Usage: ./destroy-cluster.sh --cluster <cluster-name>
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -43,8 +43,8 @@ validate_env_vars() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --clusterName <cluster-name>"
-    echo "  --clusterName       Name of the cluster to install"
+    echo "Usage: $0 --cluster <cluster-name>"
+    echo "  --cluster       Name of the cluster to install"
     exit 1
 }
 
@@ -55,7 +55,7 @@ OKD_VERSION=""
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -71,7 +71,7 @@ done
 
 # Validate required parameters
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: --clusterName parameter is required"
+    echo "Error: --cluster parameter is required"
     usage
 fi
 

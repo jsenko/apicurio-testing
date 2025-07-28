@@ -1,25 +1,25 @@
 #!/bin/bash
 
 # Script to destroy a namespace in a Kubernetes cluster
-# Usage: ./destroy-namespace.sh --clusterName <cluster-name> --namespace <namespace>
+# Usage: ./destroy-namespace.sh --cluster <cluster-name> --namespace <namespace>
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --clusterName <cluster-name> --namespace <namespace>"
+    echo "Usage: $0 --cluster <cluster-name> --namespace <namespace>"
     echo ""
     echo "Required Parameters:"
-    echo "  --clusterName <cluster-name>    Name of the cluster containing the namespace"
-    echo "  --namespace <namespace>         Name of the namespace to delete"
+    echo "  --cluster <cluster-name>    Name of the cluster containing the namespace"
+    echo "  --namespace <namespace>     Name of the namespace to delete"
     echo ""
     echo "Optional Parameters:"
-    echo "  -h, --help                      Show this help message"
+    echo "  -h, --help                  Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 --clusterName okd419 --namespace test-namespace"
-    echo "  $0 --clusterName cluster1 --namespace apicurio-registry"
+    echo "  $0 --cluster okd419 --namespace test-namespace"
+    echo "  $0 --cluster cluster1 --namespace apicurio-registry"
     echo ""
     echo "Notes:"
     echo "  - The cluster must already exist and be properly configured"
@@ -35,7 +35,7 @@ NAMESPACE=""
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -55,7 +55,7 @@ done
 
 # Validate required parameters
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: --clusterName parameter is required"
+    echo "Error: --cluster parameter is required"
     usage
 fi
 

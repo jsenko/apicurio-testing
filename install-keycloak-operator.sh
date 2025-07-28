@@ -7,10 +7,10 @@ BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> --keycloakVersion <version> [OPTIONS]"
+    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> --keycloakVersion <version> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --clusterName <name>     Name of the OpenShift cluster where Keycloak will be installed"
+    echo "  --cluster <name>         Name of the OpenShift cluster where Keycloak will be installed"
     echo "  --namespace <namespace>  Kubernetes namespace to deploy Keycloak into"
     echo ""
     echo "OPTIONAL PARAMETERS:"
@@ -18,7 +18,7 @@ show_usage() {
     echo ""
     echo "EXAMPLES:"
     echo "  # Basic installation:"
-    echo "  $0 --clusterName okd419 --namespace keycloak-ns"
+    echo "  $0 --cluster okd419 --namespace keycloak-ns"
     echo ""
     echo "NOTES:"
     echo "  - The cluster must already exist and be properly configured"
@@ -32,7 +32,7 @@ NAMESPACE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -54,7 +54,7 @@ done
 
 # Check if required arguments are provided
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --clusterName argument is required"
+    echo "Error: --cluster argument is required"
     show_usage
     exit 1
 fi

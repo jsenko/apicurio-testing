@@ -8,42 +8,42 @@ AVAILABLE_PROFILES=$(ls -1 "$BASE_DIR/templates/profiles" 2>/dev/null | tr '\n' 
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> [OPTIONS]"
+    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --clusterName <name>     Name of the OpenShift cluster where Apicurio Registry will be installed"
-    echo "  --namespace <namespace>  Kubernetes namespace to deploy Apicurio Registry into"
+    echo "  --cluster <name>          Name of the OpenShift cluster where Apicurio Registry will be installed"
+    echo "  --namespace <namespace>   Kubernetes namespace to deploy Apicurio Registry into"
     echo ""
     echo "OPTIONAL PARAMETERS:"
-    echo "  --appName <name>         Name of the application deployment (default: 'registry')"
-    echo "  --profile <profile>      Profile to use for Apicurio Registry (default: 'inmemory')"
-    echo "                           Available profiles: $AVAILABLE_PROFILES"
-    echo "  --strimziVersion <ver>   Version of Strimzi Kafka operator to install (optional)"
-    echo "                           Only needed for profiles that require Kafka (e.g., kafkasql)"
+    echo "  --appName <name>          Name of the application deployment (default: 'registry')"
+    echo "  --profile <profile>       Profile to use for Apicurio Registry (default: 'inmemory')"
+    echo "                            Available profiles: $AVAILABLE_PROFILES"
+    echo "  --strimziVersion <ver>    Version of Strimzi Kafka operator to install (optional)"
+    echo "                            Only needed for profiles that require Kafka (e.g., kafkasql)"
     echo "  --postgresqlVersion <ver> PostgreSQL version to use (default: '16')"
-    echo "                           Only used when profile is 'postgresql'"
-    echo "  --mysqlVersion <ver>     MySQL version to use (default: '8.4')"
-    echo "                           Only used when profile is 'mysql'"
-    echo "  -h, --help               Display this help message and exit"
+    echo "                            Only used when profile is 'postgresql'"
+    echo "  --mysqlVersion <ver>      MySQL version to use (default: '8.4')"
+    echo "                            Only used when profile is 'mysql'"
+    echo "  -h, --help                Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
     echo "  # Basic installation with inmemory profile:"
-    echo "  $0 --clusterName okd419 --namespace simplens1"
+    echo "  $0 --cluster okd419 --namespace simplens1"
     echo ""
     echo "  # Installation with custom app name and kafkasql profile:"
-    echo "  $0 --appName my-registry --clusterName okd419 --namespace kafkans1 --profile kafkasql --strimziVersion 0.43.0"
+    echo "  $0 --appName my-registry --cluster okd419 --namespace kafkans1 --profile kafkasql --strimziVersion 0.43.0"
     echo ""
     echo "  # Installation with PostgreSQL profile:"
-    echo "  $0 --clusterName okd419 --namespace pgns1 --profile postgresql"
+    echo "  $0 --cluster okd419 --namespace pgns1 --profile postgresql"
     echo ""
     echo "  # Installation with PostgreSQL 12:"
-    echo "  $0 --clusterName okd419 --namespace pgns1 --profile postgresql --postgresqlVersion 12"
+    echo "  $0 --cluster okd419 --namespace pgns1 --profile postgresql --postgresqlVersion 12"
     echo ""
     echo "  # Installation with MySQL profile:"
-    echo "  $0 --clusterName okd419 --namespace mysqlns1 --profile mysql"
+    echo "  $0 --cluster okd419 --namespace mysqlns1 --profile mysql"
     echo ""
     echo "  # Installation with MySQL 5.7:"
-    echo "  $0 --clusterName okd419 --namespace mysqlns1 --profile mysql --mysqlVersion 5.7"
+    echo "  $0 --cluster okd419 --namespace mysqlns1 --profile mysql --mysqlVersion 5.7"
     echo ""
     echo "NOTES:"
     echo "  - The cluster must already exist and be properly configured"
@@ -213,7 +213,7 @@ while [[ $# -gt 0 ]]; do
             APPLICATION_NAME="$2"
             shift 2
             ;;
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -257,7 +257,7 @@ fi
 
 # Check if required arguments are provided
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --clusterName argument is required"
+    echo "Error: --cluster argument is required"
     show_usage
     exit 1
 fi

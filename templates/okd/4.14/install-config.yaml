@@ -27,7 +27,7 @@ platform:
       apicurio/Environment: TEST
       apicurio/ForCleanup: "true"
       apicurio/FromOkdInstaller: "true"
-      apicurio/ClusterName: $CLUSTER_NAME
+      apicurio/cluster: $CLUSTER_NAME
       app-code: SRQE-001
       service-phase: dev
       cost-center: 704

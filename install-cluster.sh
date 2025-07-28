@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to install OKD cluster
-# Usage: ./install-cluster.sh --clusterName <cluster-name>
+# Usage: ./install-cluster.sh --cluster <cluster-name>
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -170,19 +170,19 @@ get_okd_installer_url() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --clusterName <cluster-name> [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>]"
+    echo "Usage: $0 --cluster <cluster-name> [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>]"
     echo ""
     echo "Required Parameters:"
-    echo "  --clusterName <cluster-name>    Name of the cluster to install"
-    echo "                           Must contain only letters and numbers"
+    echo "  --cluster <cluster-name>     Name of the cluster to install"
+    echo "                               Must contain only letters and numbers"
     echo ""
     echo "Optional Parameters:"
-    echo "  --okdVersion <version>   OKD version to install (default: 4.19)"
-    echo "  --region <aws-region>    AWS region to deploy to (default: us-east-1)"
-    echo "  --computeNodes <count>   Number of compute/worker nodes (default: 3)"
-    echo "  --controlPlaneNodes <count> Number of control plane/master nodes (default: 3)"
-    echo "  --baseDomain <domain>    Base domain name for the cluster (default: apicurio-testing.org)"
-    echo "  -h, --help               Show this help message"
+    echo "  --okdVersion <version>       OKD version to install (default: 4.19)"
+    echo "  --region <aws-region>        AWS region to deploy to (default: us-east-1)"
+    echo "  --computeNodes <count>       Number of compute/worker nodes (default: 3)"
+    echo "  --controlPlaneNodes <count>  Number of control plane/master nodes (default: 3)"
+    echo "  --baseDomain <domain>        Base domain name for the cluster (default: apicurio-testing.org)"
+    echo "  -h, --help                   Show this help message"
     exit 1
 }
 
@@ -197,7 +197,7 @@ BASE_DOMAIN="apicurio-testing.org"
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -233,7 +233,7 @@ done
 
 # Validate required parameters
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: --clusterName parameter is required"
+    echo "Error: --cluster parameter is required"
     usage
 fi
 
@@ -309,7 +309,7 @@ envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $CLUSTER_D
 
 # Generate a TLS cert for the cluster
 cd $BASE_DIR
-./generate-tls-cert.sh --clusterName $CLUSTER_NAME
+./generate-tls-cert.sh --cluster $CLUSTER_NAME
 
 # Update the cluster's default ingress to use the cert
 export KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig

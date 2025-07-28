@@ -40,11 +40,11 @@ jobs:
 
       - name: Install OpenShift cluster
         run: |
-          ./install-cluster.sh --clusterName $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION
+          ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION
 
       - name: Install Apicurio Registry Operator
         run: |
-          ./install-operator.sh --clusterName $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
+          ./install-operator.sh --cluster $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
 
       - name: Commit TLS Certs (if necessary)
         run: |
@@ -105,21 +105,20 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
       - name: Package up the pod logs
         if: failure()
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
           path: ${{ github.job }}-logs.zip
-        if: failure()
 
 
   openshift-419_postgresql:
@@ -155,21 +154,20 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
       - name: Package up the pod logs
         if: failure()
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
           path: ${{ github.job }}-logs.zip
-        if: failure()
 
 
   openshift-419_mysql:
@@ -205,21 +203,20 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
       - name: Package up the pod logs
         if: failure()
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
           path: ${{ github.job }}-logs.zip
-        if: failure()
 
 
   openshift-419_kafkasql:
@@ -256,21 +253,20 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --strimziVersion $STRIMZI_VERSION
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --strimziVersion $STRIMZI_VERSION
 
       - name: Package up the pod logs
         if: failure()
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
           path: ${{ github.job }}-logs.zip
-        if: failure()
 
 
   openshift-419_authn:
@@ -282,6 +278,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: authn
       PROFILE: authn
+      KEYCLOAK_VERSION: 26.3.1
 
     steps:
       - name: Checkout Code
@@ -304,23 +301,30 @@ jobs:
         run: |
           unzip openshift-419-clusters.zip
 
-      # - name: Install Apicurio Registry
-      #   run: |
-      #     ./install-apicurio-registry.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+      - name: Install Keycloak Operator
+        run: |
+          ./install-keycloak-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+      - name: Install Keycloak
+        run: |
+          ./install-keycloak.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --keycloakVersion $KEYCLOAK_VERSION
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
       - name: Package up the pod logs
         if: failure()
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
           path: ${{ github.job }}-logs.zip
-        if: failure()
 
 
   openshift-419_inmemory_uitests:
@@ -348,15 +352,14 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -388,15 +391,14 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -428,15 +430,14 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -468,15 +469,14 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -508,15 +508,14 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -548,15 +547,14 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -588,15 +586,14 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -628,15 +625,14 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -672,11 +668,10 @@ jobs:
 
       - name: Package up the pod logs
         run: |
-          ./download-pod-logs.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./download-pod-logs.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
           zip -r ${{ github.job }}-logs.zip logs/
 
       - name: Upload pod logs
-        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-logs.zip
@@ -710,7 +705,7 @@ jobs:
 
       - name: Destroy OpenShift cluster
         run: |
-          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
   openshift-419_postgresql_teardown:
@@ -740,7 +735,7 @@ jobs:
 
       - name: Destroy OpenShift cluster
         run: |
-          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
   openshift-419_mysql_teardown:
@@ -770,7 +765,7 @@ jobs:
 
       - name: Destroy OpenShift cluster
         run: |
-          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
   openshift-419_kafkasql_teardown:
@@ -800,7 +795,7 @@ jobs:
 
       - name: Destroy OpenShift cluster
         run: |
-          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
   openshift-419_authn_teardown:
@@ -829,7 +824,7 @@ jobs:
 
       - name: Destroy OpenShift cluster
         run: |
-          ./destroy-namespace.sh --clusterName $CLUSTER_NAME --namespace $NAMESPACE
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
   openshift-419-teardown:
@@ -866,4 +861,4 @@ jobs:
 
       - name: Destroy OpenShift cluster
         run: |
-          ./destroy-cluster.sh --clusterName $CLUSTER_NAME
+          ./destroy-cluster.sh --cluster $CLUSTER_NAME

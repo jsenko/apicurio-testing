@@ -2,18 +2,18 @@
 
 # Function to display usage information
 show_usage() {
-    echo "Usage: $0 --clusterName <cluster_name> --namespace <namespace> --tag <registry_tag>"
+    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> --tag <registry_tag>"
     echo ""
     echo "This script runs the apicurio-registry UI tests against a deployed Registry instance."
     echo "The Registry UI URL is constructed as: http://registry-ui-NAMESPACE.apps.CLUSTER_NAME.apicurio-testing.org"
     echo ""
     echo "Arguments:"
-    echo "  --clusterName <cluster_name>  Name of the cluster where the registry is deployed"
-    echo "  --namespace <namespace>       Kubernetes namespace where the registry is running"
+    echo "  --cluster <cluster_name>     Name of the cluster where the registry is deployed"
+    echo "  --namespace <namespace>      Kubernetes namespace where the registry is running"
     echo "  --tag <registry_tag>         Git branch or tag of the apicurio-registry repository to test"
     echo "  -h, --help                   Show this help message and exit"
     echo ""
-    echo "Example: $0 --clusterName okd419 --namespace testns1 --tag 3.0.9"
+    echo "Example: $0 --cluster okd419 --namespace testns1 --tag 3.0.9"
 }
 
 # Parse command line arguments
@@ -23,7 +23,7 @@ APICURIO_REGISTRY_TAG="main"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -49,7 +49,7 @@ done
 
 # Check if required arguments are provided
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --clusterName argument is required"
+    echo "Error: --cluster argument is required"
     show_usage
     exit 1
 fi

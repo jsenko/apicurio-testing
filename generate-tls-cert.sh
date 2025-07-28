@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to generate Let's Encrypt TLS certificates using certbot in OpenShift
-# Usage: ./generate-tls-cert.sh --clusterName <cluster-name> [OPTIONS]
+# Usage: ./generate-tls-cert.sh --cluster <cluster-name> [OPTIONS]
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -36,10 +36,10 @@ validate_env_vars() {
 
 # Function to display usage information
 show_usage() {
-    echo "Usage: $0 --clusterName <cluster_name> [OPTIONS]"
+    echo "Usage: $0 --cluster <cluster_name> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --clusterName <name>     Name of the OpenShift cluster to use for certificate generation"
+    echo "  --cluster <name>         Name of the OpenShift cluster to use for certificate generation"
     echo ""
     echo "OPTIONAL PARAMETERS:"
     echo "  --domain <domain>        Domain to generate certificate for (default: '*.apps.<cluster_name>.apicurio-testing.org')"
@@ -50,13 +50,13 @@ show_usage() {
     echo ""
     echo "EXAMPLES:"
     echo "  # Basic usage with defaults:"
-    echo "  $0 --clusterName okd419"
+    echo "  $0 --cluster okd419"
     echo ""
     echo "  # Custom domain and email:"
-    echo "  $0 --clusterName okd419 --domain '*.apps.mycompany.org' --email 'admin@mycompany.org'"
+    echo "  $0 --cluster okd419 --domain '*.apps.mycompany.org' --email 'admin@mycompany.org'"
     echo ""
     echo "  # Save to specific directory:"
-    echo "  $0 --clusterName okd419 --outputDir ./certificates"
+    echo "  $0 --cluster okd419 --outputDir ./certificates"
     echo ""
     echo "NOTES:"
     echo "  - The cluster must already exist and be properly configured"
@@ -176,7 +176,7 @@ NAMESPACE="certbot"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -210,7 +210,7 @@ done
 
 # Check if required arguments are provided
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --clusterName argument is required"
+    echo "Error: --cluster argument is required"
     show_usage
     exit 1
 fi

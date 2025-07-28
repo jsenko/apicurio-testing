@@ -7,10 +7,10 @@ BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 --clusterName <cluster_name> --version <registry_version> [OPTIONS]"
+    echo "Usage: $0 --cluster <cluster_name> --version <registry_version> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --clusterName <name>     Name of the OpenShift cluster where Apicurio Registry Operator will be installed"
+    echo "  --cluster <name>         Name of the OpenShift cluster where Apicurio Registry Operator will be installed"
     echo "  --version <version>      Version of Apicurio Registry Operator to install (e.g., 3.0.9)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
@@ -18,7 +18,7 @@ show_usage() {
     echo ""
     echo "EXAMPLES:"
     echo "  # Basic operator installation:"
-    echo "  $0 --clusterName okd419 --version 3.0.9"
+    echo "  $0 --cluster okd419 --version 3.0.9"
     echo ""
     echo ""
     echo "NOTES:"
@@ -33,7 +33,7 @@ APICURIO_REGISTRY_VERSION=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --clusterName)
+        --cluster)
             CLUSTER_NAME="$2"
             shift 2
             ;;
@@ -58,7 +58,7 @@ OPERATOR_NAMESPACE="apicurio-registry-operator"
 
 # Check if required arguments are provided
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --clusterName argument is required"
+    echo "Error: --cluster argument is required"
     show_usage
     exit 1
 fi
