@@ -20,6 +20,8 @@ jobs:
       OPENSHIFT_VERSION: "4.19"
       CLUSTER_NAME: ci419
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      CONTROL_PLANE_NODES: 3
+      COMPUTE_NODES: 6
 
     steps:
       - name: Checkout Code
@@ -40,7 +42,7 @@ jobs:
 
       - name: Install OpenShift cluster
         run: |
-          ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION
+          ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION --controlPlaneNodes $CONTROL_PLANE_NODES --computeNodes $COMPUTE_NODES
 
       - name: Install Apicurio Registry Operator
         run: |
@@ -664,7 +666,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          echo "TBD: run AUTH integration tests!"
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag main --testProfile auth --registryProtocol https --registryPort 443
 
       - name: Package up the pod logs
         run: |
