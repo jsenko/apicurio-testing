@@ -8,7 +8,7 @@ compute:
   replicas: $COMPUTE_NODES
   platform:
     aws:
-      type: m5.large
+      type: m5.xlarge
 controlPlane:
   architecture: amd64
   hyperthreading: Enabled

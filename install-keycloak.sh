@@ -181,6 +181,70 @@ wait_for_keycloak_pods_ready() {
     return 1
 }
 
+wait_for_realm_import_completion() {
+    local namespace="$1"
+    local timeout=300  # 5 minutes
+    local interval=5   # 5 seconds
+    local elapsed=0
+    
+    echo "Waiting for KeycloakRealmImport pod to complete..."
+    echo "Timeout: ${timeout}s, Polling interval: ${interval}s"
+    
+    while [ $elapsed -lt $timeout ]; do
+        # Find realm import pods using the specified label
+        local pods=$(kubectl get pods -n "$namespace" -l app=keycloak-realm-import -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+        
+        if [ -z "$pods" ]; then
+            echo "No realm import pods found yet, waiting for pod creation... (${elapsed}s/${timeout}s)"
+        else
+            echo "Found realm import pods: $pods"
+            local all_pods_completed=true
+            local pod_status_info=""
+            
+            # Check each pod's completion status
+            for pod in $pods; do
+                local pod_phase=$(kubectl get pod "$pod" -n "$namespace" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
+                
+                if [ "$pod_phase" = "Succeeded" ]; then
+                    pod_status_info="${pod_status_info}  ✓ Pod $pod: Completed successfully\n"
+                elif [ "$pod_phase" = "Failed" ]; then
+                    pod_status_info="${pod_status_info}  ✗ Pod $pod: Failed\n"
+                    echo "ERROR: Realm import pod $pod failed"
+                    echo -e "$pod_status_info"
+                    
+                    # Show pod logs for debugging
+                    echo "Pod logs for debugging:"
+                    kubectl logs "$pod" -n "$namespace" --tail=20 2>/dev/null || echo "Failed to get logs for pod $pod"
+                    return 1
+                else
+                    pod_status_info="${pod_status_info}  ⏳ Pod $pod: Phase=$pod_phase\n"
+                    all_pods_completed=false
+                fi
+            done
+            
+            if [ "$all_pods_completed" = "true" ]; then
+                echo "All realm import pods completed successfully!"
+                echo -e "$pod_status_info"
+                return 0
+            else
+                echo "Some realm import pods are not completed yet (${elapsed}s/${timeout}s):"
+                echo -e "$pod_status_info"
+            fi
+        fi
+        
+        sleep $interval
+        elapsed=$((elapsed + interval))
+    done
+    
+    echo "ERROR: Realm import did not complete within ${timeout} seconds"
+    
+    # Output debug information for troubleshooting
+    echo "Final realm import pod status check:"
+    kubectl get pods -n "$namespace" -l app=keycloak-realm-import -o wide 2>/dev/null || echo "Failed to get realm import pod information"
+    
+    return 1
+}
+
 wait_for_keycloak_cr_ready() {
     local namespace="$1"
     local elapsed=0
@@ -360,6 +424,18 @@ done
 
 # Wait for the Keycloak CR to be ready
 wait_for_keycloak_cr_ready $NAMESPACE
+
+# Wait for the KeycloakRealmImport pod to complete
+if ! wait_for_realm_import_completion $NAMESPACE; then
+    echo "ERROR: KeycloakRealmImport failed to complete"
+    echo "Running debug information collection..."
+    output_debug_info $NAMESPACE
+    exit 1
+fi
+
+# Wait 10 seconds for Keycloak pods to restart after realm import
+echo "Realm import completed. Waiting 10 seconds for Keycloak pods to restart..."
+sleep 10
 
 # Now wait for the actual Keycloak pods to be ready
 if ! wait_for_keycloak_pods_ready $NAMESPACE; then
