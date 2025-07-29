@@ -31,59 +31,6 @@ show_usage() {
 
 
 # ##################################################
-# Function to poll a Keycloak health endpoint until 
-# it becomes ready.
-# ##################################################
-wait_for_keycloak_health() {
-    local url="$1"
-    local timeout="${2:-600}"  # Default timeout of 10 minutes (600 seconds)
-    local interval="${3:-5}"   # Default polling interval of 5 seconds
-    
-    echo "Polling Keycloak health endpoint: $url"
-    echo "Timeout: ${timeout}s, Polling interval: ${interval}s"
-    
-    local start_time=$(date +%s)
-    local end_time=$((start_time + timeout))
-    
-    # Initial wait period
-    echo "Waiting 30 seconds before starting health endpoint polling..."
-    sleep 30
-    
-    while [ $(date +%s) -lt $end_time ]; do
-        # Use curl to get the response from the health endpoint
-        local response=$(curl -sL --max-time 10 "$url" 2>/dev/null)
-        local curl_exit_code=$?
-        
-        # Check if curl succeeded and we got a response
-        if [ $curl_exit_code -eq 0 ] && [ -n "$response" ]; then
-            # For Keycloak health endpoint, check if we get a 200 response with "UP" status
-            local status=$(echo "$response" | jq -r '.status // empty' 2>/dev/null)
-            
-            if [ "$status" = "UP" ]; then
-                echo "Keycloak health endpoint is ready! Status: UP"
-                return 0
-            else
-                # If no JSON status, check if we get any successful response (some Keycloak versions return plain text)
-                if echo "$response" | grep -q "UP\|ready\|healthy" 2>/dev/null; then
-                    echo "Keycloak health endpoint is ready!"
-                    return 0
-                else
-                    echo "Keycloak health endpoint responded but status is not ready, waiting ${interval}s..."
-                fi
-            fi
-        else
-            echo "Keycloak health endpoint not reachable yet, waiting ${interval}s..."
-        fi
-        
-        sleep $interval
-    done
-    
-    echo "ERROR: Keycloak health endpoint did not become ready within ${timeout} seconds"
-    return 1
-}
-
-
-# ##################################################
 # Function to output debugging information when 
 # application fails to become ready
 # ##################################################
@@ -147,6 +94,91 @@ output_debug_info() {
     echo "END DEBUGGING INFORMATION"
     echo "=========================================="
     echo ""
+}
+
+wait_for_keycloak_pods_ready() {
+    local namespace="$1"
+    local timeout=300  # 5 minutes
+    local interval=5   # 5 seconds
+    local elapsed=0
+    
+    echo "Waiting for Keycloak pods to be ready..."
+    echo "Timeout: ${timeout}s, Polling interval: ${interval}s"
+    
+    while [ $elapsed -lt $timeout ]; do
+        # Find Keycloak pods using common label selectors
+        local pods=$(kubectl get pods -n "$namespace" -l app=keycloak -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+        
+        # If no pods found with app=keycloak, try other common selectors
+        if [ -z "$pods" ]; then
+            pods=$(kubectl get pods -n "$namespace" -l app.kubernetes.io/name=keycloak -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+        fi
+        
+        # If still no pods, try to find any pods that might be Keycloak-related
+        if [ -z "$pods" ]; then
+            pods=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[?(@.metadata.name=~"keycloak.*")].metadata.name}' 2>/dev/null)
+        fi
+        
+        if [ -z "$pods" ]; then
+            echo "No Keycloak pods found yet, waiting for pod creation... (${elapsed}s/${timeout}s)"
+        else
+            echo "Found Keycloak pods: $pods"
+            local all_pods_ready=true
+            local pod_status_info=""
+            
+            # Check each pod's readiness
+            for pod in $pods; do
+                # Check pod phase
+                local pod_phase=$(kubectl get pod "$pod" -n "$namespace" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
+                
+                # Check if all containers are ready
+                local container_ready_statuses=$(kubectl get pod "$pod" -n "$namespace" -o jsonpath='{.status.containerStatuses[*].ready}' 2>/dev/null || echo "")
+                local all_containers_ready=true
+                
+                if [ -n "$container_ready_statuses" ]; then
+                    for ready_status in $container_ready_statuses; do
+                        if [ "$ready_status" != "true" ]; then
+                            all_containers_ready=false
+                            break
+                        fi
+                    done
+                else
+                    all_containers_ready=false
+                fi
+                
+                # Check pod Ready condition
+                local pod_ready_condition=$(kubectl get pod "$pod" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "Unknown")
+                
+                # Determine if this pod is ready
+                if [ "$pod_phase" = "Running" ] && [ "$all_containers_ready" = "true" ] && [ "$pod_ready_condition" = "True" ]; then
+                    pod_status_info="${pod_status_info}  ✓ Pod $pod: Ready\n"
+                else
+                    pod_status_info="${pod_status_info}  ✗ Pod $pod: Phase=$pod_phase, ContainersReady=$all_containers_ready, PodReady=$pod_ready_condition\n"
+                    all_pods_ready=false
+                fi
+            done
+            
+            if [ "$all_pods_ready" = "true" ]; then
+                echo "All Keycloak pods are ready!"
+                echo -e "$pod_status_info"
+                return 0
+            else
+                echo "Some Keycloak pods are not ready yet (${elapsed}s/${timeout}s):"
+                echo -e "$pod_status_info"
+            fi
+        fi
+        
+        sleep $interval
+        elapsed=$((elapsed + interval))
+    done
+    
+    echo "ERROR: Keycloak pods did not become ready within ${timeout} seconds"
+    
+    # Output debug information for troubleshooting
+    echo "Final pod status check:"
+    kubectl get pods -n "$namespace" -o wide 2>/dev/null || echo "Failed to get pod information"
+    
+    return 1
 }
 
 wait_for_keycloak_cr_ready() {
@@ -326,8 +358,16 @@ for template_file in "$KEYCLOAK_TEMPLATE_DIR"/*.yaml; do
     fi
 done
 
-# Wait for the Keycloak health endpoint to be ready
+# Wait for the Keycloak CR to be ready
 wait_for_keycloak_cr_ready $NAMESPACE
+
+# Now wait for the actual Keycloak pods to be ready
+if ! wait_for_keycloak_pods_ready $NAMESPACE; then
+    echo "ERROR: Keycloak pods failed to become ready"
+    echo "Running debug information collection..."
+    output_debug_info $NAMESPACE
+    exit 1
+fi
 
 # Get Admin Username/password for Keycloak
 KC_ADMIN_USER=$(kubectl get secret keycloak-instance-initial-admin -n $NAMESPACE -o jsonpath='{.data.username}' | base64 --decode)

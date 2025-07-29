@@ -18,6 +18,11 @@ spec:
         cacheExpiration: 25m
       tls:
         tlsVerificationType: none
+      authz:
+        enabled: true
+        ownerOnlyEnabled: true
+        adminOverride:
+          enabled: true
     features:
       resourceDeleteEnabled: true
   ui:

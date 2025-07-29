@@ -26,15 +26,31 @@ spec:
     clients:
       - clientId: wrong-client
         enabled: true
-        clientAuthenticatorType: client-secret,
-        secret: test1,
-        standardFlowEnabled: true,
-        implicitFlowEnabled: true,
-        directAccessGrantsEnabled: true,
-        serviceAccountsEnabled: true,
+        clientAuthenticatorType: client-secret
+        secret: test1
+        standardFlowEnabled: true
+        implicitFlowEnabled: true
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
         publicClient: false
-        bearerOnly: false,
-        consentRequired: false,
+        bearerOnly: false
+        consentRequired: false
+        redirectUris:
+          - '*'
+        webOrigins:
+          - '*'
+
+      - clientId: admin-client
+        enabled: true
+        clientAuthenticatorType: client-secret
+        secret: test1
+        standardFlowEnabled: true
+        implicitFlowEnabled: true
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        publicClient: false
+        bearerOnly: false
+        consentRequired: false
         redirectUris:
           - '*'
         webOrigins:
@@ -42,15 +58,15 @@ spec:
 
       - clientId: developer-client
         enabled: true
-        clientAuthenticatorType: client-secret,
-        secret: test1,
-        standardFlowEnabled: true,
-        implicitFlowEnabled: true,
-        directAccessGrantsEnabled: true,
-        serviceAccountsEnabled: true,
+        clientAuthenticatorType: client-secret
+        secret: test1
+        standardFlowEnabled: true
+        implicitFlowEnabled: true
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
         publicClient: false
-        bearerOnly: false,
-        consentRequired: false,
+        bearerOnly: false
+        consentRequired: false
         redirectUris:
           - '*'
         webOrigins:
@@ -58,15 +74,15 @@ spec:
 
       - clientId: developer-2-client
         enabled: true
-        clientAuthenticatorType: client-secret,
-        secret: test2,
-        standardFlowEnabled: true,
-        implicitFlowEnabled: true,
-        directAccessGrantsEnabled: true,
-        serviceAccountsEnabled: true,
+        clientAuthenticatorType: client-secret
+        secret: test2
+        standardFlowEnabled: true
+        implicitFlowEnabled: true
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
         publicClient: false
-        bearerOnly: false,
-        consentRequired: false,
+        bearerOnly: false
+        consentRequired: false
         redirectUris:
           - '*'
         webOrigins:
@@ -74,15 +90,15 @@ spec:
 
       - clientId: no-role-client
         enabled: true
-        clientAuthenticatorType: client-secret,
-        secret: test1,
-        standardFlowEnabled: true,
-        implicitFlowEnabled: true,
-        directAccessGrantsEnabled: true,
-        serviceAccountsEnabled: true,
+        clientAuthenticatorType: client-secret
+        secret: test1
+        standardFlowEnabled: true
+        implicitFlowEnabled: true
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
         publicClient: false
-        bearerOnly: false,
-        consentRequired: false,
+        bearerOnly: false
+        consentRequired: false
         redirectUris:
           - '*'
         webOrigins:
@@ -90,15 +106,15 @@ spec:
 
       - clientId: readonly-client
         enabled: true
-        clientAuthenticatorType: client-secret,
-        secret: test1,
-        standardFlowEnabled: true,
-        implicitFlowEnabled: true,
-        directAccessGrantsEnabled: true,
-        serviceAccountsEnabled: true,
+        clientAuthenticatorType: client-secret
+        secret: test1
+        standardFlowEnabled: true
+        implicitFlowEnabled: true
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
         publicClient: false
-        bearerOnly: false,
-        consentRequired: false,
+        bearerOnly: false
+        consentRequired: false
         redirectUris:
           - '*'
         webOrigins:
@@ -155,6 +171,12 @@ spec:
         enabled: true
         realmRoles:
           - sr-readonly
+
+      - username: admin-client
+        serviceAccountClientId: admin-client
+        enabled: true
+        realmRoles:
+          - sr-admin
 
       - username: developer-client
         serviceAccountClientId: developer-client
