@@ -6,7 +6,7 @@ on:
         description: Released version to test
         required: true
 
-runs:
+jobs:
   openshift-419:
     name: OpenShift 4.19
     runs-on: ubuntu-22.04
