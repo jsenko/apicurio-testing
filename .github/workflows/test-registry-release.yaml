@@ -51,6 +51,7 @@ jobs:
 
       - name: Commit TLS Certs (if necessary)
         run: |
+          git pull origin main
           git add certificates
           if git diff --cached --quiet; then
             echo "Nothing to commit."
@@ -63,6 +64,7 @@ jobs:
         if: always()
         run: |
           rm -f clusters/$CLUSTER_NAME/openshift-install.tar.gz
+          rm -f clusters/$CLUSTER_NAME/openshift-install
           mkdir -p clusters
           zip -r clusters.zip clusters/
 
@@ -71,6 +73,7 @@ jobs:
         run: |
           mkdir -p workflow-cache/runs/${{ github.run_id }}
           cp clusters.zip workflow-cache/runs/${{ github.run_id }}/
+          git pull origin main
           git add workflow-cache/runs/${{ github.run_id }}
           git commit -m "Add cluster state for workflow run ${{ github.run_id }}"
           git push origin main

@@ -288,8 +288,22 @@ cd $CLUSTER_DIR
 # Download the OKD installer
 INSTALLER_URL=$(get_okd_installer_url "$OKD_VERSION")
 
+if [[ $? -ne 0 ]] || [[ -z "$INSTALLER_URL" ]]; then
+    echo "Error: Failed to get installer URL for OKD version $OKD_VERSION"
+    exit 1
+fi
+
 echo "Downloading OKD installer from: $INSTALLER_URL"
-curl -sS -L -o openshift-install.tar.gz https://github.com/okd-project/okd/releases/download/4.19.0-okd-scos.6/openshift-install-linux-4.19.0-okd-scos.6.tar.gz
+curl -sS -L -o openshift-install.tar.gz "$INSTALLER_URL"
+
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to download OKD installer"
+    exit 1
+fi
+
+# Save the installer URL to a file for later use by destroy script
+echo "$INSTALLER_URL" > installer-url.txt
+echo "Saved installer URL to installer-url.txt"
 
 # Unpack the installer
 echo "Unpacking OKD installer"
