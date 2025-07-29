@@ -6,7 +6,7 @@ on:
         description: Released version to test
         required: true
 
-jobs:
+runs:
   openshift-419:
     name: OpenShift 4.19
     runs-on: ubuntu-22.04
@@ -24,6 +24,12 @@ jobs:
       COMPUTE_NODES: 6
 
     steps:
+      - name: Check Required tools
+        run: |
+          curl --version
+          jq --version
+          git --version
+
       - name: Checkout Code
         run: |
           git init
@@ -34,11 +40,6 @@ jobs:
           git checkout main
           git branch --set-upstream-to=origin/main
           git pull
-
-      - name: Check Required tools
-        run: |
-          curl --version
-          jq --version
 
       - name: Install OpenShift cluster
         run: |
@@ -63,15 +64,16 @@ jobs:
         run: |
           rm -f clusters/$CLUSTER_NAME/openshift-install.tar.gz
           mkdir -p clusters
-          zip -r ${{ github.job }}-clusters.zip clusters/
+          zip -r clusters.zip clusters/
 
-      - name: Upload cluster state
+      - name: Commit cluster state to repository
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.job }}-clusters.zip
-          path: ${{ github.job }}-clusters.zip
-          retention-days: 1
+        run: |
+          mkdir -p workflow-cache/runs/${{ github.run_id }}
+          cp clusters.zip workflow-cache/runs/${{ github.run_id }}/
+          git add workflow-cache/runs/${{ github.run_id }}
+          git commit -m "Add cluster state for workflow run ${{ github.run_id }}"
+          git push origin main
 
 
   openshift-419_inmemory:
@@ -96,14 +98,13 @@ jobs:
       - name: Verify kubectl
         run: kubectl version --client
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Install Apicurio Registry
         run: |
@@ -145,14 +146,13 @@ jobs:
       - name: Verify kubectl
         run: kubectl version --client
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Install Apicurio Registry
         run: |
@@ -194,14 +194,13 @@ jobs:
       - name: Verify kubectl
         run: kubectl version --client
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Install Apicurio Registry
         run: |
@@ -244,14 +243,13 @@ jobs:
       - name: Verify kubectl
         run: kubectl version --client
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Install Apicurio Registry
         run: |
@@ -294,14 +292,13 @@ jobs:
       - name: Verify kubectl
         run: kubectl version --client
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Install Keycloak Operator
         run: |
@@ -343,14 +340,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run UI Tests
         run: |
@@ -382,14 +378,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run Integration Tests
         run: |
@@ -421,14 +416,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run UI Tests
         run: |
@@ -460,14 +454,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run Integration Tests
         run: |
@@ -499,14 +492,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run UI Tests
         run: |
@@ -538,14 +530,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run Integration Tests
         run: |
@@ -577,14 +568,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run UI Tests
         run: |
@@ -616,14 +606,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run Integration Tests
         run: |
@@ -655,14 +644,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Run Integration Tests
         run: |
@@ -696,14 +684,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Destroy OpenShift cluster
         run: |
@@ -726,14 +713,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Destroy OpenShift cluster
         run: |
@@ -756,14 +742,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Destroy OpenShift cluster
         run: |
@@ -786,14 +771,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Destroy OpenShift cluster
         run: |
@@ -815,14 +799,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Destroy OpenShift cluster
         run: |
@@ -852,14 +835,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download cluster state
-        uses: actions/download-artifact@v4
-        with:
-          name: openshift-419-clusters.zip
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
 
       - name: Unpack cluster state
         run: |
-          unzip openshift-419-clusters.zip
+          unzip clusters.zip
 
       - name: Destroy OpenShift cluster
         run: |
