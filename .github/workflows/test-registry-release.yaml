@@ -1,4 +1,4 @@
-name: Test Apicurio Registry Release ${{ github.event.inputs.release-version }}
+name: Test Apicurio Registry Release
 on:
   workflow_dispatch:
     inputs:
