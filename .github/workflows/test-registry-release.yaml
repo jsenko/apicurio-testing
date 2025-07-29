@@ -46,7 +46,7 @@ jobs:
 
       - name: Install Apicurio Registry Operator
         run: |
-          ./install-operator.sh --cluster $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
+          ./install-apicurio-operator.sh --cluster $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
 
       - name: Commit TLS Certs (if necessary)
         run: |
@@ -66,12 +66,12 @@ jobs:
           zip -r ${{ github.job }}-clusters.zip clusters/
 
       - name: Upload cluster state
-        id: upload
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}-clusters.zip
           path: ${{ github.job }}-clusters.zip
+          retention-days: 1
 
 
   openshift-419_inmemory:
