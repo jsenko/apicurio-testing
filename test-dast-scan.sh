@@ -112,6 +112,7 @@ docker run \
   -v $CONFIG_FILENAME:/opt/rapidast/config/config.yaml:Z \
   -v $RESULTS_DIR:/opt/rapidast/results/:Z \
   --user $(id -u):$(id -g) \
+  -e JAVA_TOOL_OPTIONS="-Djava.util.prefs.userRoot=/tmp/.java" \
   quay.io/redhatproductsecurity/rapidast:latest
 
 RAPIDAST_EXIT_CODE=$?

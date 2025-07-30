@@ -105,10 +105,15 @@ jobs:
       PROFILE: inmemory
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -151,10 +156,15 @@ jobs:
       PROFILE: postgresql
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -197,10 +207,15 @@ jobs:
       PROFILE: mysql
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -244,10 +259,15 @@ jobs:
       STRIMZI_VERSION: 0.47.0
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
