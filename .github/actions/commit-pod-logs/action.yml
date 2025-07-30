@@ -1,0 +1,41 @@
+name: 'Commit Pod Logs'
+description: 'Downloads pod logs and commits them to the repository'
+inputs:
+  cluster-name:
+    description: 'Name of the cluster'
+    required: true
+  namespace:
+    description: 'Kubernetes namespace'
+    required: true
+  job-name:
+    description: 'Name of the current job'
+    required: true
+  run-id:
+    description: 'GitHub workflow run ID'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Download and commit pod logs
+      shell: bash
+      run: |
+        # Download pod logs
+        ./download-pod-logs.sh --cluster ${{ inputs.cluster-name }} --namespace ${{ inputs.namespace }}
+        
+        # Create workflow-results directory structure
+        RUN_DATE=$(date +%Y-%m-%d)
+        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ inputs.run-id }}/${{ inputs.job-name }}"
+        mkdir -p "$RESULTS_DIR"
+        cp -r logs/* "$RESULTS_DIR/" 2>/dev/null || true
+        
+        # Configure git and commit logs
+        git config --global user.name "apicurio-ci"
+        git config --global user.email "apicurio.ci@gmail.com"
+        git pull origin main
+        git add workflow-results
+        if git diff --cached --quiet; then
+          echo "No pod logs to commit."
+        else
+          git commit -m "Add pod logs for job ${{ inputs.job-name }} from workflow run ${{ inputs.run-id }}"
+          git push origin main
+        fi

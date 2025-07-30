@@ -110,7 +110,8 @@ echo "------------------------------------"
 mkdir $RESULTS_DIR
 docker run \
   -v $CONFIG_FILENAME:/opt/rapidast/config/config.yaml:Z \
-  -v $RESULTS_DIR:/opt/rapidast/results/:Z,U \
+  -v $RESULTS_DIR:/opt/rapidast/results/:Z \
+  --user $(id -u):$(id -g) \
   quay.io/redhatproductsecurity/rapidast:latest
 
 RAPIDAST_EXIT_CODE=$?
