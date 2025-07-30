@@ -12,7 +12,7 @@ show_usage() {
 }
 
 # Parse command line arguments
-DAST_BASE_URL=""
+DAST_BASE_URL="https://registry-api.dev.apicur.io"
 RAPIDAST_TAG="development"
 
 while [[ $# -gt 0 ]]; do
@@ -66,6 +66,7 @@ cd rapidast
 export DAST_BASE_URL
 envsubst < $BASE_DIR/templates/rapidast/registry_v3_unauthenticated.yaml > $DAST_TESTS_DIR/rapidast-config.yaml
 CONFIG_FILENAME=$DAST_TESTS_DIR/rapidast-config.yaml
+RESULTS_DIR=$DAST_TESTS_DIR/results
 
 # Check if Python 3.12+ is available
 if ! command -v python3.12 &> /dev/null; then
@@ -104,7 +105,13 @@ echo "Running RapiDAST DAST Security Scan..."
 echo "------------------------------------"
 
 # Run rapidast with the provided configuration
-$PYTHON_CMD rapidast.py --config "$CONFIG_FILENAME"
+# $PYTHON_CMD rapidast.py --config "$CONFIG_FILENAME"
+
+mkdir $RESULTS_DIR
+docker run \
+  -v $CONFIG_FILENAME:/opt/rapidast/config/config.yaml:Z \
+  -v $RESULTS_DIR:/opt/rapidast/results/:Z,U \
+  quay.io/redhatproductsecurity/rapidast:latest
 
 RAPIDAST_EXIT_CODE=$?
 
