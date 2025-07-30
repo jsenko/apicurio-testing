@@ -136,7 +136,7 @@ jobs:
           ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
       - name: Commit pod logs to repository
-        if: failure()
+        if: always()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
