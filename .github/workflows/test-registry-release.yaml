@@ -67,6 +67,10 @@ jobs:
           rm -f clusters/$CLUSTER_NAME/openshift-install
           mkdir -p clusters
           zip -r clusters.zip clusters/
+          echo ""
+          echo "***** Content of 'clusters.zip' *****"
+          unzip -l clusters.zip
+          echo ""
 
       - name: Commit cluster state to repository
         if: always()
@@ -92,6 +96,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -140,6 +146,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -188,6 +196,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -237,6 +247,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -286,6 +298,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -342,6 +356,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -380,6 +396,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -418,6 +436,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -456,6 +476,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -494,6 +516,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -532,6 +556,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -570,6 +596,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -608,6 +636,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -646,6 +676,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -686,6 +718,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -715,6 +749,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -744,6 +780,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -773,6 +811,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -801,6 +841,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
@@ -837,6 +879,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Copy cluster state from repository
         run: |
