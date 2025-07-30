@@ -30,10 +30,15 @@ jobs:
           jq --version
           git --version
 
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Install OpenShift cluster
         run: |
@@ -286,10 +291,15 @@ jobs:
       KEYCLOAK_VERSION: 26.3.1
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -340,10 +350,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -386,10 +401,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -432,10 +452,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -478,10 +503,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -524,10 +554,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -570,10 +605,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -616,10 +656,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -662,10 +707,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -708,10 +758,15 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -756,10 +811,15 @@ jobs:
       NAMESPACE: inmemory
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -787,10 +847,15 @@ jobs:
       NAMESPACE: postgresql
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -818,10 +883,15 @@ jobs:
       NAMESPACE: mysql
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -849,10 +919,15 @@ jobs:
       NAMESPACE: kafkasql
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -879,10 +954,15 @@ jobs:
       NAMESPACE: authn
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -917,10 +997,15 @@ jobs:
       CLUSTER_NAME: ci419
 
     steps:
-      - name: Checkout code
-        uses: ./.github/actions/checkout-code
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
