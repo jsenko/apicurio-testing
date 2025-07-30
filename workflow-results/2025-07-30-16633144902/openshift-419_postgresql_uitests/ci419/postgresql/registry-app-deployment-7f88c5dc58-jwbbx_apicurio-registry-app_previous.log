@@ -1,0 +1,158 @@
+INFO exec -a "java" java -XX:MaxRAMPercentage=80.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError -cp "." -jar /deployments/apicurio-registry-app-3.0.9-runner.jar 
+INFO running in /deployments
+__  ____  __  _____   ___  __ ____  ______ 
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/   
+2025-07+00-30 21:24:21 WARN [null] (main) The 'quarkus.log.console.color' config property is deprecated and should not be used anymore
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:22 INFO [io.apicurio.registry.storage.impl.sql.AbstractSqlRegistryStorage] (main) SqlRegistryStorage constructed successfully.
+2025-07+00-30 21:24:22 INFO [io.apicurio.registry.storage.impl.sql.RegistryDatasourceProducer] (main) Using postgresql SQL storage.
+2025-07+00-30 21:24:22 WARN [io.quarkus.agroal.runtime.AgroalEventLoggingListener] (agroal-11) Datasource 'postgresql': Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+2025-07+00-30 21:24:23 ERROR [io.quarkus.runtime.ApplicationLifecycleManager] (main) Failed to start application: java.lang.RuntimeException: Failed to start quarkus
+	at io.quarkus.runner.ApplicationImpl.doStart(Unknown Source)
+	at io.quarkus.runtime.Application.start(Application.java:101)
+	at io.quarkus.runtime.ApplicationLifecycleManager.run(ApplicationLifecycleManager.java:119)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:71)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:44)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:124)
+	at io.quarkus.runner.GeneratedMain.main(Unknown Source)
+Caused by: io.apicurio.registry.storage.error.RegistryStorageException: org.postgresql.util.PSQLException: Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+	at io.apicurio.registry.storage.impl.sql.AbstractHandleFactory.withHandle(AbstractHandleFactory.java:56)
+	at io.apicurio.registry.storage.impl.sql.AbstractHandleFactory.withHandleNoException(AbstractHandleFactory.java:104)
+	at io.apicurio.registry.storage.impl.sql.HandleFactoryProducer_ProducerMethod_produceHandleFactory_NU1A3ot6FkfWU5W0o_6TCeQ4KO4_ClientProxy.withHandleNoException(Unknown Source)
+	at io.apicurio.registry.storage.impl.sql.AbstractSqlRegistryStorage.initialize(AbstractSqlRegistryStorage.java:272)
+	at io.apicurio.registry.storage.impl.sql.SqlRegistryStorage_Subclass.initialize$$superforward(Unknown Source)
+	at io.apicurio.registry.storage.impl.sql.SqlRegistryStorage_Subclass$$function$$112.apply(Unknown Source)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:73)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext$NextAroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:97)
+	at io.apicurio.registry.metrics.health.readiness.PersistenceTimeoutReadinessInterceptor.intercept(PersistenceTimeoutReadinessInterceptor.java:29)
+	at io.apicurio.registry.metrics.health.readiness.PersistenceTimeoutReadinessInterceptor_Bean.intercept(Unknown Source)
+	at io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:70)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext$NextAroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:97)
+	at io.apicurio.registry.metrics.health.liveness.PersistenceExceptionLivenessInterceptor.intercept(PersistenceExceptionLivenessInterceptor.java:25)
+	at io.apicurio.registry.metrics.health.liveness.PersistenceExceptionLivenessInterceptor_Bean.intercept(Unknown Source)
+	at io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:70)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext$NextAroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:97)
+	at io.apicurio.registry.logging.LoggingInterceptor.logMethodEntry(LoggingInterceptor.java:52)
+	at io.apicurio.registry.logging.LoggingInterceptor_Bean.intercept(Unknown Source)
+	at io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:70)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:62)
+	at io.apicurio.registry.metrics.StorageMetricsInterceptor.intercept(StorageMetricsInterceptor.java:41)
+	at io.apicurio.registry.metrics.StorageMetricsInterceptor_Bean.intercept(Unknown Source)
+	at io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.perform(AroundInvokeInvocationContext.java:30)
+	at io.quarkus.arc.impl.InvocationContexts.performAroundInvoke(InvocationContexts.java:27)
+	at io.apicurio.registry.storage.impl.sql.SqlRegistryStorage_Subclass.initialize(Unknown Source)
+	at io.apicurio.registry.storage.impl.sql.SqlRegistryStorage.initialize(SqlRegistryStorage.java:34)
+	at io.apicurio.registry.storage.impl.sql.SqlRegistryStorage_Subclass.initialize$$superforward(Unknown Source)
+	at io.apicurio.registry.storage.impl.sql.SqlRegistryStorage_Subclass$$function$$111.apply(Unknown Source)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:73)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext$NextAroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:97)
+	at io.apicurio.registry.metrics.health.readiness.PersistenceTimeoutReadinessInterceptor.intercept(PersistenceTimeoutReadinessInterceptor.java:29)
+	at io.apicurio.registry.metrics.health.readiness.PersistenceTimeoutReadinessInterceptor_Bean.intercept(Unknown Source)
+	at io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:70)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext$NextAroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:97)
+	at io.apicurio.registry.metrics.health.liveness.PersistenceExceptionLivenessInterceptor.intercept(PersistenceExceptionLivenessInterceptor.java:25)
+	at io.apicurio.registry.metrics.health.liveness.PersistenceExceptionLivenessInterceptor_Bean.intercept(Unknown Source)
+	at io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:70)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext$NextAroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:97)
+	at io.apicurio.registry.logging.LoggingInterceptor.logMethodEntry(LoggingInterceptor.java:52)
+	at io.apicurio.registry.logging.LoggingInterceptor_Bean.intercept(Unknown Source)
+	at io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:70)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:62)
+	at io.apicurio.registry.metrics.StorageMetricsInterceptor.intercept(StorageMetricsInterceptor.java:41)
+	at io.apicurio.registry.metrics.StorageMetricsInterceptor_Bean.intercept(Unknown Source)
+	at io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)
+	at io.quarkus.arc.impl.AroundInvokeInvocationContext.perform(AroundInvokeInvocationContext.java:30)
+	at io.quarkus.arc.impl.InvocationContexts.performAroundInvoke(InvocationContexts.java:27)
+	at io.apicurio.registry.storage.impl.sql.SqlRegistryStorage_Subclass.initialize(Unknown Source)
+	at io.apicurio.registry.storage.impl.sql.SqlRegistryStorage_ClientProxy.initialize(Unknown Source)
+	at io.apicurio.registry.storage.RegistryStorageProducer.raw(RegistryStorageProducer.java:96)
+	at io.apicurio.registry.storage.RegistryStorageProducer.current(RegistryStorageProducer.java:53)
+	at io.apicurio.registry.storage.RegistryStorageProducer_ProducerMethod_current_KUuvkPhY_4l3q6EULlF1GPXbKes_Bean.doCreate(Unknown Source)
+	at io.apicurio.registry.storage.RegistryStorageProducer_ProducerMethod_current_KUuvkPhY_4l3q6EULlF1GPXbKes_Bean.create(Unknown Source)
+	at io.apicurio.registry.storage.RegistryStorageProducer_ProducerMethod_current_KUuvkPhY_4l3q6EULlF1GPXbKes_Bean.create(Unknown Source)
+	at io.quarkus.arc.impl.AbstractSharedContext.createInstanceHandle(AbstractSharedContext.java:119)
+	at io.quarkus.arc.impl.AbstractSharedContext$1.get(AbstractSharedContext.java:38)
+	at io.quarkus.arc.impl.AbstractSharedContext$1.get(AbstractSharedContext.java:35)
+	at io.quarkus.arc.generator.Default_jakarta_enterprise_context_ApplicationScoped_ContextInstances.c123(Unknown Source)
+	at io.quarkus.arc.generator.Default_jakarta_enterprise_context_ApplicationScoped_ContextInstances.computeIfAbsent(Unknown Source)
+	at io.quarkus.arc.impl.AbstractSharedContext.get(AbstractSharedContext.java:35)
+	at io.quarkus.arc.impl.ClientProxies.getApplicationScopedDelegate(ClientProxies.java:21)
+	at io.apicurio.registry.storage.RegistryStorageProducer_ProducerMethod_current_KUuvkPhY_4l3q6EULlF1GPXbKes_ClientProxy.arc$delegate(Unknown Source)
+	at io.apicurio.registry.storage.RegistryStorageProducer_ProducerMethod_current_KUuvkPhY_4l3q6EULlF1GPXbKes_ClientProxy.isReady(Unknown Source)
+	at io.apicurio.registry.config.config.impl.DynamicConfigStartup.onStart(DynamicConfigStartup.java:45)
+	at io.apicurio.registry.config.config.impl.DynamicConfigStartup_Bean.doCreate(Unknown Source)
+	at io.apicurio.registry.config.config.impl.DynamicConfigStartup_Bean.create(Unknown Source)
+	at io.apicurio.registry.config.config.impl.DynamicConfigStartup_Bean.create(Unknown Source)
+	at io.quarkus.arc.impl.AbstractSharedContext.createInstanceHandle(AbstractSharedContext.java:119)
+	at io.quarkus.arc.impl.AbstractSharedContext$1.get(AbstractSharedContext.java:38)
+	at io.quarkus.arc.impl.AbstractSharedContext$1.get(AbstractSharedContext.java:35)
+	at io.quarkus.arc.generator.Default_jakarta_enterprise_context_ApplicationScoped_ContextInstances.c86(Unknown Source)
+	at io.quarkus.arc.generator.Default_jakarta_enterprise_context_ApplicationScoped_ContextInstances.computeIfAbsent(Unknown Source)
+	at io.quarkus.arc.impl.AbstractSharedContext.get(AbstractSharedContext.java:35)
+	at io.quarkus.arc.impl.ClientProxies.getApplicationScopedDelegate(ClientProxies.java:21)
+	at io.apicurio.registry.config.config.impl.DynamicConfigStartup_ClientProxy.arc$delegate(Unknown Source)
+	at io.apicurio.registry.config.config.impl.DynamicConfigStartup_ClientProxy.arc_contextualInstance(Unknown Source)
+	at io.apicurio.registry.config.config.impl.DynamicConfigStartup_Observer_Synthetic_zBEdc3BsaVTfvW7IiVurjlFVC7I.notify(Unknown Source)
+	at io.quarkus.arc.impl.EventImpl$Notifier.notifyObservers(EventImpl.java:351)
+	at io.quarkus.arc.impl.EventImpl$Notifier.notify(EventImpl.java:333)
+	at io.quarkus.arc.impl.EventImpl.fire(EventImpl.java:80)
+	at io.quarkus.arc.runtime.ArcRecorder.fireLifecycleEvent(ArcRecorder.java:156)
+	at io.quarkus.arc.runtime.ArcRecorder.handleLifecycleEvents(ArcRecorder.java:107)
+	at io.quarkus.deployment.steps.LifecycleEventsBuildStep$startupEvent1144526294.deploy_0(Unknown Source)
+	at io.quarkus.deployment.steps.LifecycleEventsBuildStep$startupEvent1144526294.deploy(Unknown Source)
+	... 7 more
+Caused by: org.postgresql.util.PSQLException: Connection to postgresql:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+	at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:352)
+	at org.postgresql.core.ConnectionFactory.openConnection(ConnectionFactory.java:54)
+	at org.postgresql.jdbc.PgConnection.<init>(PgConnection.java:273)
+	at org.postgresql.Driver.makeConnection(Driver.java:446)
+	at org.postgresql.Driver.connect(Driver.java:298)
+	at io.agroal.pool.ConnectionFactory.createConnection(ConnectionFactory.java:225)
+	at io.agroal.pool.ConnectionPool$CreateConnectionTask.call(ConnectionPool.java:580)
+	at io.agroal.pool.ConnectionPool$CreateConnectionTask.call(ConnectionPool.java:561)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at io.agroal.pool.util.PriorityScheduledExecutor.beforeExecute(PriorityScheduledExecutor.java:75)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1134)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.net.ConnectException: Connection refused
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:672)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:554)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:602)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:633)
+	at org.postgresql.core.PGStream.createSocket(PGStream.java:260)
+	at org.postgresql.core.PGStream.<init>(PGStream.java:121)
+	at org.postgresql.core.v3.ConnectionFactoryImpl.tryConnect(ConnectionFactoryImpl.java:140)
+	at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:268)
+	... 12 more
+
