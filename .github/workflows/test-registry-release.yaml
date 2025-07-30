@@ -402,6 +402,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -459,6 +460,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -510,6 +512,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -567,6 +570,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -618,6 +622,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -675,6 +680,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -726,6 +732,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -783,6 +790,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
@@ -840,6 +848,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
+        if: failure()
         uses: ./.github/actions/commit-pod-logs
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
