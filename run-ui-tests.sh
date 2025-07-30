@@ -120,3 +120,14 @@ echo "---------------------------"
 # Run the tests
 export REGISTRY_UI_URL="http://$UI_INGRESS_URL"
 npm run test
+
+# Check if the npm test command succeeded
+NPM_EXIT_CODE=$?
+if [ $NPM_EXIT_CODE -ne 0 ]; then
+    echo ""
+    echo "UI tests failed with exit code: $NPM_EXIT_CODE"
+    exit $NPM_EXIT_CODE
+fi
+
+echo ""
+echo "UI tests completed successfully."

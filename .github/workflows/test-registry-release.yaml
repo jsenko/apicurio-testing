@@ -431,6 +431,12 @@ jobs:
           git config --global user.name "apicurio-ci"
           git config --global user.email "apicurio.ci@gmail.com"
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
       - name: Copy cluster state from repository
         run: |
           cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
@@ -532,6 +538,12 @@ jobs:
         run: |
           git config --global user.name "apicurio-ci"
           git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Copy cluster state from repository
         run: |
@@ -635,6 +647,12 @@ jobs:
           git config --global user.name "apicurio-ci"
           git config --global user.email "apicurio.ci@gmail.com"
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
       - name: Copy cluster state from repository
         run: |
           cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
@@ -737,6 +755,12 @@ jobs:
           git config --global user.name "apicurio-ci"
           git config --global user.email "apicurio.ci@gmail.com"
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
       - name: Copy cluster state from repository
         run: |
           cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
@@ -787,6 +811,12 @@ jobs:
         run: |
           git config --global user.name "apicurio-ci"
           git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Copy cluster state from repository
         run: |

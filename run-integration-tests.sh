@@ -182,5 +182,13 @@ echo "------------------------------------"
     -Dquarkus.http.test-host=$REGISTRY_HOST \
     -Dquarkus.http.test-port=$REGISTRY_PORT
 
+# Check if the mvnw command succeeded
+MVNW_EXIT_CODE=$?
+if [ $MVNW_EXIT_CODE -ne 0 ]; then
+    echo ""
+    echo "Integration tests failed with exit code: $MVNW_EXIT_CODE"
+    exit $MVNW_EXIT_CODE
+fi
+
 echo ""
-echo "Integration tests completed."
+echo "Integration tests completed successfully."
