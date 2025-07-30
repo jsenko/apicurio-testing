@@ -29,8 +29,6 @@ runs:
         cp -r logs/* "$RESULTS_DIR/" 2>/dev/null || true
         
         # Configure git and commit logs
-        git config --global user.name "apicurio-ci"
-        git config --global user.email "apicurio.ci@gmail.com"
         git pull origin main
         git add workflow-results
         if git diff --cached --quiet; then

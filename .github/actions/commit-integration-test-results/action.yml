@@ -1,0 +1,61 @@
+name: 'Commit Integration Test Results'
+description: 'Collects Maven Surefire test results and commits them to the repository'
+inputs:
+  cluster-name:
+    description: 'Name of the cluster'
+    required: true
+  namespace:
+    description: 'Kubernetes namespace'
+    required: true
+  job-name:
+    description: 'Name of the current job'
+    required: true
+  run-id:
+    description: 'GitHub workflow run ID'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Collect and commit integration test results
+      shell: bash
+      run: |
+        # Create workflow-results directory structure
+        RUN_DATE=$(date +%Y-%m-%d)
+        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ inputs.run-id }}/${{ inputs.job-name }}"
+        mkdir -p "$RESULTS_DIR/test-results"
+
+        CLUSTER_NAME="${{ inputs.cluster-name }}"
+        NAMESPACE="${{ inputs.namespace }}"
+
+        BASE_DIR="."
+        CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
+        TESTS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/tests"
+        INTEGRATION_TESTS_DIR="$TESTS_DIR/integration/apicurio-registry/integration-tests"
+
+        echo "Looking for integration test results in: $INTEGRATION_TESTS_DIR"
+        echo "---"
+        find $INTEGRATION_TESTS_DIR
+        echo "---"
+
+        # Collect Maven Surefire test results from integration-tests module
+        if [ -d "$INTEGRATION_TESTS_DIR/target/surefire-reports" ]; then
+          cp -r $INTEGRATION_TESTS_DIR/target/surefire-reports/* "$RESULTS_DIR/test-results/" 2>/dev/null || true
+          echo "Copied Surefire test reports from $INTEGRATION_TESTS_DIR/target/surefire-reports/"
+        fi
+
+        # Also look for failsafe reports (for integration tests)
+        if [ -d "$INTEGRATION_TESTS_DIR/target/failsafe-reports" ]; then
+          mkdir -p "$RESULTS_DIR/test-results/failsafe-reports"
+          cp -r $INTEGRATION_TESTS_DIR/target/failsafe-reports/* "$RESULTS_DIR/test-results/failsafe-reports/" 2>/dev/null || true
+          echo "Copied Failsafe test reports from $INTEGRATION_TESTS_DIR/target/failsafe-reports/"
+        fi
+
+        # Configure git and commit test results
+        git pull origin main
+        git add workflow-results
+        if git diff --cached --quiet; then
+          echo "No integration test results to commit."
+        else
+          git commit -m "Add integration test results for job ${{ inputs.job-name }} from workflow run ${{ inputs.run-id }}"
+          git push origin main
+        fi

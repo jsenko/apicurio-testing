@@ -30,16 +30,10 @@ jobs:
           jq --version
           git --version
 
-      - name: Checkout Code
-        run: |
-          git init
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
-          git remote add origin "https://apicurio-ci:${{ secrets.ACCESS_TOKEN }}@github.com/Apicurio/apicurio-testing.git"
-          git fetch
-          git checkout main
-          git branch --set-upstream-to=origin/main
-          git pull
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
+        with:
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Install OpenShift cluster
         run: |
@@ -106,10 +100,10 @@ jobs:
       PROFILE: inmemory
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -152,10 +146,10 @@ jobs:
       PROFILE: postgresql
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -198,10 +192,10 @@ jobs:
       PROFILE: mysql
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -245,10 +239,10 @@ jobs:
       STRIMZI_VERSION: 0.47.0
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -292,10 +286,10 @@ jobs:
       KEYCLOAK_VERSION: 26.3.1
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -346,10 +340,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -362,6 +356,15 @@ jobs:
       - name: Run UI Tests
         run: |
           ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Commit UI test results to repository
+        if: always()
+        uses: ./.github/actions/commit-ui-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -383,10 +386,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -399,6 +402,15 @@ jobs:
       - name: Run Integration Tests
         run: |
           ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -420,10 +432,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -436,6 +448,15 @@ jobs:
       - name: Run UI Tests
         run: |
           ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Commit UI test results to repository
+        if: always()
+        uses: ./.github/actions/commit-ui-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -457,10 +478,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -473,6 +494,15 @@ jobs:
       - name: Run Integration Tests
         run: |
           ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -494,10 +524,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -510,6 +540,15 @@ jobs:
       - name: Run UI Tests
         run: |
           ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Commit UI test results to repository
+        if: always()
+        uses: ./.github/actions/commit-ui-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -531,10 +570,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -547,6 +586,15 @@ jobs:
       - name: Run Integration Tests
         run: |
           ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -568,10 +616,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -584,6 +632,15 @@ jobs:
       - name: Run UI Tests
         run: |
           ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Commit UI test results to repository
+        if: always()
+        uses: ./.github/actions/commit-ui-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -605,10 +662,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -621,6 +678,15 @@ jobs:
       - name: Run Integration Tests
         run: |
           ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -642,10 +708,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -658,6 +724,15 @@ jobs:
       - name: Run Integration Tests
         run: |
           ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag main --testProfile auth --registryProtocol https --registryPort 443
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
 
       - name: Commit pod logs to repository
         uses: ./.github/actions/commit-pod-logs
@@ -681,10 +756,10 @@ jobs:
       NAMESPACE: inmemory
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -712,10 +787,10 @@ jobs:
       NAMESPACE: postgresql
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -743,10 +818,10 @@ jobs:
       NAMESPACE: mysql
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -774,10 +849,10 @@ jobs:
       NAMESPACE: kafkasql
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -804,10 +879,10 @@ jobs:
       NAMESPACE: authn
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
@@ -842,10 +917,10 @@ jobs:
       CLUSTER_NAME: ci419
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: ./.github/actions/checkout-code
         with:
-          ref: main
+          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Copy cluster state from repository
         run: |
