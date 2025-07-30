@@ -72,13 +72,23 @@ jobs:
           unzip -l clusters.zip
           echo ""
 
-      - name: Commit cluster state to repository
+      - name: Copy clusters.zip to workflow-cache
         if: always()
         run: |
           mkdir -p workflow-cache/runs/${{ github.run_id }}
           cp clusters.zip workflow-cache/runs/${{ github.run_id }}/
+          echo ""
+          echo "**** Verifying copy ****"
+          echo "ls -al:: "
+          ls -al workflow-cache/runs | grep ${{ github.run_id }}
+          echo "find::  "
+          find workflow-cache/runs/${{ github.run_id }}
+
+      - name: Commit cluster state to repository
+        if: always()
+        run: |
           git pull origin main
-          git add workflow-cache/runs/${{ github.run_id }}
+          git add workflow-cache/runs
           git commit -m "Add cluster state for workflow run ${{ github.run_id }}"
           git push origin main
 
