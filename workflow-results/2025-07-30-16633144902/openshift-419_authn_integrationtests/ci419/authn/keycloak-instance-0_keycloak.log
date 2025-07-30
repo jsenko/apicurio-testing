@@ -1,0 +1,38 @@
+Changes detected in configuration. Updating the server image.
+WARNING: The following used run time options are UNAVAILABLE and will be ignored during build time:
+ 	- tracing-resource-attributes: Available only when Tracing is enabled.
+	- tracing-service-name: Available only when Tracing is enabled.
+Updating the configuration and installing your custom providers, if any. Please wait.
+2025-07-30 21:30:46,450 INFO  [org.keycloak.common.Profile] (main) Preview features enabled: scripts:v1, token-exchange:v1
+2025-07-30 21:30:50,122 INFO  [org.keycloak.common.Profile] (main) Preview features enabled: scripts:v1, token-exchange:v1
+2025-07-30 21:31:10,359 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 21704ms
+Server configuration updated and persisted. Run the following command to review the configuration:
+
+	kc.sh show-config
+
+Next time you run the server, just run:
+
+	kc.sh --verbose start --optimized
+
+WARNING: The following used run time options are UNAVAILABLE and will be ignored during build time:
+ 	- tracing-resource-attributes: Available only when Tracing is enabled.
+	- tracing-service-name: Available only when Tracing is enabled.
+WARNING: Hostname v1 options [hostname-strict-backchannel] are still in use, please review your configuration
+2025-07-30 21:31:12,229 INFO  [org.keycloak.common.Profile] (main) Preview features enabled: scripts:v1, token-exchange:v1
+2025-07-30 21:31:13,154 INFO  [org.keycloak.common.Profile] (main) Preview features enabled: scripts:v1, token-exchange:v1
+2025-07-30 21:31:15,349 INFO  [org.keycloak.url.HostnameV2ProviderFactory] (main) If hostname is specified, hostname-strict is effectively ignored
+2025-07-30 21:31:22,126 INFO  [org.keycloak.spi.infinispan.impl.embedded.JGroupsConfigurator] (main) JGroups JDBC_PING discovery enabled.
+2025-07-30 21:31:22,140 INFO  [org.keycloak.spi.infinispan.impl.embedded.JGroupsConfigurator] (main) JGroups Encryption enabled (mTLS).
+2025-07-30 21:31:22,662 INFO  [org.keycloak.jgroups.certificates.CertificateReloadManager] (main) Starting JGroups certificate reload manager
+2025-07-30 21:31:22,861 INFO  [org.infinispan.CONTAINER] (main) ISPN000556: Starting user marshaller 'org.infinispan.commons.marshall.ImmutableProtoStreamMarshaller'
+2025-07-30 21:31:23,331 INFO  [org.infinispan.CLUSTER] (main) ISPN000078: Starting JGroups channel `ISPN` with stack `jdbc-ping`
+2025-07-30 21:31:23,332 INFO  [org.jgroups.JChannel] (main) local_addr: aa7d0623-9998-4e8b-8bde-77e046e73193, name: keycloak-instance-0-3475
+2025-07-30 21:31:23,344 INFO  [org.jgroups.protocols.FD_SOCK2] (main) server listening on *:57800
+2025-07-30 21:31:23,427 INFO  [org.jgroups.protocols.pbcast.GMS] (main) keycloak-instance-0-3475: no members discovered after 6 ms: creating cluster as coordinator
+2025-07-30 21:31:23,526 INFO  [org.infinispan.CLUSTER] (main) ISPN000094: Received new cluster view for channel ISPN: [keycloak-instance-0-3475|0] (1) [keycloak-instance-0-3475]
+2025-07-30 21:31:23,530 INFO  [org.keycloak.jgroups.certificates.CertificateReloadManager] (main) Reloading JGroups Certificate
+2025-07-30 21:31:23,656 INFO  [org.infinispan.CLUSTER] (main) ISPN000079: Channel `ISPN` local address is `keycloak-instance-0-3475`, physical addresses are `[10.130.2.13:7800]`
+2025-07-30 21:31:24,323 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: keycloak-instance-0-3475, Site name: null
+2025-07-30 21:31:26,175 INFO  [io.quarkus] (main) Keycloak 26.3.2 on JVM (powered by Quarkus 3.20.2) started in 15.525s. Listening on: http://0.0.0.0:8080. Management interface listening on http://0.0.0.0:9000.
+2025-07-30 21:31:26,221 INFO  [io.quarkus] (main) Profile prod activated. 
+2025-07-30 21:31:26,221 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-postgresql, keycloak, narayana-jta, opentelemetry, reactive-routes, rest, rest-jackson, smallrye-context-propagation, smallrye-health, vertx]
