@@ -83,6 +83,8 @@ jobs:
           ls -al workflow-cache/runs | grep ${{ github.run_id }}
           echo "find::  "
           find workflow-cache/runs/${{ github.run_id }}
+          echo "git status"
+          git status
 
       - name: Commit cluster state to repository
         if: always()
