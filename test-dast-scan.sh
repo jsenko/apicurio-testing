@@ -51,6 +51,72 @@ DAST_TESTS_DIR="$BASE_DIR/dast-tests"
 mkdir -p $DAST_TESTS_DIR
 cd $DAST_TESTS_DIR
 
+# Install ZAP if not already available
+install_zap() {
+    echo "Checking for ZAP installation..."
+    
+    # Check if ZAP is already available on PATH
+    if command -v zap.sh &> /dev/null || command -v zap &> /dev/null; then
+        echo "ZAP is already installed and available on PATH"
+        return 0
+    fi
+    
+    # Check if ZAP is already installed in our local directory
+    if [ -f "$DAST_TESTS_DIR/ZAP_2.16.1/zap.sh" ]; then
+        echo "ZAP found in local directory, adding to PATH"
+        export PATH="$DAST_TESTS_DIR/ZAP_2.16.1:$PATH"
+        return 0
+    fi
+    
+    echo "ZAP not found, downloading and installing..."
+    
+    # Download ZAP Linux package
+    ZAP_VERSION="2.16.1"
+    ZAP_DOWNLOAD_URL="https://github.com/zaproxy/zaproxy/releases/download/v${ZAP_VERSION}/ZAP_${ZAP_VERSION}_Linux.tar.gz"
+    ZAP_ARCHIVE="ZAP_${ZAP_VERSION}_Linux.tar.gz"
+    
+    echo "Downloading ZAP from: $ZAP_DOWNLOAD_URL"
+    if ! curl -L -o "$ZAP_ARCHIVE" "$ZAP_DOWNLOAD_URL"; then
+        echo "Error: Failed to download ZAP"
+        exit 1
+    fi
+    
+    # Extract ZAP
+    echo "Extracting ZAP..."
+    if ! tar -xzf "$ZAP_ARCHIVE"; then
+        echo "Error: Failed to extract ZAP archive"
+        exit 1
+    fi
+    
+    # Clean up archive
+    rm -f "$ZAP_ARCHIVE"
+    
+    # Check if extraction was successful
+    if [ ! -f "ZAP_${ZAP_VERSION}/zap.sh" ]; then
+        echo "Error: ZAP installation failed - zap.sh not found"
+        exit 1
+    fi
+    
+    # Make zap.sh executable
+    chmod +x "ZAP_${ZAP_VERSION}/zap.sh"
+    
+    # Add ZAP to PATH for this session
+    export PATH="$DAST_TESTS_DIR/ZAP_${ZAP_VERSION}:$PATH"
+    
+    echo "ZAP ${ZAP_VERSION} installed successfully"
+    
+    # Verify installation
+    if command -v zap.sh &> /dev/null; then
+        echo "ZAP is now available on PATH"
+    else
+        echo "Warning: ZAP may not be properly configured on PATH"
+    fi
+}
+
+
+# Install ZAP
+install_zap
+
 # Clone the rapidast repository
 echo "Cloning rapidast git repository at branch/tag: $RAPIDAST_TAG"
 if [ -d "rapidast" ]; then
@@ -81,12 +147,6 @@ else
     PYTHON_CMD="python3.12"
 fi
 
-# Install dependencies if requirements.txt exists
-if [ -f "requirements.txt" ]; then
-    echo "Installing rapidast dependencies..."
-    $PYTHON_CMD -m pip install --user -r requirements.txt
-fi
-
 # Display some diagnostic info
 echo ""
 echo "RapiDAST DAST Scan Info:"
@@ -104,16 +164,27 @@ echo "------------------------------------"
 echo "Running RapiDAST DAST Security Scan..."
 echo "------------------------------------"
 
-# Run rapidast with the provided configuration
-# $PYTHON_CMD rapidast.py --config "$CONFIG_FILENAME"
-
 mkdir $RESULTS_DIR
-docker run \
-  -v $CONFIG_FILENAME:/opt/rapidast/config/config.yaml:Z \
-  -v $RESULTS_DIR:/opt/rapidast/results/:Z \
-  --user $(id -u):$(id -g) \
-  -e JAVA_TOOL_OPTIONS="-Djava.util.prefs.userRoot=/tmp/.java" \
-  quay.io/redhatproductsecurity/rapidast:latest
+
+# Create the virtual environment
+echo "Creating the virtual environment"
+$PYTHON_CMD -m venv venv
+source venv/bin/activate
+
+# Install requirements
+echo "Installing requirements"
+pip install -U pip
+pip install -r requirements.txt
+
+# Run rapidast with the provided configuration
+$PYTHON_CMD rapidast.py --config "$CONFIG_FILENAME"
+
+# docker run \
+#   -v $CONFIG_FILENAME:/opt/rapidast/config/config.yaml:Z \
+#   -v $RESULTS_DIR:/opt/rapidast/results/:Z \
+#   --user $(id -u):$(id -g) \
+#   -e JAVA_TOOL_OPTIONS="-Djava.util.prefs.userRoot=/tmp/.java" \
+#   quay.io/redhatproductsecurity/rapidast:latest
 
 RAPIDAST_EXIT_CODE=$?
 
