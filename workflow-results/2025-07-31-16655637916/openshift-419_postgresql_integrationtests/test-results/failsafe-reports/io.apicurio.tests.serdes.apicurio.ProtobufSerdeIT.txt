@@ -1,0 +1,184 @@
+-------------------------------------------------------------------------------
+Test set: io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT
+-------------------------------------------------------------------------------
+Tests run: 17, Failures: 0, Errors: 12, Skipped: 0, Time elapsed: 5.677 s <<< FAILURE! -- in io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testSimpleTopicIdStrategyFindLatest -- Time elapsed: 0.104 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testSimpleTopicIdStrategyFindLatest(ProtobufSerdeIT.java:76)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestDeriveClassProtobufTypeTopicIdStrategy -- Time elapsed: 0.031 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestDeriveClassProtobufTypeTopicIdStrategy(ProtobufSerdeIT.java:265)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testWrongSchema -- Time elapsed: 0.040 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testWrongSchema(ProtobufSerdeIT.java:98)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testValidation -- Time elapsed: 0.023 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testValidation(ProtobufSerdeIT.java:164)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testTopicIdStrategyFindLatest -- Time elapsed: 0.018 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testTopicIdStrategyFindLatest(ProtobufSerdeIT.java:56)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testWrongSchemaFindLatest -- Time elapsed: 0.027 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testWrongSchemaFindLatest(ProtobufSerdeIT.java:119)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testConsumeReturnSpecificClass -- Time elapsed: 0.023 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testConsumeReturnSpecificClass(ProtobufSerdeIT.java:243)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestSpecificProtobufType -- Time elapsed: 0.026 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestSpecificProtobufType(ProtobufSerdeIT.java:308)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestDynamicMessageProtobufType -- Time elapsed: 0.031 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestDynamicMessageProtobufType(ProtobufSerdeIT.java:345)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestDeriveClassProtobufTypeSimpleTopicIdStrategy -- Time elapsed: 0.026 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestDeriveClassProtobufTypeSimpleTopicIdStrategy(ProtobufSerdeIT.java:286)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestAndUseBody -- Time elapsed: 0.028 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testFindLatestAndUseBody(ProtobufSerdeIT.java:493)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testConsumeDynamicMessage -- Time elapsed: 0.023 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifact(ApicurioRegistryBaseIT.java:190)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testConsumeDynamicMessage(ProtobufSerdeIT.java:221)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
