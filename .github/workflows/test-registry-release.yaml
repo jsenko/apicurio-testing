@@ -6,7 +6,7 @@ on:
         description: Released version to test
         required: true
       tests-tag:
-        description: The apicurio-registry tag to use when running UI and integration tests
+        description: git tag to use for running tests
         required: true
         default: main
 
