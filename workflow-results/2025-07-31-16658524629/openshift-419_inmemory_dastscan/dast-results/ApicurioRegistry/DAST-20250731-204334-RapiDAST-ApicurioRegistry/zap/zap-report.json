@@ -1,0 +1,18 @@
+{
+    "@programName": "ZAP",
+    "@version": "2.16.1",
+    "@generated": "Thu, 31 Jul 2025 20:44:49",
+    "site":[ 
+        {
+            "@name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org",
+            "@host": "registry-app-inmemory.apps.ci419.apicurio-testing.org",
+            "@port": "80",
+            "@ssl": "false",
+            "alerts": [ 
+            ]
+        }
+    ],
+    "sequences":[
+    ]
+}
+
