@@ -1,0 +1,20 @@
+-------------------------------------------------------------------------------
+Test set: io.apicurio.tests.smokeTests.apicurio.AllArtifactTypesIT
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 19.63 s <<< FAILURE! -- in io.apicurio.tests.smokeTests.apicurio.AllArtifactTypesIT
+io.apicurio.tests.smokeTests.apicurio.AllArtifactTypesIT.testOpenApi30 -- Time elapsed: 0.047 s <<< ERROR!
+io.apicurio.registry.rest.client.models.ProblemDetails
+	at io.apicurio.registry.rest.client.models.ProblemDetails.createFromDiscriminatorValue(ProblemDetails.java:58)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.sendPrimitive(VertXRequestAdapter.java:196)
+	at io.apicurio.registry.rest.client.admin.rules.RulesRequestBuilder.post(RulesRequestBuilder.java:117)
+	at io.apicurio.registry.rest.client.admin.rules.RulesRequestBuilder.post(RulesRequestBuilder.java:100)
+	at io.apicurio.tests.smokeTests.apicurio.AllArtifactTypesIT.doTest(AllArtifactTypesIT.java:45)
+	at io.apicurio.tests.smokeTests.apicurio.AllArtifactTypesIT.testOpenApi30(AllArtifactTypesIT.java:142)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
