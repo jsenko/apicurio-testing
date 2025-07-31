@@ -5,6 +5,10 @@ on:
       release-version:
         description: Released version to test
         required: true
+      tests-tag:
+        description: The apicurio-registry tag to use when running UI and integration tests
+        required: true
+        default: main
 
 jobs:
   openshift-419:
@@ -390,7 +394,7 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -448,7 +452,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -548,7 +552,7 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -606,7 +610,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -658,7 +662,7 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -716,7 +720,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -768,7 +772,7 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -826,7 +830,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag v$APICURIO_REGISTRY_VERSION
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -884,7 +888,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag main --testProfile auth --registryProtocol https --registryPort 443
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }} --testProfile auth --registryProtocol https --registryPort 443
 
       - name: Commit integration test results to repository
         if: always()
