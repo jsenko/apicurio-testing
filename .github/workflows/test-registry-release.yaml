@@ -414,7 +414,7 @@ jobs:
   openshift-419_inmemory_integrationtests:
     name: Integration Tests (in mem)
     runs-on: ubuntu-22.04
-    needs: openshift-419_inmemory
+    needs: openshift-419_inmemory_uitests
 
     env:
       CLUSTER_NAME: ci419
@@ -462,6 +462,54 @@ jobs:
       - name: Commit pod logs to repository
         if: failure()
         uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+
+  openshift-419_inmemory_dastscan:
+    name: DAST Scan (in mem)
+    runs-on: ubuntu-22.04
+    needs: openshift-419_inmemory_integrationtests
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: inmemory
+      RAPIDAST_TAG: development
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Run DAST Scanner
+        run: |
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_unauthenticated.yaml --tag $RAPIDAST_TAG
+
+      - name: Commit DAST scan results to repository
+        uses: ./.github/actions/commit-dast-scan-results
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
           namespace: ${{ env.NAMESPACE }}
@@ -524,7 +572,7 @@ jobs:
   openshift-419_postgresql_integrationtests:
     name: Integration Tests (postgresql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_postgresql
+    needs: openshift-419_postgresql_uitests
 
     env:
       CLUSTER_NAME: ci419
@@ -634,7 +682,7 @@ jobs:
   openshift-419_mysql_integrationtests:
     name: Integration Tests (mysql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_mysql
+    needs: openshift-419_mysql_uitests
 
     env:
       CLUSTER_NAME: ci419
@@ -744,7 +792,7 @@ jobs:
   openshift-419_kafkasql_integrationtests:
     name: Integration Tests (kafkasql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_kafkasql
+    needs: openshift-419_kafkasql_uitests
 
     env:
       CLUSTER_NAME: ci419
@@ -863,6 +911,7 @@ jobs:
     needs:
       - openshift-419_inmemory_uitests
       - openshift-419_inmemory_integrationtests
+      - openshift-419_inmemory_dastscan
     if: always()
 
     env:

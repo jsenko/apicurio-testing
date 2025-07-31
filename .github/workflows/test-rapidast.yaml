@@ -37,6 +37,6 @@ jobs:
         with:
           ref: main
 
-      - name: Install Apicurio Registry Operator
+      - name: Run DAST Scanner
         run: |
           ./test-dast-scan.sh --url $DAST_BASE_URL --version $RAPIDAST_TAG

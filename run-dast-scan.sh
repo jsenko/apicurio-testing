@@ -17,6 +17,72 @@ show_usage() {
     echo "Example: $0 --cluster okd419 --namespace testns1 --config ./dast-config.yaml --tag 2.12.1"
 }
 
+
+# Install ZAP if not already available
+install_zap() {
+    local dast_tests_dir="$1"
+
+    echo "Checking for ZAP installation..."
+    
+    # Check if ZAP is already available on PATH
+    if command -v zap.sh &> /dev/null || command -v zap &> /dev/null; then
+        echo "ZAP is already installed and available on PATH"
+        return 0
+    fi
+    
+    # Check if ZAP is already installed in our local directory
+    if [ -f "$dast_tests_dir/ZAP_2.16.1/zap.sh" ]; then
+        echo "ZAP found in local directory, adding to PATH"
+        export PATH="$dast_tests_dir/ZAP_2.16.1:$PATH"
+        return 0
+    fi
+    
+    echo "ZAP not found, downloading and installing..."
+    
+    # Download ZAP Linux package
+    ZAP_VERSION="2.16.1"
+    ZAP_DOWNLOAD_URL="https://github.com/zaproxy/zaproxy/releases/download/v${ZAP_VERSION}/ZAP_${ZAP_VERSION}_Linux.tar.gz"
+    ZAP_ARCHIVE="ZAP_${ZAP_VERSION}_Linux.tar.gz"
+    
+    echo "Downloading ZAP from: $ZAP_DOWNLOAD_URL"
+    if ! curl -L -o "$ZAP_ARCHIVE" "$ZAP_DOWNLOAD_URL"; then
+        echo "Error: Failed to download ZAP"
+        exit 1
+    fi
+    
+    # Extract ZAP
+    echo "Extracting ZAP..."
+    if ! tar -xzf "$ZAP_ARCHIVE"; then
+        echo "Error: Failed to extract ZAP archive"
+        exit 1
+    fi
+    
+    # Clean up archive
+    rm -f "$ZAP_ARCHIVE"
+    
+    # Check if extraction was successful
+    if [ ! -f "ZAP_${ZAP_VERSION}/zap.sh" ]; then
+        echo "Error: ZAP installation failed - zap.sh not found"
+        exit 1
+    fi
+    
+    # Make zap.sh executable
+    chmod +x "ZAP_${ZAP_VERSION}/zap.sh"
+    
+    # Add ZAP to PATH for this session
+    export PATH="$dast_tests_dir/ZAP_${ZAP_VERSION}:$PATH"
+    
+    echo "ZAP ${ZAP_VERSION} installed successfully"
+    
+    # Verify installation
+    if command -v zap.sh &> /dev/null; then
+        echo "ZAP is now available on PATH"
+    else
+        echo "Warning: ZAP may not be properly configured on PATH"
+    fi
+}
+
+
 # Parse command line arguments
 CLUSTER_NAME=""
 NAMESPACE=""
@@ -91,12 +157,14 @@ export DAST_TESTS_DIR="$TESTS_DIR/dast"
 export APPS_URL="apps.$CLUSTER_NAME.$BASE_DOMAIN"
 
 # Common application URLs that might be useful for rapidast configuration
-export REGISTRY_APP_URL="registry-app-$NAMESPACE.$APPS_URL"
-export REGISTRY_UI_URL="registry-ui-$NAMESPACE.$APPS_URL"
-export KEYCLOAK_URL="keycloak-$NAMESPACE.$APPS_URL"
+export REGISTRY_APP_URL="http://registry-app-$NAMESPACE.$APPS_URL"
+export REGISTRY_UI_URL="http://registry-ui-$NAMESPACE.$APPS_URL"
 
 mkdir -p $DAST_TESTS_DIR
 cd $DAST_TESTS_DIR
+
+# Make sure ZAP is installed
+install_zap $DAST_TESTS_DIR
 
 # Clone the rapidast repository
 echo "Cloning rapidast git repository at branch/tag: $RAPIDAST_TAG"
@@ -110,9 +178,9 @@ git clone --branch $RAPIDAST_TAG --depth 1 https://github.com/RedHatProductSecur
 cd rapidast
 
 # Copy the configuration file to the rapidast directory
-CONFIG_FILENAME=$(basename "$CONFIG_FILE")
-echo "Copying configuration file: $CONFIG_FILE -> $CONFIG_FILENAME"
-cp "$CONFIG_FILE" "$CONFIG_FILENAME"
+export DAST_BASE_URL=$REGISTRY_APP_URL
+RAPIDAST_CONFIG=$DAST_TESTS_DIR/rapidast-config.yaml
+envsubst < $BASE_DIR/templates/rapidast/$CONFIG_FILE > $RAPIDAST_CONFIG
 
 # Check if Python 3.12+ is available
 if ! command -v python3.12 &> /dev/null; then
@@ -127,12 +195,6 @@ else
     PYTHON_CMD="python3.12"
 fi
 
-# Install dependencies if requirements.txt exists
-if [ -f "requirements.txt" ]; then
-    echo "Installing rapidast dependencies..."
-    $PYTHON_CMD -m pip install --user -r requirements.txt
-fi
-
 # Display some diagnostic info
 echo ""
 echo "RapiDAST DAST Scan Info:"
@@ -140,7 +202,7 @@ echo "--"
 echo "Cluster: $CLUSTER_NAME"
 echo "Namespace: $NAMESPACE"
 echo "RapiDAST version: $RAPIDAST_TAG"
-echo "Configuration file: $CONFIG_FILENAME"
+echo "Configuration file: $RAPIDAST_CONFIG"
 echo "Available application URLs:"
 echo "  Registry App: http://$REGISTRY_APP_URL"
 echo "  Registry UI: http://$REGISTRY_UI_URL"
@@ -151,8 +213,18 @@ echo "------------------------------------"
 echo "Running RapiDAST DAST Security Scan..."
 echo "------------------------------------"
 
+# Create the virtual environment
+echo "Creating the virtual environment"
+$PYTHON_CMD -m venv venv
+source venv/bin/activate
+
+# Install requirements
+echo "Installing requirements"
+pip install -U pip
+pip install -r requirements.txt
+
 # Run rapidast with the provided configuration
-$PYTHON_CMD rapidast.py --config "$CONFIG_FILENAME"
+$PYTHON_CMD rapidast.py --config $RAPIDAST_CONFIG
 
 RAPIDAST_EXIT_CODE=$?
 
