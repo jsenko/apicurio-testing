@@ -1,0 +1,20 @@
+-------------------------------------------------------------------------------
+Test set: io.apicurio.tests.serdes.confluent.BasicConfluentSerDesIT
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 6.749 s <<< FAILURE! -- in io.apicurio.tests.serdes.confluent.BasicConfluentSerDesIT
+io.apicurio.tests.serdes.confluent.BasicConfluentSerDesIT.testEvolveAvroConfluent -- Time elapsed: 0.852 s <<< ERROR!
+io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.item.versions.VersionsRequestBuilder.post(VersionsRequestBuilder.java:117)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.item.versions.VersionsRequestBuilder.post(VersionsRequestBuilder.java:94)
+	at io.apicurio.tests.ApicurioRegistryBaseIT.createArtifactVersion(ApicurioRegistryBaseIT.java:153)
+	at io.apicurio.tests.serdes.confluent.BasicConfluentSerDesIT.testEvolveAvroConfluent(BasicConfluentSerDesIT.java:208)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
