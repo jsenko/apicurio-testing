@@ -2,7 +2,7 @@
 
 # Function to display usage information
 show_usage() {
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> --config <config_file> [--tag <rapidast_tag>]"
+    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [--config <config_file>] [--tag <rapidast_tag>]"
     echo ""
     echo "This script runs RapiDAST (Rapid DAST) security scanning against a deployed application."
     echo "The target application URL should be configured in the provided rapidast YAML configuration file."
@@ -10,11 +10,11 @@ show_usage() {
     echo "Arguments:"
     echo "  --cluster           Required. The OpenShift cluster name"
     echo "  --namespace         Required. The namespace where the target application is deployed"
-    echo "  --config            Required. Path to the rapidast YAML configuration file"
+    echo "  --config            Optional. Path to the rapidast YAML configuration file (default: registry_v3_unauthenticated.yaml)"
     echo "  --tag               Optional. Git branch/tag of rapidast to use (default: development)"
     echo ""
-    echo "Example: $0 --cluster okd419 --namespace testns1 --config /path/to/rapidast-config.yaml"
-    echo "Example: $0 --cluster okd419 --namespace testns1 --config ./dast-config.yaml --tag 2.12.1"
+    echo "Example: $0 --cluster okd419 --namespace testns1"
+    echo "Example: $0 --cluster okd419 --namespace testns1 --config registry_v3_basicauth.yaml --tag 2.12.1"
 }
 
 
@@ -133,15 +133,7 @@ if [ -z "$NAMESPACE" ]; then
 fi
 
 if [ -z "$CONFIG_FILE" ]; then
-    echo "Error: --config argument is required"
-    show_usage
-    exit 1
-fi
-
-# Check if config file exists
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Error: Configuration file '$CONFIG_FILE' does not exist"
-    exit 1
+    CONFIG_FILE="registry_v3_unauthenticated.yaml"
 fi
 
 # Get the directory where this script is located
@@ -177,6 +169,12 @@ git clone --branch $RAPIDAST_TAG --depth 1 https://github.com/RedHatProductSecur
 # Change to the repository directory
 cd rapidast
 
+# Check if config file exists
+if [ ! -f "$BASE_DIR/templates/rapidast/$CONFIG_FILE" ]; then
+    echo "Error: Configuration file '$CONFIG_FILE' does not exist"
+    exit 1
+fi
+
 # Copy the configuration file to the rapidast directory
 export DAST_BASE_URL=$REGISTRY_APP_URL
 RAPIDAST_CONFIG=$DAST_TESTS_DIR/rapidast-config.yaml
@@ -203,15 +201,13 @@ echo "Cluster: $CLUSTER_NAME"
 echo "Namespace: $NAMESPACE"
 echo "RapiDAST version: $RAPIDAST_TAG"
 echo "Configuration file: $RAPIDAST_CONFIG"
+echo "URL under test: $DAST_BASE_URL"
 echo "Available application URLs:"
 echo "  Registry App: http://$REGISTRY_APP_URL"
 echo "  Registry UI: http://$REGISTRY_UI_URL"
 echo "  Keycloak: https://$KEYCLOAK_URL"
 echo "--"
 echo ""
-echo "------------------------------------"
-echo "Running RapiDAST DAST Security Scan..."
-echo "------------------------------------"
 
 # Create the virtual environment
 echo "Creating the virtual environment"
@@ -224,6 +220,11 @@ pip install -U pip
 pip install -r requirements.txt
 
 # Run rapidast with the provided configuration
+echo ""
+echo "------------------------------------"
+echo "Running RapiDAST DAST Security Scan..."
+echo "------------------------------------"
+echo ""
 $PYTHON_CMD rapidast.py --config $RAPIDAST_CONFIG
 
 RAPIDAST_EXIT_CODE=$?
