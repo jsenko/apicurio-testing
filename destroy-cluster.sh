@@ -156,3 +156,6 @@ ensure_installer "$CLUSTER_DIR"
 
 # Destroy the cluster
 ./openshift-install destroy cluster --log-level=info
+
+# Clean up local ./clusters directory
+rm -rf $CLUSTER_DIR

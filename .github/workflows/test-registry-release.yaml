@@ -1126,3 +1126,15 @@ jobs:
       - name: Destroy OpenShift cluster
         run: |
           ./destroy-cluster.sh --cluster $CLUSTER_NAME
+
+      - name: Remove clusters.zip from git
+        run: |
+          git pull origin main
+          rm -rf workflow-cache/runs/${{ github.run_id }}
+          git add workflow-cache/runs/${{ github.run_id }}
+          if git diff --cached --quiet; then
+            echo "clusters.zip file was already removed or does not exist."
+          else
+            git commit -m "Remove clusters.zip for workflow run ${{ github.run_id }} after cluster teardown"
+            git push origin main
+          fi
