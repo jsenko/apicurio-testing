@@ -102,7 +102,7 @@ jobs:
   os419_inmemory:
     name: Apicurio Registry (in-memory)
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: os419
 
     env:
@@ -152,9 +152,9 @@ jobs:
 
 
   os419_pg17:
-    name: Apicurio Registry (postgresql)
+    name: Apicurio Registry (pg 17)
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: os419_inmemory
 
     env:
@@ -205,9 +205,9 @@ jobs:
 
 
   os419_pg12:
-    name: Apicurio Registry (postgresql)
+    name: Apicurio Registry (pg12)
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: os419_pg17
 
     env:
@@ -260,7 +260,7 @@ jobs:
   os419_mysql:
     name: Apicurio Registry (mysql)
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs: os419_pg12
 
     env:
@@ -312,7 +312,7 @@ jobs:
   os419_strimzi047:
     name: Apicurio Registry (strimzi 0.47)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 40
     needs: os419_mysql
 
     env:
@@ -373,7 +373,7 @@ jobs:
   os419_strimzi043:
     name: Apicurio Registry (strimzi 0.43)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 40
     needs: os419_strimzi047
 
     env:
@@ -434,7 +434,7 @@ jobs:
   os419_authn:
     name: Apicurio Registry (authn)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 40
     needs: os419_strimzi043
 
     env:
@@ -681,7 +681,7 @@ jobs:
 
 
   os419_pg17_uitests:
-    name: UI Tests (postgresql)
+    name: UI Tests (pg17)
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     needs: os419_pg17
@@ -734,9 +734,9 @@ jobs:
 
 
   os419_pg17_integrationtests:
-    name: Integration Tests (postgresql)
+    name: Integration Tests (pg17)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: os419_pg17_uitests
 
     env:
@@ -794,9 +794,9 @@ jobs:
 
 
   os419_pg12_integrationtests:
-    name: Integration Tests (postgresql)
+    name: Integration Tests (pg12)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: os419_pg12
 
     env:
@@ -909,7 +909,7 @@ jobs:
   os419_mysql_integrationtests:
     name: Integration Tests (mysql)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: os419_mysql_uitests
 
     env:
@@ -1021,7 +1021,7 @@ jobs:
   os419_strimzi047_integrationtests:
     name: Integration Tests (strimzi 0.47)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: os419_strimzi047_uitests
 
     env:
@@ -1133,7 +1133,7 @@ jobs:
   os419_strimzi043_integrationtests:
     name: Integration Tests (strimzi 0.43)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: os419_strimzi043_uitests
 
     env:
@@ -1192,7 +1192,7 @@ jobs:
   os419_authn_integrationtests:
     name: Integration Tests (authn)
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: os419_authn
 
     env:
@@ -1364,7 +1364,7 @@ jobs:
 
 
   os419_pg17_teardown:
-    name: Destroy Registry (postgresql)
+    name: Destroy Registry (pg17)
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     needs:
@@ -1584,10 +1584,10 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419-teardown:
+  os419_teardown:
     name: Destroy OpenShift 4.19
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     needs:
       - os419_inmemory_teardown
       - os419_pg17_teardown

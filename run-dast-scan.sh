@@ -359,8 +359,6 @@ fi
 echo "--"
 echo ""
 
-exit 1
-
 # Create the virtual environment
 echo "Creating the virtual environment"
 $PYTHON_CMD -m venv venv

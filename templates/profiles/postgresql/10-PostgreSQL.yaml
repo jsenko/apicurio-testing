@@ -26,24 +26,28 @@ spec:
       labels:
         app: postgresql
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
       containers:
       - name: postgresql
-        image: registry.redhat.io/rhel8/postgresql-${POSTGRESQL_VERSION}:latest
+        image: postgres:${POSTGRESQL_VERSION}
         ports:
         - containerPort: 5432
           name: postgresql
         env:
-        - name: POSTGRESQL_USER
+        - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
               name: postgresql-secret
               key: POSTGRESQL_USER
-        - name: POSTGRESQL_PASSWORD
+        - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: postgresql-secret
               key: POSTGRESQL_PASSWORD
-        - name: POSTGRESQL_DATABASE
+        - name: POSTGRES_DB
           valueFrom:
             secretKeyRef:
               name: postgresql-secret
@@ -62,7 +66,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - pg_isready -U $POSTGRESQL_USER -d $POSTGRESQL_DATABASE
+            - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -72,7 +76,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - pg_isready -U $POSTGRESQL_USER -d $POSTGRESQL_DATABASE
+            - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3
