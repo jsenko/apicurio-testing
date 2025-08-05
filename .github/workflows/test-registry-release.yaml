@@ -151,7 +151,7 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  os419_pg16:
+  os419_pg17:
     name: Apicurio Registry (postgresql)
     runs-on: ubuntu-22.04
     timeout-minutes: 10
@@ -159,9 +159,9 @@ jobs:
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: pg16
+      NAMESPACE: pg17
       PROFILE: postgresql
-      POSTGRESQL_VERSION: 16
+      POSTGRESQL_VERSION: 17
 
     steps:
       - name: Checkout Code
@@ -208,7 +208,7 @@ jobs:
     name: Apicurio Registry (postgresql)
     runs-on: ubuntu-22.04
     timeout-minutes: 10
-    needs: os419_pg16
+    needs: os419_pg17
 
     env:
       CLUSTER_NAME: ci419
@@ -680,15 +680,15 @@ jobs:
           subdirectory-name: ccompat-v7-unauthenticated
 
 
-  os419_pg16_uitests:
+  os419_pg17_uitests:
     name: UI Tests (postgresql)
     runs-on: ubuntu-22.04
     timeout-minutes: 15
-    needs: os419_pg16
+    needs: os419_pg17
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: pg16
+      NAMESPACE: pg17
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
@@ -733,15 +733,15 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  os419_pg16_integrationtests:
+  os419_pg17_integrationtests:
     name: Integration Tests (postgresql)
     runs-on: ubuntu-22.04
     timeout-minutes: 20
-    needs: os419_pg16_uitests
+    needs: os419_pg17_uitests
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: pg16
+      NAMESPACE: pg17
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
       TEST_PROFILE: all
 
@@ -1363,18 +1363,18 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_pg16_teardown:
+  os419_pg17_teardown:
     name: Destroy Registry (postgresql)
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     needs:
-      - os419_pg16_uitests
-      - os419_pg16_integrationtests
+      - os419_pg17_uitests
+      - os419_pg17_integrationtests
     if: always()
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: pg16
+      NAMESPACE: pg17
 
     steps:
       - name: Checkout Code
@@ -1590,7 +1590,7 @@ jobs:
     timeout-minutes: 15
     needs:
       - os419_inmemory_teardown
-      - os419_pg16_teardown
+      - os419_pg17_teardown
       - os419_pg12_teardown
       - os419_mysql_teardown
       - os419_strimzi047_teardown
