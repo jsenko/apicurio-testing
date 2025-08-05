@@ -2,3 +2,4 @@
 /clusters.zip
 /logs/
 /okd-installers/
+/configure-secrets.env

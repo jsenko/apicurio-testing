@@ -13,6 +13,9 @@ inputs:
   run-id:
     description: 'GitHub workflow run ID'
     required: true
+  subdirectory-name:
+    description: 'Name of the subdirectory within dast-results to save results'
+    required: true
 runs:
   using: 'composite'
   steps:
@@ -22,7 +25,7 @@ runs:
         # Create workflow-results directory structure
         RUN_DATE=$(date +%Y-%m-%d)
         RESULTS_DIR="workflow-results/${RUN_DATE}-${{ inputs.run-id }}/${{ inputs.job-name }}"
-        mkdir -p "$RESULTS_DIR/dast-results"
+        mkdir -p "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}"
 
         BASE_DIR="."
         CLUSTER_NAME=${{ inputs.cluster-name }}
@@ -46,20 +49,20 @@ runs:
 
         # Collect RapiDAST scan results
         if [ -d "$RAPIDAST_RESULTS_DIR" ]; then
-          cp -r $RAPIDAST_RESULTS_DIR/* "$RESULTS_DIR/dast-results/" 2>/dev/null || true
-          echo "Copied DAST scan results from $RAPIDAST_RESULTS_DIR/"
+          cp -r $RAPIDAST_RESULTS_DIR/* "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}/" 2>/dev/null || true
+          echo "Copied DAST scan results from $RAPIDAST_RESULTS_DIR/ to subdirectory: ${{ inputs.subdirectory-name }}"
           
           # List what was copied for verification
           echo "Files copied to workflow results:"
-          find "$RESULTS_DIR/dast-results" -type f | head -10
-          if [ $(find "$RESULTS_DIR/dast-results" -type f | wc -l) -gt 10 ]; then
-            echo "... and $(( $(find "$RESULTS_DIR/dast-results" -type f | wc -l) - 10 )) more files"
+          find "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | head -10
+          if [ $(find "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | wc -l) -gt 10 ]; then
+            echo "... and $(( $(find "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | wc -l) - 10 )) more files"
           fi
         else
           echo "No DAST results directory found at $RAPIDAST_RESULTS_DIR"
           # Create an empty results directory to indicate the scan was attempted
-          mkdir -p "$RESULTS_DIR/dast-results"
-          echo "DAST scan was executed but no results directory was found" > "$RESULTS_DIR/dast-results/scan-status.txt"
+          mkdir -p "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}"
+          echo "DAST scan was executed but no results directory was found" > "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}/scan-status.txt"
         fi
 
         # Configure git and commit DAST scan results
@@ -70,4 +73,13 @@ runs:
         else
           git commit -m "Add DAST scan results for job ${{ inputs.job-name }} from workflow run ${{ inputs.run-id }}"
           git push origin main
+        fi
+
+        # Clean up rapidast results directory after successful commit
+        if [ -d "$RAPIDAST_RESULTS_DIR" ]; then
+          echo "Cleaning up rapidast results directory: $RAPIDAST_RESULTS_DIR"
+          rm -rf "$RAPIDAST_RESULTS_DIR"
+          echo "Successfully removed rapidast results directory"
+        else
+          echo "No rapidast results directory to clean up"
         fi

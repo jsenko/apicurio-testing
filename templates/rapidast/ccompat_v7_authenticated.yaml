@@ -1,0 +1,28 @@
+config:
+  configVersion: 5
+application:
+  shortName: "ApicurioRegistry"
+  url: "$DAST_BASE_URL/apis/ccompat/v7"
+  authentication:
+    type: "headers"
+    headers:
+      - name: "Authorization"
+        value: "Bearer $ACCESS_TOKEN"
+scanners:
+  zap:
+    apiScan:
+      apis:
+        apiUrl: "$DAST_BASE_URL/api-specifications/ccompat/v7/openapi.json"
+
+    spider:
+      maxDuration: 0
+
+    spiderAjax:
+      maxDuration: 0
+      browserId: firefox-headless
+
+    activeScan:
+      policy: "Kubernetes-API-scan"
+
+    report:
+      format: ["json","html"]

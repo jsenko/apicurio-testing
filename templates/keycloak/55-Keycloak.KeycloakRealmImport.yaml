@@ -24,6 +24,22 @@ spec:
         priority: 100
         config: {}
     clients:
+      - clientId: rapidast-client
+        enabled: true
+        clientAuthenticatorType: client-secret
+        secret: rapidast-client-secret
+        standardFlowEnabled: true
+        implicitFlowEnabled: true
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        publicClient: false
+        bearerOnly: false
+        consentRequired: false
+        redirectUris:
+          - '*'
+        webOrigins:
+          - '*'
+
       - clientId: wrong-client
         enabled: true
         clientAuthenticatorType: client-secret

@@ -7,12 +7,12 @@ BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> --keycloakVersion <version> [OPTIONS]"
+    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
     echo "  --cluster <name>         Name of the OpenShift cluster where Keycloak will be installed"
     echo "  --namespace <namespace>  Kubernetes namespace to deploy Keycloak into"
-    echo "  --keycloakVersion <ver>  Version of Keycloak to install (e.g., 26.3.1, 25.0.0)"
+    echo ""
     echo ""
     echo "OPTIONAL PARAMETERS:"
     echo "  --realmName <realm>      Name of the realm to create (default: 'registry')"
@@ -20,7 +20,7 @@ show_usage() {
     echo ""
     echo "EXAMPLES:"
     echo "  # Basic installation:"
-    echo "  $0 --cluster okd419 --namespace keycloak-ns --keycloakVersion 26.3.1"
+    echo "  $0 --cluster okd419 --namespace keycloak-ns"
     echo ""
     echo "NOTES:"
     echo "  - The cluster must already exist and be properly configured"
@@ -288,7 +288,7 @@ wait_for_keycloak_cr_ready() {
 APPLICATION_NAME="keycloak"
 CLUSTER_NAME=""
 NAMESPACE=""
-KEYCLOAK_VERSION=""
+
 REALM_NAME=""
 
 while [[ $# -gt 0 ]]; do
@@ -301,10 +301,7 @@ while [[ $# -gt 0 ]]; do
             NAMESPACE="$2"
             shift 2
             ;;
-        --keycloakVersion)
-            KEYCLOAK_VERSION="$2"
-            shift 2
-            ;;
+
         --realmName)
             REALM_NAME="$2"
             shift 2
@@ -340,11 +337,7 @@ if [ -z "$NAMESPACE" ]; then
     exit 1
 fi
 
-if [ -z "$KEYCLOAK_VERSION" ]; then
-    echo "Error: --keycloakVersion argument is required"
-    show_usage
-    exit 1
-fi
+
 
 # Validate namespace contains only letters and numbers
 if [[ ! "$NAMESPACE" =~ ^[a-zA-Z0-9]+$ ]]; then
@@ -359,7 +352,7 @@ export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export CERT_DIR="$BASE_DIR/certificates"
 export NAMESPACE
-export KEYCLOAK_VERSION
+
 export REALM_NAME
 export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
@@ -398,12 +391,10 @@ else
     kubectl create namespace "$NAMESPACE"
 fi
 
-# Check if version-specific templates exist
-KEYCLOAK_TEMPLATE_DIR="$BASE_DIR/templates/keycloak/$KEYCLOAK_VERSION"
+# Set the Keycloak template directory
+KEYCLOAK_TEMPLATE_DIR="$BASE_DIR/templates/keycloak"
 if [ ! -d "$KEYCLOAK_TEMPLATE_DIR" ]; then
-    echo "Error: Templates for Keycloak version '$KEYCLOAK_VERSION' not found at '$KEYCLOAK_TEMPLATE_DIR'"
-    echo "Available versions:"
-    ls -1 "$BASE_DIR/templates/keycloak" 2>/dev/null || echo "No Keycloak templates found"
+    echo "Error: Keycloak templates not found at '$KEYCLOAK_TEMPLATE_DIR'"
     exit 1
 fi
 

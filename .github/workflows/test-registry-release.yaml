@@ -11,9 +11,10 @@ on:
         default: main
 
 jobs:
-  openshift-419:
+  os419:
     name: OpenShift 4.19
     runs-on: ubuntu-22.04
+    timeout-minutes: 90
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
@@ -35,7 +36,7 @@ jobs:
           git --version
 
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -98,10 +99,11 @@ jobs:
           git push origin main
 
 
-  openshift-419_inmemory:
+  os419_inmemory:
     name: Apicurio Registry (in-memory)
     runs-on: ubuntu-22.04
-    needs: openshift-419
+    timeout-minutes: 10
+    needs: os419
 
     env:
       CLUSTER_NAME: ci419
@@ -110,7 +112,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -149,19 +151,21 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_postgresql:
+  os419_pg16:
     name: Apicurio Registry (postgresql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_inmemory
+    timeout-minutes: 10
+    needs: os419_inmemory
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: postgresql
+      NAMESPACE: pg16
       PROFILE: postgresql
+      POSTGRESQL_VERSION: 16
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -188,7 +192,7 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --postgresqlVersion $POSTGRESQL_VERSION
 
       - name: Commit pod logs to repository
         if: failure()
@@ -200,10 +204,64 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_mysql:
+  os419_pg12:
+    name: Apicurio Registry (postgresql)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    needs: os419_pg16
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: pg12
+      PROFILE: postgresql
+      POSTGRESQL_VERSION: 12
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --postgresqlVersion $POSTGRESQL_VERSION
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+
+  os419_mysql:
     name: Apicurio Registry (mysql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_postgresql
+    timeout-minutes: 10
+    needs: os419_pg12
 
     env:
       CLUSTER_NAME: ci419
@@ -212,7 +270,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -251,20 +309,21 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_kafkasql:
-    name: Apicurio Registry (kafkasql)
+  os419_strimzi047:
+    name: Apicurio Registry (strimzi 0.47)
     runs-on: ubuntu-22.04
-    needs: openshift-419_mysql
+    timeout-minutes: 20
+    needs: os419_mysql
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: kafkasql
+      NAMESPACE: ksql047
       PROFILE: kafkasql
       STRIMZI_VERSION: 0.47.0
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -289,9 +348,17 @@ jobs:
         run: |
           unzip clusters.zip
 
+      - name: Install Strimzi Operator
+        run: |
+          ./install-strimzi.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --version $STRIMZI_VERSION
+
+      - name: Install Kafka Cluster
+        run: |
+          ./install-kafka.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --strimziVersion $STRIMZI_VERSION
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
 
       - name: Commit pod logs to repository
         if: failure()
@@ -303,10 +370,72 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_authn:
+  os419_strimzi043:
+    name: Apicurio Registry (strimzi 0.43)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: os419_strimzi047
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: ksql043
+      PROFILE: kafkasql
+      STRIMZI_VERSION: 0.43.0
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Install Strimzi Operator
+        run: |
+          ./install-strimzi.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --version $STRIMZI_VERSION
+
+      - name: Install Kafka Cluster
+        run: |
+          ./install-kafka.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+
+  os419_authn:
     name: Apicurio Registry (authn)
     runs-on: ubuntu-22.04
-    needs: openshift-419_kafkasql
+    timeout-minutes: 20
+    needs: os419_strimzi043
 
     env:
       CLUSTER_NAME: ci419
@@ -316,7 +445,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -363,10 +492,11 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_inmemory_uitests:
+  os419_inmemory_uitests:
     name: UI Tests (in mem)
     runs-on: ubuntu-22.04
-    needs: openshift-419_inmemory
+    timeout-minutes: 15
+    needs: os419_inmemory
 
     env:
       CLUSTER_NAME: ci419
@@ -375,7 +505,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -415,10 +545,11 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_inmemory_integrationtests:
+  os419_inmemory_integrationtests:
     name: Integration Tests (in mem)
     runs-on: ubuntu-22.04
-    needs: openshift-419_inmemory_uitests
+    timeout-minutes: 30
+    needs: os419_inmemory_uitests
 
     env:
       CLUSTER_NAME: ci419
@@ -427,7 +558,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -473,10 +604,11 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_inmemory_dastscan:
+  os419_inmemory_dastscan:
     name: DAST Scan (in mem)
     runs-on: ubuntu-22.04
-    needs: openshift-419_inmemory_integrationtests
+    timeout-minutes: 20
+    needs: os419_inmemory_integrationtests
 
     env:
       CLUSTER_NAME: ci419
@@ -485,7 +617,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -508,7 +640,7 @@ jobs:
         run: |
           unzip clusters.zip
 
-      - name: Run DAST Scanner
+      - name: Run DAST Scanner (v3)
         run: |
           ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_unauthenticated.yaml --tag $RAPIDAST_TAG
 
@@ -519,21 +651,49 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          subdirectory-name: registry-v3-unauthenticated
+
+      - name: Run DAST Scanner (v2)
+        run: |
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v2_unauthenticated.yaml --tag $RAPIDAST_TAG
+
+      - name: Commit DAST scan results to repository
+        uses: ./.github/actions/commit-dast-scan-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          subdirectory-name: registry-v2-unauthenticated
+
+      - name: Run DAST Scanner (ccompat v7)
+        run: |
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config ccompat_v7_unauthenticated.yaml --tag $RAPIDAST_TAG
+
+      - name: Commit DAST scan results to repository
+        uses: ./.github/actions/commit-dast-scan-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          subdirectory-name: ccompat-v7-unauthenticated
 
 
-  openshift-419_postgresql_uitests:
+  os419_pg16_uitests:
     name: UI Tests (postgresql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_postgresql
+    timeout-minutes: 15
+    needs: os419_pg16
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: postgresql
+      NAMESPACE: pg16
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -573,19 +733,21 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_postgresql_integrationtests:
+  os419_pg16_integrationtests:
     name: Integration Tests (postgresql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_postgresql_uitests
+    timeout-minutes: 20
+    needs: os419_pg16_uitests
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: postgresql
+      NAMESPACE: pg16
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      TEST_PROFILE: all
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -610,7 +772,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }} --testProfile $TEST_PROFILE
 
       - name: Commit integration test results to repository
         if: always()
@@ -631,10 +793,71 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_mysql_uitests:
+  os419_pg12_integrationtests:
+    name: Integration Tests (postgresql)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: os419_pg12
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: pg12
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      TEST_PROFILE: smoke
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }} --testProfile $TEST_PROFILE
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+
+  os419_mysql_uitests:
     name: UI Tests (mysql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_mysql
+    timeout-minutes: 15
+    needs: os419_mysql
 
     env:
       CLUSTER_NAME: ci419
@@ -643,7 +866,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -683,10 +906,11 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_mysql_integrationtests:
+  os419_mysql_integrationtests:
     name: Integration Tests (mysql)
     runs-on: ubuntu-22.04
-    needs: openshift-419_mysql_uitests
+    timeout-minutes: 20
+    needs: os419_mysql_uitests
 
     env:
       CLUSTER_NAME: ci419
@@ -695,7 +919,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -741,19 +965,20 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_kafkasql_uitests:
-    name: UI Tests (kafkasql)
+  os419_strimzi047_uitests:
+    name: UI Tests (strimzi 0.47)
     runs-on: ubuntu-22.04
-    needs: openshift-419_kafkasql
+    timeout-minutes: 15
+    needs: os419_strimzi047
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: kafkasql
+      NAMESPACE: ksql047
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -793,19 +1018,20 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_kafkasql_integrationtests:
-    name: Integration Tests (kafkasql)
+  os419_strimzi047_integrationtests:
+    name: Integration Tests (strimzi 0.47)
     runs-on: ubuntu-22.04
-    needs: openshift-419_kafkasql_uitests
+    timeout-minutes: 20
+    needs: os419_strimzi047_uitests
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: kafkasql
+      NAMESPACE: ksql047
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -851,10 +1077,123 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_authn_integrationtests:
+  os419_strimzi043_uitests:
+    name: UI Tests (strimzi 0.43)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    needs: os419_strimzi043
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: ksql043
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Run UI Tests
+        run: |
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+
+      - name: Commit UI test results to repository
+        if: always()
+        uses: ./.github/actions/commit-ui-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+
+  os419_strimzi043_integrationtests:
+    name: Integration Tests (strimzi 0.43)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: os419_strimzi043_uitests
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: ksql043
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+
+
+  os419_authn_integrationtests:
     name: Integration Tests (authn)
     runs-on: ubuntu-22.04
-    needs: openshift-419_authn
+    timeout-minutes: 20
+    needs: os419_authn
 
     env:
       CLUSTER_NAME: ci419
@@ -863,7 +1202,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -909,13 +1248,91 @@ jobs:
           run-id: ${{ github.run_id }}
 
 
-  openshift-419_inmemory_teardown:
+  os419_authn_dastscan:
+    name: DAST Scan (authn)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: os419_authn_integrationtests
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: authn
+      RAPIDAST_TAG: development
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Run DAST Scanner (v3)
+        run: |
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true
+
+      - name: Commit DAST scan results to repository
+        uses: ./.github/actions/commit-dast-scan-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          subdirectory-name: registry-v3-authenticated
+
+      - name: Run DAST Scanner (v2)
+        run: |
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v2_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true
+
+      - name: Commit DAST scan results to repository
+        uses: ./.github/actions/commit-dast-scan-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          subdirectory-name: registry-v2-authenticated
+
+      - name: Run DAST Scanner (ccompat v7)
+        run: |
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config ccompat_v7_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true
+
+      - name: Commit DAST scan results to repository
+        uses: ./.github/actions/commit-dast-scan-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          subdirectory-name: ccompat-v7-authenticated
+
+
+
+  os419_inmemory_teardown:
     name: Destroy Registry (inmemory)
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
     needs:
-      - openshift-419_inmemory_uitests
-      - openshift-419_inmemory_integrationtests
-      - openshift-419_inmemory_dastscan
+      - os419_inmemory_uitests
+      - os419_inmemory_integrationtests
+      - os419_inmemory_dastscan
     if: always()
 
     env:
@@ -924,7 +1341,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -946,21 +1363,22 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  openshift-419_postgresql_teardown:
+  os419_pg16_teardown:
     name: Destroy Registry (postgresql)
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
     needs:
-      - openshift-419_postgresql_uitests
-      - openshift-419_postgresql_integrationtests
+      - os419_pg16_uitests
+      - os419_pg16_integrationtests
     if: always()
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: postgresql
+      NAMESPACE: pg16
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -982,12 +1400,49 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  openshift-419_mysql_teardown:
+  os419_pg12_teardown:
+    name: Destroy Registry (pg12)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    needs:
+      - os419_pg12_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: pg12
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  os419_mysql_teardown:
     name: Destroy Registry (mysql)
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
     needs:
-      - openshift-419_mysql_uitests
-      - openshift-419_mysql_integrationtests
+      - os419_mysql_uitests
+      - os419_mysql_integrationtests
     if: always()
 
     env:
@@ -996,7 +1451,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -1018,21 +1473,22 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  openshift-419_kafkasql_teardown:
-    name: Destroy Registry (kafkasql)
+  os419_strimzi047_teardown:
+    name: Destroy Registry (strimzi 0.47)
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
     needs:
-      - openshift-419_kafkasql_uitests
-      - openshift-419_kafkasql_integrationtests
+      - os419_strimzi047_uitests
+      - os419_strimzi047_integrationtests
     if: always()
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: kafkasql
+      NAMESPACE: ksql047
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -1054,11 +1510,50 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  openshift-419_authn_teardown:
+  os419_strimzi043_teardown:
+    name: Destroy Registry (strimzi 0.43)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    needs:
+      - os419_strimzi043_uitests
+      - os419_strimzi043_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: ksql043
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  os419_authn_teardown:
     name: Destroy Registry (authn)
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
     needs:
-      - openshift-419_authn_integrationtests
+      - os419_authn_integrationtests
+      - os419_authn_dastscan
     if: always()
 
     env:
@@ -1067,7 +1562,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -1089,15 +1584,18 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  openshift-419-teardown:
+  os419-teardown:
     name: Destroy OpenShift 4.19
     runs-on: ubuntu-22.04
+    timeout-minutes: 15
     needs:
-      - openshift-419_inmemory_teardown
-      - openshift-419_postgresql_teardown
-      - openshift-419_mysql_teardown
-      - openshift-419_kafkasql_teardown
-      - openshift-419_authn_teardown
+      - os419_inmemory_teardown
+      - os419_pg16_teardown
+      - os419_pg12_teardown
+      - os419_mysql_teardown
+      - os419_strimzi047_teardown
+      - os419_strimzi043_teardown
+      - os419_authn_teardown
     if: always()
 
     env:
@@ -1110,7 +1608,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}

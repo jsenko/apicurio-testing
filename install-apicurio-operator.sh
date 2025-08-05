@@ -73,7 +73,7 @@ fi
 export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export APICURIO_REGISTRY_VERSION
-export APICURIO_OPERATOR_YAML="$BASE_DIR/templates/registry/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator.yaml"
+export APICURIO_OPERATOR_YAML="$BASE_DIR/templates/registry-operator/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator.yaml"
 
 # Check if cluster directory exists
 if [ ! -d "$CLUSTER_DIR" ]; then
@@ -92,7 +92,7 @@ fi
 # Check if operator YAML template exists
 if [ ! -f "$APICURIO_OPERATOR_YAML" ]; then
     echo "Error: Operator YAML template '$APICURIO_OPERATOR_YAML' does not exist"
-    echo "Make sure version '$APICURIO_REGISTRY_VERSION' is available in templates/registry/"
+    echo "Make sure version '$APICURIO_REGISTRY_VERSION' is available in templates/registry-operator/"
     exit 1
 fi
 

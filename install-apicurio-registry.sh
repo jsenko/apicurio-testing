@@ -18,8 +18,7 @@ show_usage() {
     echo "  --appName <name>          Name of the application deployment (default: 'registry')"
     echo "  --profile <profile>       Profile to use for Apicurio Registry (default: 'inmemory')"
     echo "                            Available profiles: $AVAILABLE_PROFILES"
-    echo "  --strimziVersion <ver>    Version of Strimzi Kafka operator to install (optional)"
-    echo "                            Only needed for profiles that require Kafka (e.g., kafkasql)"
+
     echo "  --postgresqlVersion <ver> PostgreSQL version to use (default: '16')"
     echo "                            Only used when profile is 'postgresql'"
     echo "  --mysqlVersion <ver>      MySQL version to use (default: '8.4')"
@@ -31,7 +30,7 @@ show_usage() {
     echo "  $0 --cluster okd419 --namespace simplens1"
     echo ""
     echo "  # Installation with custom app name and kafkasql profile:"
-    echo "  $0 --appName my-registry --cluster okd419 --namespace kafkans1 --profile kafkasql --strimziVersion 0.43.0"
+    echo "  $0 --appName my-registry --cluster okd419 --namespace kafkans1 --profile kafkasql"
     echo ""
     echo "  # Installation with PostgreSQL profile:"
     echo "  $0 --cluster okd419 --namespace pgns1 --profile postgresql"
@@ -49,7 +48,7 @@ show_usage() {
     echo "  - The cluster must already exist and be properly configured"
     echo "  - Kubeconfig file must be present at clusters/<cluster_name>/auth/kubeconfig"
     echo "  - Different profiles provide different storage backends and dependencies (e.g. Keycloak)"
-    echo "  - Strimzi version is only required when using Kafka-based profiles"
+    echo "  - For Kafka-based profiles, install Strimzi separately using install-strimzi.sh before running this script"
 }
 
 
@@ -203,7 +202,7 @@ APPLICATION_NAME=""
 CLUSTER_NAME=""
 NAMESPACE=""
 PROFILE=""
-STRIMZI_VERSION=""
+
 POSTGRESQL_VERSION=""
 MYSQL_VERSION=""
 
@@ -225,10 +224,7 @@ while [[ $# -gt 0 ]]; do
             PROFILE="$2"
             shift 2
             ;;
-        --strimziVersion)
-            STRIMZI_VERSION="$2"
-            shift 2
-            ;;
+
         --postgresqlVersion)
             POSTGRESQL_VERSION="$2"
             shift 2
@@ -308,7 +304,7 @@ export CERT_DIR="$BASE_DIR/certificates"
 export APICURIO_REGISTRY_VERSION
 export NAMESPACE
 export PROFILE
-export STRIMZI_VERSION
+
 export POSTGRESQL_VERSION
 export MYSQL_VERSION
 export BASE_DOMAIN="apicurio-testing.org"
@@ -351,22 +347,8 @@ else
     kubectl create namespace "$NAMESPACE"
 fi
 
-# Deploy Strimzi operator if strimziVersion is specified
-if [ -n "$STRIMZI_VERSION" ]; then
-    echo "Installing Strimzi Operator version: $STRIMZI_VERSION"
-    STRIMZI_OPERATOR_URL="https://github.com/strimzi/strimzi-kafka-operator/releases/download/$STRIMZI_VERSION/strimzi-$STRIMZI_VERSION.zip"
-    echo "Downloading Strimzi Operator ZIP from: $STRIMZI_OPERATOR_URL"
-    curl -sSL -o $APP_DIR/strimzi-$STRIMZI_VERSION.zip $STRIMZI_OPERATOR_URL
-    echo "Unpacking Strimzi operator ZIP"
-    unzip $APP_DIR/strimzi-$STRIMZI_VERSION.zip -d $APP_DIR
-    echo "Installing Strimzi Operator into namespace $NAMESPACE"
-    apply_all_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/strimzi-admin $NAMESPACE
-    apply_all_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/cluster-operator $NAMESPACE
-#    apply_all_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/topic-operator $NAMESPACE
-#    apply_all_yaml_files $APP_DIR/strimzi-$STRIMZI_VERSION/install/user-operator $NAMESPACE
-else
-    echo "No Strimzi version specified, skipping Strimzi operator installation"
-fi
+# Note: For Kafka-based profiles, Strimzi should be installed separately using install-strimzi.sh
+echo "Assuming Strimzi Operator is already installed if using Kafka-based profiles"
 
 # Note: Apicurio Registry Operator should be installed separately using install-apicurio-registry-operator.sh
 # This script assumes the operator is already deployed cluster-wide

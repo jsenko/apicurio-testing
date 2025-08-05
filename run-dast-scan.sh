@@ -2,7 +2,7 @@
 
 # Function to display usage information
 show_usage() {
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [--config <config_file>] [--tag <rapidast_tag>]"
+    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [--config <config_file>] [--tag <rapidast_tag>] [--authEnabled <true|false>]"
     echo ""
     echo "This script runs RapiDAST (Rapid DAST) security scanning against a deployed application."
     echo "The target application URL should be configured in the provided rapidast YAML configuration file."
@@ -12,9 +12,66 @@ show_usage() {
     echo "  --namespace         Required. The namespace where the target application is deployed"
     echo "  --config            Optional. Path to the rapidast YAML configuration file (default: registry_v3_unauthenticated.yaml)"
     echo "  --tag               Optional. Git branch/tag of rapidast to use (default: development)"
+    echo "  --authEnabled       Optional. Enable OAuth2 authentication (true|false). When enabled, automatically derives auth settings."
     echo ""
     echo "Example: $0 --cluster okd419 --namespace testns1"
     echo "Example: $0 --cluster okd419 --namespace testns1 --config registry_v3_basicauth.yaml --tag 2.12.1"
+    echo "Example: $0 --cluster okd419 --namespace testns1 --authEnabled true"
+}
+
+ACCESS_TOKEN=""
+
+# Function to retrieve OAuth2 access token using Resource Owner Password Credentials Grant
+get_oauth2_token() {
+    local token_url="$1"
+    local client_id="$2"
+    local client_secret="$3"
+    local username="$4"
+    local password="$5"
+    
+    # Check if jq is available
+    if ! command -v jq &> /dev/null; then
+        echo "Error: jq is required for JSON parsing but not found. Please install jq."
+        exit 1
+    fi
+    
+    echo "Retrieving OAuth2 access token from: $token_url"
+    
+    # Make the OAuth2 token request
+    local response
+    response=$(curl -v -X POST "$token_url" \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "grant_type=password" \
+        -d "client_id=$client_id" \
+        -d "client_secret=$client_secret" \
+        -d "username=$username" \
+        -d "password=$password")
+    
+    # Check if curl command was successful
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to retrieve OAuth2 token - curl command failed"
+        exit 1
+    fi
+    
+    # Extract access token from JSON response using jq
+    local access_token
+    access_token=$(echo "$response" | jq -r '.access_token')
+    
+    # Check if jq parsing was successful and token exists
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to parse JSON response with jq"
+        echo "Response: $response"
+        exit 1
+    fi
+    
+    if [ -z "$access_token" ] || [ "$access_token" = "null" ]; then
+        echo "Error: Failed to extract access token from OAuth2 response"
+        echo "Response: $response"
+        exit 1
+    fi
+    
+    echo "Successfully retrieved OAuth2 access token"
+    ACCESS_TOKEN="$access_token"
 }
 
 
@@ -88,6 +145,7 @@ CLUSTER_NAME=""
 NAMESPACE=""
 CONFIG_FILE=""
 RAPIDAST_TAG="development"
+AUTH_ENABLED="false"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -105,6 +163,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --tag)
             RAPIDAST_TAG="$2"
+            shift 2
+            ;;
+        --authEnabled)
+            AUTH_ENABLED="$2"
             shift 2
             ;;
         -h|--help)
@@ -136,6 +198,49 @@ if [ -z "$CONFIG_FILE" ]; then
     CONFIG_FILE="registry_v3_unauthenticated.yaml"
 fi
 
+# Validate authEnabled parameter
+if [ -n "$AUTH_ENABLED" ] && [ "$AUTH_ENABLED" != "true" ] && [ "$AUTH_ENABLED" != "false" ]; then
+    echo "Error: --authEnabled must be 'true' or 'false'"
+    show_usage
+    exit 1
+fi
+
+# Set base domain for URL construction
+BASE_DOMAIN="apicurio-testing.org"
+SCHEME="http"
+
+# Validate and auto-configure authentication
+AUTH_TOKEN_URL=""
+AUTH_CLIENT_ID=""
+AUTH_CLIENT_SECRET=""
+AUTH_USERNAME=""
+AUTH_PASSWORD=""
+
+if [ "$AUTH_ENABLED" = "true" ]; then
+    # Auto-derive authentication variables
+    echo "Authentication enabled - auto-configuring auth variables..."
+    
+    # Auto-derive Keycloak token URL based on cluster and namespace
+    KEYCLOAK_URL="keycloak-$NAMESPACE.apps.$CLUSTER_NAME.$BASE_DOMAIN"
+    AUTH_TOKEN_URL="https://$KEYCLOAK_URL/realms/registry/protocol/openid-connect/token"
+    
+    # Use placeholder values for credentials (to be replaced with actual values)
+    AUTH_CLIENT_ID="rapidast-client"
+    AUTH_CLIENT_SECRET="rapidast-client-secret"
+    AUTH_USERNAME="registry-admin"
+    AUTH_PASSWORD="secret"
+    SCHEME="https"
+    
+    echo "Auto-configured authentication settings:"
+    echo "  Token URL: $AUTH_TOKEN_URL"
+    echo "  Client ID: $AUTH_CLIENT_ID"
+    echo "  Client Secret: **********"
+    echo "  Username: $AUTH_USERNAME (placeholder)"
+    echo "  Password: **********"
+    echo ""
+    echo "NOTE: Replace placeholder credentials with actual values in your environment or credential store."
+fi
+
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -143,14 +248,14 @@ export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export RAPIDAST_TAG
 export NAMESPACE
-export BASE_DOMAIN="apicurio-testing.org"
+export BASE_DOMAIN
 export TESTS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/tests"
 export DAST_TESTS_DIR="$TESTS_DIR/dast"
 export APPS_URL="apps.$CLUSTER_NAME.$BASE_DOMAIN"
 
 # Common application URLs that might be useful for rapidast configuration
-export REGISTRY_APP_URL="http://registry-app-$NAMESPACE.$APPS_URL"
-export REGISTRY_UI_URL="http://registry-ui-$NAMESPACE.$APPS_URL"
+export REGISTRY_APP_URL="$SCHEME://registry-app-$NAMESPACE.$APPS_URL"
+export REGISTRY_UI_URL="$SCHEME://registry-ui-$NAMESPACE.$APPS_URL"
 
 mkdir -p $DAST_TESTS_DIR
 cd $DAST_TESTS_DIR
@@ -173,6 +278,44 @@ cd rapidast
 if [ ! -f "$BASE_DIR/templates/rapidast/$CONFIG_FILE" ]; then
     echo "Error: Configuration file '$CONFIG_FILE' does not exist"
     exit 1
+fi
+
+# Retrieve OAuth2 access token if authentication is configured
+if [ -n "$AUTH_TOKEN_URL" ]; then
+    get_oauth2_token "$AUTH_TOKEN_URL" "$AUTH_CLIENT_ID" "$AUTH_CLIENT_SECRET" "$AUTH_USERNAME" "$AUTH_PASSWORD"
+    export ACCESS_TOKEN
+    echo "Access token retrieved and exported as ACCESS_TOKEN environment variable"
+    echo "--"
+    echo "$ACCESS_TOKEN"
+    echo "--"
+
+    echo "Checking that the access token works..."
+    echo "--"
+    
+    # Get user info and validate the response
+    USER_INFO_RESPONSE=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" $REGISTRY_APP_URL/apis/registry/v3/users/me)
+    echo "User info response: $USER_INFO_RESPONSE"
+    
+    # Parse and validate the response
+    USERNAME=$(echo "$USER_INFO_RESPONSE" | jq -r '.username // empty')
+    IS_ADMIN=$(echo "$USER_INFO_RESPONSE" | jq -r '.admin // false')
+    
+    echo "Username: $USERNAME"
+    echo "Is Admin: $IS_ADMIN"
+    
+    # Validate that username is "registry-admin" and admin is true
+    if [ "$USERNAME" != "registry-admin" ]; then
+        echo "ERROR: Expected username 'registry-admin' but got '$USERNAME'"
+        exit 1
+    fi
+    
+    if [ "$IS_ADMIN" != "true" ]; then
+        echo "ERROR: Expected admin field to be true but got '$IS_ADMIN'"
+        exit 1
+    fi
+    
+    echo "✓ Access token validation successful - user is registry-admin with admin privileges"
+    echo "--"
 fi
 
 # Copy the configuration file to the rapidast directory
@@ -202,12 +345,21 @@ echo "Namespace: $NAMESPACE"
 echo "RapiDAST version: $RAPIDAST_TAG"
 echo "Configuration file: $RAPIDAST_CONFIG"
 echo "URL under test: $DAST_BASE_URL"
+if [ -n "$AUTH_TOKEN_URL" ]; then
+    echo "OAuth2 Authentication: Enabled (Token URL: $AUTH_TOKEN_URL)"
+else
+    echo "OAuth2 Authentication: Disabled"
+fi
 echo "Available application URLs:"
-echo "  Registry App: http://$REGISTRY_APP_URL"
-echo "  Registry UI: http://$REGISTRY_UI_URL"
-echo "  Keycloak: https://$KEYCLOAK_URL"
+echo "  Registry App:  $REGISTRY_APP_URL"
+echo "  Registry UI:   $REGISTRY_UI_URL"
+if [ "$AUTH_ENABLED" = "true" ]; then
+    echo "  Keycloak:      https://$KEYCLOAK_URL"
+fi
 echo "--"
 echo ""
+
+exit 1
 
 # Create the virtual environment
 echo "Creating the virtual environment"
