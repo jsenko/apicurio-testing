@@ -1,0 +1,48 @@
+-------------------------------------------------------------------------------
+Test set: io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT
+-------------------------------------------------------------------------------
+Tests run: 17, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 63.38 s <<< FAILURE! -- in io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT
+io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testAutoRegisterAndUseBody -- Time elapsed: 0.638 s <<< ERROR!
+java.util.concurrent.ExecutionException: java.lang.RuntimeException: java.lang.RuntimeException: java.util.concurrent.ExecutionException: io.vertx.core.http.HttpClosedException: Connection was closed
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:396)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2096)
+	at io.apicurio.tests.serdes.apicurio.KafkaSerdesTester.produceMessages(KafkaSerdesTester.java:160)
+	at io.apicurio.tests.serdes.apicurio.KafkaSerdesTester.produceMessages(KafkaSerdesTester.java:123)
+	at io.apicurio.tests.serdes.apicurio.SimpleSerdesTesterBuilder$SimpleSerdesTester.test(SimpleSerdesTesterBuilder.java:139)
+	at io.apicurio.tests.serdes.apicurio.ProtobufSerdeIT.testAutoRegisterAndUseBody(ProtobufSerdeIT.java:452)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: java.lang.RuntimeException: java.lang.RuntimeException: java.util.concurrent.ExecutionException: io.vertx.core.http.HttpClosedException: Connection was closed
+	at io.apicurio.registry.resolver.cache.ERCache.retry(ERCache.java:242)
+	at io.apicurio.registry.resolver.cache.ERCache.getValue(ERCache.java:173)
+	at io.apicurio.registry.resolver.cache.ERCache.getByContent(ERCache.java:147)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.handleAutoCreateArtifact(DefaultSchemaResolver.java:295)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.getSchemaFromRegistry(DefaultSchemaResolver.java:120)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.lambda$resolveSchema$0(DefaultSchemaResolver.java:84)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.resolveSchema(DefaultSchemaResolver.java:84)
+	at io.apicurio.registry.serde.AbstractSerializer.serializeData(AbstractSerializer.java:62)
+	at io.apicurio.registry.serde.KafkaSerializer.serialize(KafkaSerializer.java:77)
+	at org.apache.kafka.clients.producer.KafkaProducer.doSend(KafkaProducer.java:1046)
+	at org.apache.kafka.clients.producer.KafkaProducer.send(KafkaProducer.java:993)
+	at org.apache.kafka.clients.producer.KafkaProducer.send(KafkaProducer.java:875)
+	at io.apicurio.tests.serdes.apicurio.KafkaSerdesTester.lambda$produceMessages$3(KafkaSerdesTester.java:138)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.lang.RuntimeException: java.util.concurrent.ExecutionException: io.vertx.core.http.HttpClosedException: Connection was closed
+	at io.kiota.http.vertx.VertXRequestAdapter.getHttpResponseMessage(VertXRequestAdapter.java:437)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:167)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.registry.resolver.client.RegistryClientFacadeImpl.createSchema(RegistryClientFacadeImpl.java:144)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.lambda$handleAutoCreateArtifact$4(DefaultSchemaResolver.java:307)
+	at io.apicurio.registry.resolver.cache.ERCache.lambda$getValue$0(ERCache.java:174)
+	at io.apicurio.registry.resolver.cache.ERCache.retry(ERCache.java:227)
+	... 15 more
+Caused by: java.util.concurrent.ExecutionException: io.vertx.core.http.HttpClosedException: Connection was closed
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:396)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2073)
+	at io.kiota.http.vertx.VertXRequestAdapter.getHttpResponseMessage(VertXRequestAdapter.java:431)
+	... 21 more
+Caused by: io.vertx.core.http.HttpClosedException: Connection was closed
+
