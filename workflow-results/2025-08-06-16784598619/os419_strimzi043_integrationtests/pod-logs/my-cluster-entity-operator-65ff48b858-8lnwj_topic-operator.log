@@ -1,0 +1,53 @@
+Preparing trust store certificates for internal communication
+Adding /etc/tls-sidecar/cluster-ca-certs/ca.crt to truststore /tmp/topic-operator/replication.truststore.p12 with alias ca
+Certificate was added to keystore
+Preparing trust store certificates for internal communication is completed
+Preparing key store certificates for internal communication
+Preparing key store certificates for internal communication is completed
++ exec /usr/bin/tini -w -e 143 -- java -Dlog4j2.configurationFile=file:/opt/topic-operator/custom-config/log4j2.properties -Djava.security.egd=file:/dev/./urandom -XX:+ExitOnOutOfMemoryError -XX:MinRAMPercentage=15 -XX:MaxRAMPercentage=20 -classpath :lib/io.strimzi.topic-operator-0.43.0.jar:lib/io.strimzi.api-0.43.0.jar:lib/io.fabric8.kubernetes-model-networking-6.13.3.jar:lib/io.fabric8.kubernetes-model-common-6.13.3.jar:lib/io.fabric8.kubernetes-model-apiextensions-6.13.3.jar:lib/org.slf4j.slf4j-api-1.7.36.jar:lib/io.fabric8.kubernetes-client-6.13.3.jar:lib/io.fabric8.zjsonpatch-0.3.0.jar:lib/io.fabric8.kubernetes-httpclient-jdk-6.13.3.jar:lib/io.fabric8.kubernetes-client-api-6.13.3.jar:lib/io.fabric8.kubernetes-model-gatewayapi-6.13.3.jar:lib/io.fabric8.kubernetes-model-resource-6.13.3.jar:lib/io.fabric8.kubernetes-model-rbac-6.13.3.jar:lib/io.fabric8.kubernetes-model-admissionregistration-6.13.3.jar:lib/io.fabric8.kubernetes-model-apps-6.13.3.jar:lib/io.fabric8.kubernetes-model-autoscaling-6.13.3.jar:lib/io.fabric8.kubernetes-model-batch-6.13.3.jar:lib/io.fabric8.kubernetes-model-certificates-6.13.3.jar:lib/io.fabric8.kubernetes-model-coordination-6.13.3.jar:lib/io.fabric8.kubernetes-model-discovery-6.13.3.jar:lib/io.fabric8.kubernetes-model-events-6.13.3.jar:lib/io.fabric8.kubernetes-model-extensions-6.13.3.jar:lib/io.fabric8.kubernetes-model-flowcontrol-6.13.3.jar:lib/io.fabric8.kubernetes-model-metrics-6.13.3.jar:lib/io.fabric8.kubernetes-model-policy-6.13.3.jar:lib/io.fabric8.kubernetes-model-scheduling-6.13.3.jar:lib/io.fabric8.kubernetes-model-storageclass-6.13.3.jar:lib/io.fabric8.kubernetes-model-node-6.13.3.jar:lib/org.snakeyaml.snakeyaml-engine-2.7.jar:lib/com.fasterxml.jackson.dataformat.jackson-dataformat-yaml-2.16.2.jar:lib/org.yaml.snakeyaml-2.2.jar:lib/com.fasterxml.jackson.datatype.jackson-datatype-jsr310-2.16.2.jar:lib/io.fabric8.kubernetes-model-core-6.13.3.jar:lib/org.apache.logging.log4j.log4j-api-2.17.2.jar:lib/org.apache.logging.log4j.log4j-core-2.17.2.jar:lib/org.apache.logging.log4j.log4j-slf4j-impl-2.17.2.jar:lib/org.apache.kafka.kafka-clients-3.8.0.jar:lib/com.github.luben.zstd-jni-1.5.6-3.jar:lib/org.lz4.lz4-java-1.8.0.jar:lib/com.fasterxml.jackson.core.jackson-core-2.16.2.jar:lib/com.fasterxml.jackson.core.jackson-databind-2.16.2.jar:lib/com.fasterxml.jackson.core.jackson-annotations-2.16.2.jar:lib/io.strimzi.operator-common-0.43.0.jar:lib/io.strimzi.crd-annotations-0.43.0.jar:lib/org.quartz-scheduler.quartz-2.3.2.jar:lib/org.eclipse.jetty.jetty-server-9.4.54.v20240208.jar:lib/org.eclipse.jetty.jetty-http-9.4.54.v20240208.jar:lib/org.eclipse.jetty.jetty-util-9.4.54.v20240208.jar:lib/org.eclipse.jetty.jetty-io-9.4.54.v20240208.jar:lib/javax.servlet.javax.servlet-api-3.1.0.jar:lib/io.micrometer.micrometer-core-1.12.3.jar:lib/io.micrometer.micrometer-commons-1.12.3.jar:lib/io.micrometer.micrometer-observation-1.12.3.jar:lib/org.hdrhistogram.HdrHistogram-2.1.12.jar:lib/org.latencyutils.LatencyUtils-2.0.3.jar:lib/io.micrometer.micrometer-registry-prometheus-1.12.3.jar:lib/io.prometheus.simpleclient_common-0.16.0.jar:lib/io.prometheus.simpleclient-0.16.0.jar:lib/io.prometheus.simpleclient_tracer_otel-0.16.0.jar:lib/io.prometheus.simpleclient_tracer_common-0.16.0.jar:lib/io.prometheus.simpleclient_tracer_otel_agent-0.16.0.jar io.strimzi.operator.topic.TopicOperatorMain
+2025-08-06 18:50:06,10311 INFO  [main] TopicOperatorConfig:172 - TopicOperator configuration is TopicOperatorConfig{
+	namespace='ksql043'
+	labelSelector=Labels{strimzi.io/cluster=my-cluster}
+	bootstrapServers='my-cluster-kafka-bootstrap:9091'
+	clientId='strimzi-topic-operator-3a2586fb-f817-496f-baad-999a42499ab5'
+	fullReconciliationIntervalMs=120000
+	tlsEnabled=true
+	truststoreLocation='/tmp/topic-operator/replication.truststore.p12'
+	truststorePassword='********'
+	keystoreLocation='/tmp/topic-operator/replication.keystore.p12'
+	keystorePassword='********'
+	sslEndpointIdentificationAlgorithm='HTTPS'
+	saslEnabled=false
+	saslMechanism=''
+	saslCustomConfigJson='********'
+	alterableTopicConfig='ALL'
+	skipClusterConfigReview='false'
+	saslUsername=''
+	saslPassword='********'
+	securityProtocol='SSL'
+	useFinalizer=true
+	maxQueueSize=1024
+	maxBatchSize=100
+	maxBatchLingerMs=100
+	enableAdditionalMetrics=false
+	featureGates='FeatureGates(ContinueReconciliationOnManualRollingUpdateFailure=false)'
+	cruiseControlEnabled=false
+	cruiseControlRackEnabled=false
+	cruiseControlHostname=127.0.0.1
+	cruiseControlPort=9090
+	cruiseControlSslEnabled=false
+	cruiseControlAuthEnabled=false
+	cruiseControlCrtFilePath=/etc/tls-sidecar/cluster-ca-certs/ca.crt
+	cruiseControlApiUserPath=/etc/eto-cc-api/topic-operator.apiAdminName
+	cruiseControlApiPassPath=/etc/eto-cc-api/topic-operator.apiAdminPassword}
+2025-08-06 18:50:07,29858 INFO  [main] AppInfoParser:124 - Kafka version: 3.8.0
+2025-08-06 18:50:07,30192 INFO  [main] AppInfoParser:125 - Kafka commitId: 771b9576b00ecf5b
+2025-08-06 18:50:07,30236 INFO  [main] AppInfoParser:126 - Kafka startTimeMs: 1754506207296
+2025-08-06 18:50:08,69486 WARN  [main] BatchingTopicController:126 - It is recommended that auto.create.topics.enable is set to 'false' to avoid races between the operator and Kafka applications auto-creating topics
+2025-08-06 18:50:08,80795 INFO  [main] TopicOperatorMain:79 - TopicOperator 0.43.0 is starting
+2025-08-06 18:50:08,80881 INFO  [main] TopicOperatorMain:85 - Installing shutdown hook
+2025-08-06 18:50:08,80916 INFO  [main] TopicOperatorMain:87 - Starting health and metrics
+2025-08-06 18:50:08,84131 INFO  [main] TopicOperatorMain:89 - Starting queue
+2025-08-06 18:50:08,86259 INFO  [main] TopicOperatorMain:104 - Starting informer
+2025-08-06 18:50:08,95980 WARN  [main] VersionUsageUtils:60 - The client is using resource type 'kafkatopics' with unstable version 'v1beta2'
+2025-08-06 18:50:09,30391 INFO  [main] TopicOperatorMain:106 - TopicOperator started
