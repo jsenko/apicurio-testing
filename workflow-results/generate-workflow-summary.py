@@ -358,8 +358,17 @@ class WorkflowSummaryGenerator:
                 scan_info = {
                     'name': scan_dir.name,
                     'issues': [],
-                    'status': 'unknown'
+                    'status': 'unknown',
+                    'zap_report_path': None
                 }
+                
+                # Look for ZAP report - search for zap-report.html recursively
+                zap_report_files = list(scan_dir.rglob('zap-report.html'))
+                if zap_report_files:
+                    # Use the first found ZAP report and make path relative to dast_dir
+                    zap_report_path = zap_report_files[0]
+                    scan_info['zap_report_path'] = str(zap_report_path.relative_to(dast_dir))
+                    print(f"Found ZAP report for {scan_dir.name}: {scan_info['zap_report_path']}")
                 
                 # Look for SARIF results
                 for sarif_dir in scan_dir.rglob('*.sarif'):
@@ -956,10 +965,21 @@ class WorkflowSummaryGenerator:
                             <h4>Scan Details:</h4>
 """
                 for scan in scans['scans']:
+                    # Create status section with ZAP report link if available
+                    scan_status_section = f"""
+                                <span class="suite-stats">{len(scan['issues'])} issues</span>"""
+                    
+                    if scan.get('zap_report_path'):
+                        scan_status_section = f"""
+                                <div class="status-section">
+                                    <a href="{job["name"]}/dast-results/{scan['zap_report_path']}" target="_blank" class="report-icon" title="View ZAP Security Report">🛡️</a>
+                                    <span class="suite-stats">{len(scan['issues'])} issues</span>
+                                </div>"""
+                    
                     html_content += f"""
                             <div class="suite-item">
                                 <span class="suite-name">{html.escape(scan['name'])}</span>
-                                <span class="suite-stats">{len(scan['issues'])} issues</span>
+                                {scan_status_section}
                             </div>
 """
                 html_content += """

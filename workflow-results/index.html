@@ -63,11 +63,13 @@
             border-radius: 8px;
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
         }
         
         .workflow-card:hover {
-            transform: translateY(-2px);
+            transform: translateX(5px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: #BBB;
         }
         
         .workflow-header {
@@ -112,35 +114,7 @@
         .workflow-content {
             padding: 20px;
         }
-        
-        .workflow-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-item {
-            text-align: center;
-            padding: 15px 10px;
-            border-radius: 5px;
-            background: #f8f9fa;
-        }
-        
-        .stat-number {
-            font-size: 1.8em;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #007bff;
-        }
-        
-        .stat-label {
-            font-size: 0.8em;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
+         
         .workflow-actions {
             display: flex;
             gap: 10px;
@@ -323,7 +297,7 @@ python generate-workflow-summary.py &lt;workflow-name&gt;
         </div>
         
         <div class="footer">
-            <p>Apicurio Registry Quality Engineering | Last updated: 2025-08-06 15:28:06 | Auto-generated from directory scan</p>
+            <p>Apicurio Registry Quality Engineering | Last updated: 2025-08-06 16:12:44 | Auto-generated from directory scan</p>
         </div>
     </div>
     
@@ -336,6 +310,7 @@ python generate-workflow-summary.py &lt;workflow-name&gt;
             // This is a static list - in practice, this would be generated server-side
             // or the directories would be scanned dynamically
             const workflowDirectories = [
+                '2025-08-06-16784598619',
                 '2025-08-06-16780041188',
                 '2025-08-05-16756786569',
                 '2025-08-05-16755050560',
@@ -376,7 +351,7 @@ python generate-workflow-summary.py &lt;workflow-name&gt;
         function checkForIndex(workflowName) {
             // In a real implementation, this would check if index.html exists
             // For now, we'll simulate based on recent workflows
-            return ['2025-08-06-16780041188', '2025-08-05-16756786569', '2025-08-05-16755050560', '2025-07-31-16658524629', '2025-07-31-16655637916', '2025-07-31-16654129399', '2025-07-31-16651820908', '2025-07-31-16637496194'].includes(workflowName);
+            return ['2025-08-06-16784598619', '2025-08-06-16780041188', '2025-08-05-16756786569', '2025-08-05-16755050560', '2025-07-31-16658524629', '2025-07-31-16655637916', '2025-07-31-16654129399', '2025-07-31-16651820908', '2025-07-31-16637496194'].includes(workflowName);
         }
         
         function estimateJobCount(workflowName) {
@@ -415,16 +390,6 @@ python generate-workflow-summary.py &lt;workflow-name&gt;
                             </div>
                         </div>
                         <div class="workflow-content">
-                            <div class="workflow-stats">
-                                <div class="stat-item">
-                                    <div class="stat-number">${workflow.jobCount}</div>
-                                    <div class="stat-label">Jobs</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-number">${workflow.runId}</div>
-                                    <div class="stat-label">Run ID</div>
-                                </div>
-                            </div>
                             <div class="workflow-actions">
                                 ${workflow.hasIndex ? 
                                     `<a href="${workflow.name}/index.html" class="btn btn-primary">View Summary</a>` :

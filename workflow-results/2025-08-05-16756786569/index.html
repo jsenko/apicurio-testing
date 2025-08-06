@@ -136,6 +136,23 @@
         .status-warning { background: #fff3cd; color: #856404; }
         .status-unknown { background: #e2e3e5; color: #383d41; }
         
+        .status-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .report-icon {
+            text-decoration: none;
+            font-size: 1.1em;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .report-icon:hover {
+            opacity: 1;
+        }
+        
         .job-content {
             padding: 20px;
         }
@@ -169,6 +186,7 @@
         .passed { color: #28a745; }
         .failed { color: #dc3545; }
         .skipped { color: #6c757d; }
+        .flaky { color: #ffc107; }
         .total { color: #007bff; }
         
         .no-results {
@@ -223,6 +241,29 @@
         
         .suite-stats {
             font-size: 0.9em;
+        }
+        
+        .suite-header {
+            font-weight: bold;
+            margin: 10px 0 5px 0;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 3px;
+        }
+        
+        .test-timing {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        
+        .no-details {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 15px;
         }
     </style>
 </head>
@@ -400,48 +441,46 @@
                 <div class="job-grid">
 
                     <div class="job-card">
-                        <div class="job-header">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_inmemory_uitests_ui')">
                             <div>
                                 <div class="job-title">os419_inmemory_uitests</div>
                                 <div class="job-config">UI Tests on OpenShift 4.19 with In-Memory</div>
                             </div>
-                            <span class="status-badge status-failed">failed</span>
-                        </div>
-                        <div class="job-content">
-                            <p>HTML test report available</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="section">
-                <h2 class="section-title">Other Configurations</h2>
-                <div class="job-grid">
-
-                    <div class="job-card">
-                        <div class="job-header">
-                            <div>
-                                <div class="job-title">os419_inmemory</div>
-                                <div class="job-config">Tests on OpenShift 4.19 with In-Memory</div>
+                            <div class="status-section">
+                                <a href="os419_inmemory_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
+                                <span class="status-badge status-failed">FAILED</span>
                             </div>
-                            <span class="status-badge status-info">Configuration</span>
                         </div>
                         <div class="job-content">
-                            <p>Configuration setup and validation</p>
-                        </div>
-                    </div>
 
-                    <div class="job-card">
-                        <div class="job-header">
-                            <div>
-                                <div class="job-title">os419_pg17</div>
-                                <div class="job-config">Tests on OpenShift 4.19 with PostgreSQL 17</div>
+                            <div class="test-results">
+                                <div class="test-stat">
+                                    <div class="test-stat-number total">0</div>
+                                    <div class="test-stat-label">Total</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number passed">0</div>
+                                    <div class="test-stat-label">Passed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number failed">0</div>
+                                    <div class="test-stat-label">Failed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number flaky">0</div>
+                                    <div class="test-stat-label">Flaky</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number skipped">0</div>
+                                    <div class="test-stat-label">Skipped</div>
+                                </div>
                             </div>
-                            <span class="status-badge status-info">Configuration</span>
+
                         </div>
-                        <div class="job-content">
-                            <p>Configuration setup and validation</p>
+
+                        <div id="os419_inmemory_uitests_ui" class="details">
+                            <h4>Test Details:</h4>
+<p class="no-details">No detailed test information available</p>
                         </div>
                     </div>
 
@@ -451,7 +490,7 @@
         </div>
         
         <div class="footer">
-            <p>Generated on 2025-08-06 14:07:02 | 
+            <p>Generated on 2025-08-06 16:12:40 | 
             Workflow Run ID: 16756786569 | 
             Total Jobs: 4</p>
         </div>

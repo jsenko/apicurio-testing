@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apicurio Registry Test Results - 2025-07-31-16658524629</title>
+    <title>Apicurio Registry Test Results - 2025-08-06-16784598619</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -271,16 +271,16 @@
     <div class="container">
         <div class="header">
             <h1>Apicurio Registry Test Results</h1>
-            <div class="subtitle">Workflow Run: 2025-07-31-16658524629 | Date: 2025-07-31</div>
+            <div class="subtitle">Workflow Run: 2025-08-06-16784598619 | Date: 2025-08-06</div>
         </div>
         
         <div class="summary-cards">
             <div class="card success">
-                <div class="card-number">5</div>
+                <div class="card-number">7</div>
                 <div class="card-label">Integration Test Jobs</div>
             </div>
             <div class="card info">
-                <div class="card-number">4</div>
+                <div class="card-number">5</div>
                 <div class="card-label">UI Test Jobs</div>
             </div>
             <div class="card warning">
@@ -288,7 +288,7 @@
                 <div class="card-label">Security Scan Jobs</div>
             </div>
             <div class="card success">
-                <div class="card-number">404/412</div>
+                <div class="card-number">528/551</div>
                 <div class="card-label">Integration Tests Passed</div>
             </div>
         </div>
@@ -300,10 +300,10 @@
                 <div class="job-grid">
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_authn_integrationtests_integration')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_authn_integrationtests_integration')">
                             <div>
-                                <div class="job-title">openshift-419_authn_integrationtests</div>
-                                <div class="job-config">Integration Tests on OpenShift  with Authentication Tests</div>
+                                <div class="job-title">os419_authn_integrationtests</div>
+                                <div class="job-config">Integration Tests on OpenShift 4.19 with Authentication Tests</div>
                             </div>
                             <span class="status-badge status-passed">passed</span>
                         </div>
@@ -327,14 +327,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="openshift-419_authn_integrationtests_integration" class="details">
+                        <div id="os419_authn_integrationtests_integration" class="details">
                             <h4>Test Suites:</h4>
                             <div class="suite-list">
 
                                 <div class="suite-item">
                                     <span class="suite-name">SimpleAuthIT</span>
                                     <span class="suite-stats passed">
-                                        8/8 passed (13.8s)
+                                        8/8 passed (18.1s)
                                     </span>
                                 </div>
 
@@ -343,12 +343,12 @@
                     </div>
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_inmemory_integrationtests_integration')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_inmemory_integrationtests_integration')">
                             <div>
-                                <div class="job-title">openshift-419_inmemory_integrationtests</div>
-                                <div class="job-config">Integration Tests on OpenShift  with In-Memory</div>
+                                <div class="job-title">os419_inmemory_integrationtests</div>
+                                <div class="job-config">Integration Tests on OpenShift 4.19 with In-Memory</div>
                             </div>
-                            <span class="status-badge status-passed">passed</span>
+                            <span class="status-badge status-failed">failed</span>
                         </div>
                         <div class="job-content">
                             <div class="test-results">
@@ -357,7 +357,7 @@
                                     <div class="test-stat-label">Total</div>
                                 </div>
                                 <div class="test-stat">
-                                    <div class="test-stat-number passed">99</div>
+                                    <div class="test-stat-number passed">95</div>
                                     <div class="test-stat-label">Passed</div>
                                 </div>
                                 <div class="test-stat">
@@ -370,105 +370,105 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="openshift-419_inmemory_integrationtests_integration" class="details">
+                        <div id="os419_inmemory_integrationtests_integration" class="details">
                             <h4>Test Suites:</h4>
                             <div class="suite-list">
 
                                 <div class="suite-item">
                                     <span class="suite-name">RegistryConverterIT</span>
-                                    <span class="suite-stats passed">
-                                        9/9 passed (9.7s)
+                                    <span class="suite-stats failed">
+                                        8/9 passed (9.4s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroSerdeIT</span>
-                                    <span class="suite-stats passed">
-                                        19/21 passed (48.1s)
+                                    <span class="suite-stats failed">
+                                        16/21 passed (85.5s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">JsonSchemaSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        6/6 passed (8.1s)
+                                        6/6 passed (20.1s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">ProtobufSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        17/17 passed (23.8s)
+                                        17/17 passed (56.7s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroNatsSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (2.2s)
+                                        1/1 passed (2.1s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroPulsarSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (26.6s)
+                                        1/1 passed (25.3s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">BasicConfluentSerDesIT</span>
                                     <span class="suite-stats passed">
-                                        8/8 passed (10.3s)
+                                        8/8 passed (36.9s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AllArtifactTypesIT</span>
                                     <span class="suite-stats passed">
-                                        7/7 passed (22.7s)
+                                        7/7 passed (22.5s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">ArtifactsIT</span>
                                     <span class="suite-stats passed">
-                                        13/13 passed (34.5s)
+                                        13/13 passed (34.7s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">MetadataIT</span>
                                     <span class="suite-stats passed">
-                                        2/2 passed (3.2s)
+                                        2/2 passed (3.1s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">RulesResourceIT</span>
                                     <span class="suite-stats passed">
-                                        5/5 passed (8.5s)
+                                        5/5 passed (8.4s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">MetadataConfluentIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (0.4s)
+                                        1/1 passed (0.1s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">RulesResourceConfluentIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (0.4s)
+                                        1/1 passed (0.3s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">SchemasConfluentIT</span>
                                     <span class="suite-stats passed">
-                                        9/9 passed (3.2s)
+                                        9/9 passed (2.7s)
                                     </span>
                                 </div>
 
@@ -477,10 +477,10 @@
                     </div>
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_kafkasql_integrationtests_integration')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_mysql_integrationtests_integration')">
                             <div>
-                                <div class="job-title">openshift-419_kafkasql_integrationtests</div>
-                                <div class="job-config">Integration Tests on OpenShift  with Kafkasql</div>
+                                <div class="job-title">os419_mysql_integrationtests</div>
+                                <div class="job-config">Integration Tests on OpenShift 4.19 with MySQL</div>
                             </div>
                             <span class="status-badge status-passed">passed</span>
                         </div>
@@ -504,218 +504,84 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="openshift-419_kafkasql_integrationtests_integration" class="details">
+                        <div id="os419_mysql_integrationtests_integration" class="details">
                             <h4>Test Suites:</h4>
                             <div class="suite-list">
 
                                 <div class="suite-item">
                                     <span class="suite-name">RegistryConverterIT</span>
                                     <span class="suite-stats passed">
-                                        9/9 passed (10.4s)
+                                        9/9 passed (11.9s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        19/21 passed (51.8s)
+                                        19/21 passed (118.2s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">JsonSchemaSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        6/6 passed (9.1s)
+                                        6/6 passed (23.2s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">ProtobufSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        17/17 passed (27.5s)
+                                        17/17 passed (69.6s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroNatsSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (2.6s)
+                                        1/1 passed (3.9s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroPulsarSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (27.0s)
+                                        1/1 passed (28.8s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">BasicConfluentSerDesIT</span>
                                     <span class="suite-stats passed">
-                                        8/8 passed (13.3s)
+                                        8/8 passed (46.7s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AllArtifactTypesIT</span>
                                     <span class="suite-stats passed">
-                                        7/7 passed (25.7s)
+                                        7/7 passed (32.7s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">ArtifactsIT</span>
                                     <span class="suite-stats passed">
-                                        13/13 passed (38.2s)
+                                        13/13 passed (46.6s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">MetadataIT</span>
                                     <span class="suite-stats passed">
-                                        2/2 passed (3.6s)
+                                        2/2 passed (4.3s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">RulesResourceIT</span>
                                     <span class="suite-stats passed">
-                                        5/5 passed (10.2s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">MetadataConfluentIT</span>
-                                    <span class="suite-stats passed">
-                                        1/1 passed (0.6s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">RulesResourceConfluentIT</span>
-                                    <span class="suite-stats passed">
-                                        1/1 passed (0.9s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">SchemasConfluentIT</span>
-                                    <span class="suite-stats passed">
-                                        9/9 passed (11.4s)
-                                    </span>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_mysql_integrationtests_integration')">
-                            <div>
-                                <div class="job-title">openshift-419_mysql_integrationtests</div>
-                                <div class="job-config">Integration Tests on OpenShift  with MySQL</div>
-                            </div>
-                            <span class="status-badge status-passed">passed</span>
-                        </div>
-                        <div class="job-content">
-                            <div class="test-results">
-                                <div class="test-stat">
-                                    <div class="test-stat-number total">101</div>
-                                    <div class="test-stat-label">Total</div>
-                                </div>
-                                <div class="test-stat">
-                                    <div class="test-stat-number passed">99</div>
-                                    <div class="test-stat-label">Passed</div>
-                                </div>
-                                <div class="test-stat">
-                                    <div class="test-stat-number failed">0</div>
-                                    <div class="test-stat-label">Failed</div>
-                                </div>
-                                <div class="test-stat">
-                                    <div class="test-stat-number skipped">2</div>
-                                    <div class="test-stat-label">Skipped</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="openshift-419_mysql_integrationtests_integration" class="details">
-                            <h4>Test Suites:</h4>
-                            <div class="suite-list">
-
-                                <div class="suite-item">
-                                    <span class="suite-name">RegistryConverterIT</span>
-                                    <span class="suite-stats passed">
-                                        9/9 passed (11.6s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">AvroSerdeIT</span>
-                                    <span class="suite-stats passed">
-                                        19/21 passed (64.7s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">JsonSchemaSerdeIT</span>
-                                    <span class="suite-stats passed">
-                                        6/6 passed (11.2s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">ProtobufSerdeIT</span>
-                                    <span class="suite-stats passed">
-                                        17/17 passed (35.3s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">AvroNatsSerdeIT</span>
-                                    <span class="suite-stats passed">
-                                        1/1 passed (3.7s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">AvroPulsarSerdeIT</span>
-                                    <span class="suite-stats passed">
-                                        1/1 passed (29.3s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">BasicConfluentSerDesIT</span>
-                                    <span class="suite-stats passed">
-                                        8/8 passed (19.4s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">AllArtifactTypesIT</span>
-                                    <span class="suite-stats passed">
-                                        7/7 passed (32.4s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">ArtifactsIT</span>
-                                    <span class="suite-stats passed">
-                                        13/13 passed (46.0s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">MetadataIT</span>
-                                    <span class="suite-stats passed">
-                                        2/2 passed (4.2s)
-                                    </span>
-                                </div>
-
-                                <div class="suite-item">
-                                    <span class="suite-name">RulesResourceIT</span>
-                                    <span class="suite-stats passed">
-                                        5/5 passed (13.7s)
+                                        5/5 passed (13.5s)
                                     </span>
                                 </div>
 
@@ -736,7 +602,7 @@
                                 <div class="suite-item">
                                     <span class="suite-name">SchemasConfluentIT</span>
                                     <span class="suite-stats passed">
-                                        9/9 passed (28.8s)
+                                        9/9 passed (29.7s)
                                     </span>
                                 </div>
 
@@ -745,10 +611,363 @@
                     </div>
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_postgresql_integrationtests_integration')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_pg12_integrationtests_integration')">
                             <div>
-                                <div class="job-title">openshift-419_postgresql_integrationtests</div>
-                                <div class="job-config">Integration Tests on OpenShift  with Postgresql</div>
+                                <div class="job-title">os419_pg12_integrationtests</div>
+                                <div class="job-config">Integration Tests on OpenShift 4.19 with PostgreSQL 12</div>
+                            </div>
+                            <span class="status-badge status-passed">passed</span>
+                        </div>
+                        <div class="job-content">
+                            <div class="test-results">
+                                <div class="test-stat">
+                                    <div class="test-stat-number total">38</div>
+                                    <div class="test-stat-label">Total</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number passed">38</div>
+                                    <div class="test-stat-label">Passed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number failed">0</div>
+                                    <div class="test-stat-label">Failed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number skipped">0</div>
+                                    <div class="test-stat-label">Skipped</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="os419_pg12_integrationtests_integration" class="details">
+                            <h4>Test Suites:</h4>
+                            <div class="suite-list">
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AllArtifactTypesIT</span>
+                                    <span class="suite-stats passed">
+                                        7/7 passed (31.6s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">ArtifactsIT</span>
+                                    <span class="suite-stats passed">
+                                        13/13 passed (35.3s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">MetadataIT</span>
+                                    <span class="suite-stats passed">
+                                        2/2 passed (3.3s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">RulesResourceIT</span>
+                                    <span class="suite-stats passed">
+                                        5/5 passed (8.7s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">MetadataConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (0.6s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">RulesResourceConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (0.4s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">SchemasConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        9/9 passed (4.2s)
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="job-card">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_pg17_integrationtests_integration')">
+                            <div>
+                                <div class="job-title">os419_pg17_integrationtests</div>
+                                <div class="job-config">Integration Tests on OpenShift 4.19 with PostgreSQL 17</div>
+                            </div>
+                            <span class="status-badge status-failed">failed</span>
+                        </div>
+                        <div class="job-content">
+                            <div class="test-results">
+                                <div class="test-stat">
+                                    <div class="test-stat-number total">101</div>
+                                    <div class="test-stat-label">Total</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number passed">94</div>
+                                    <div class="test-stat-label">Passed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number failed">0</div>
+                                    <div class="test-stat-label">Failed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number skipped">2</div>
+                                    <div class="test-stat-label">Skipped</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="os419_pg17_integrationtests_integration" class="details">
+                            <h4>Test Suites:</h4>
+                            <div class="suite-list">
+
+                                <div class="suite-item">
+                                    <span class="suite-name">RegistryConverterIT</span>
+                                    <span class="suite-stats failed">
+                                        8/9 passed (11.4s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AvroSerdeIT</span>
+                                    <span class="suite-stats failed">
+                                        16/21 passed (99.9s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">JsonSchemaSerdeIT</span>
+                                    <span class="suite-stats passed">
+                                        6/6 passed (23.3s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">ProtobufSerdeIT</span>
+                                    <span class="suite-stats failed">
+                                        16/17 passed (63.4s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AvroNatsSerdeIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (3.7s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AvroPulsarSerdeIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (28.6s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">BasicConfluentSerDesIT</span>
+                                    <span class="suite-stats passed">
+                                        8/8 passed (46.3s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AllArtifactTypesIT</span>
+                                    <span class="suite-stats passed">
+                                        7/7 passed (31.3s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">ArtifactsIT</span>
+                                    <span class="suite-stats passed">
+                                        13/13 passed (45.1s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">MetadataIT</span>
+                                    <span class="suite-stats passed">
+                                        2/2 passed (4.2s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">RulesResourceIT</span>
+                                    <span class="suite-stats passed">
+                                        5/5 passed (13.0s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">MetadataConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (1.1s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">RulesResourceConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (2.0s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">SchemasConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        9/9 passed (27.1s)
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="job-card">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_strimzi043_integrationtests_integration')">
+                            <div>
+                                <div class="job-title">os419_strimzi043_integrationtests</div>
+                                <div class="job-config">Integration Tests on OpenShift 4.19 with Strimzi Kafka 0.04.3</div>
+                            </div>
+                            <span class="status-badge status-failed">failed</span>
+                        </div>
+                        <div class="job-content">
+                            <div class="test-results">
+                                <div class="test-stat">
+                                    <div class="test-stat-number total">101</div>
+                                    <div class="test-stat-label">Total</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number passed">95</div>
+                                    <div class="test-stat-label">Passed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number failed">0</div>
+                                    <div class="test-stat-label">Failed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number skipped">2</div>
+                                    <div class="test-stat-label">Skipped</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="os419_strimzi043_integrationtests_integration" class="details">
+                            <h4>Test Suites:</h4>
+                            <div class="suite-list">
+
+                                <div class="suite-item">
+                                    <span class="suite-name">RegistryConverterIT</span>
+                                    <span class="suite-stats failed">
+                                        8/9 passed (11.2s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AvroSerdeIT</span>
+                                    <span class="suite-stats failed">
+                                        16/21 passed (88.8s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">JsonSchemaSerdeIT</span>
+                                    <span class="suite-stats passed">
+                                        6/6 passed (20.4s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">ProtobufSerdeIT</span>
+                                    <span class="suite-stats passed">
+                                        17/17 passed (58.4s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AvroNatsSerdeIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (2.3s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AvroPulsarSerdeIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (28.3s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">BasicConfluentSerDesIT</span>
+                                    <span class="suite-stats passed">
+                                        8/8 passed (38.7s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">AllArtifactTypesIT</span>
+                                    <span class="suite-stats passed">
+                                        7/7 passed (24.0s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">ArtifactsIT</span>
+                                    <span class="suite-stats passed">
+                                        13/13 passed (36.2s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">MetadataIT</span>
+                                    <span class="suite-stats passed">
+                                        2/2 passed (3.3s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">RulesResourceIT</span>
+                                    <span class="suite-stats passed">
+                                        5/5 passed (9.2s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">MetadataConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (0.4s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">RulesResourceConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        1/1 passed (0.5s)
+                                    </span>
+                                </div>
+
+                                <div class="suite-item">
+                                    <span class="suite-name">SchemasConfluentIT</span>
+                                    <span class="suite-stats passed">
+                                        9/9 passed (6.1s)
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="job-card">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_strimzi047_integrationtests_integration')">
+                            <div>
+                                <div class="job-title">os419_strimzi047_integrationtests</div>
+                                <div class="job-config">Integration Tests on OpenShift 4.19 with Strimzi Kafka 0.04.7</div>
                             </div>
                             <span class="status-badge status-passed">passed</span>
                         </div>
@@ -772,105 +991,105 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="openshift-419_postgresql_integrationtests_integration" class="details">
+                        <div id="os419_strimzi047_integrationtests_integration" class="details">
                             <h4>Test Suites:</h4>
                             <div class="suite-list">
 
                                 <div class="suite-item">
                                     <span class="suite-name">RegistryConverterIT</span>
                                     <span class="suite-stats passed">
-                                        9/9 passed (11.4s)
+                                        9/9 passed (10.0s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        19/21 passed (61.1s)
+                                        19/21 passed (103.7s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">JsonSchemaSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        6/6 passed (10.9s)
+                                        6/6 passed (20.6s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">ProtobufSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        17/17 passed (35.0s)
+                                        17/17 passed (58.4s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroNatsSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (3.7s)
+                                        1/1 passed (2.4s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AvroPulsarSerdeIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (29.0s)
+                                        1/1 passed (26.3s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">BasicConfluentSerDesIT</span>
                                     <span class="suite-stats passed">
-                                        8/8 passed (19.1s)
+                                        8/8 passed (38.8s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">AllArtifactTypesIT</span>
                                     <span class="suite-stats passed">
-                                        7/7 passed (31.5s)
+                                        7/7 passed (24.3s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">ArtifactsIT</span>
                                     <span class="suite-stats passed">
-                                        13/13 passed (45.4s)
+                                        13/13 passed (36.5s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">MetadataIT</span>
                                     <span class="suite-stats passed">
-                                        2/2 passed (4.2s)
+                                        2/2 passed (3.6s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">RulesResourceIT</span>
                                     <span class="suite-stats passed">
-                                        5/5 passed (13.1s)
+                                        5/5 passed (9.3s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">MetadataConfluentIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (1.0s)
+                                        1/1 passed (0.3s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">RulesResourceConfluentIT</span>
                                     <span class="suite-stats passed">
-                                        1/1 passed (2.0s)
+                                        1/1 passed (0.6s)
                                     </span>
                                 </div>
 
                                 <div class="suite-item">
                                     <span class="suite-name">SchemasConfluentIT</span>
                                     <span class="suite-stats passed">
-                                        9/9 passed (27.2s)
+                                        9/9 passed (6.9s)
                                     </span>
                                 </div>
 
@@ -886,13 +1105,13 @@
                 <div class="job-grid">
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_inmemory_uitests_ui')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_inmemory_uitests_ui')">
                             <div>
-                                <div class="job-title">openshift-419_inmemory_uitests</div>
-                                <div class="job-config">UI Tests on OpenShift  with In-Memory</div>
+                                <div class="job-title">os419_inmemory_uitests</div>
+                                <div class="job-config">UI Tests on OpenShift 4.19 with In-Memory</div>
                             </div>
                             <div class="status-section">
-                                <a href="openshift-419_inmemory_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
+                                <a href="os419_inmemory_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
                                 <span class="status-badge status-failed">FAILED</span>
                             </div>
                         </div>
@@ -923,20 +1142,20 @@
 
                         </div>
 
-                        <div id="openshift-419_inmemory_uitests_ui" class="details">
+                        <div id="os419_inmemory_uitests_ui" class="details">
                             <h4>Test Details:</h4>
 <p class="no-details">No detailed test information available</p>
                         </div>
                     </div>
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_kafkasql_uitests_ui')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_mysql_uitests_ui')">
                             <div>
-                                <div class="job-title">openshift-419_kafkasql_uitests</div>
-                                <div class="job-config">UI Tests on OpenShift  with Kafkasql</div>
+                                <div class="job-title">os419_mysql_uitests</div>
+                                <div class="job-config">UI Tests on OpenShift 4.19 with MySQL</div>
                             </div>
                             <div class="status-section">
-                                <a href="openshift-419_kafkasql_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
+                                <a href="os419_mysql_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
                                 <span class="status-badge status-failed">FAILED</span>
                             </div>
                         </div>
@@ -967,20 +1186,20 @@
 
                         </div>
 
-                        <div id="openshift-419_kafkasql_uitests_ui" class="details">
+                        <div id="os419_mysql_uitests_ui" class="details">
                             <h4>Test Details:</h4>
 <p class="no-details">No detailed test information available</p>
                         </div>
                     </div>
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_mysql_uitests_ui')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_pg17_uitests_ui')">
                             <div>
-                                <div class="job-title">openshift-419_mysql_uitests</div>
-                                <div class="job-config">UI Tests on OpenShift  with MySQL</div>
+                                <div class="job-title">os419_pg17_uitests</div>
+                                <div class="job-config">UI Tests on OpenShift 4.19 with PostgreSQL 17</div>
                             </div>
                             <div class="status-section">
-                                <a href="openshift-419_mysql_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
+                                <a href="os419_pg17_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
                                 <span class="status-badge status-failed">FAILED</span>
                             </div>
                         </div>
@@ -1011,20 +1230,20 @@
 
                         </div>
 
-                        <div id="openshift-419_mysql_uitests_ui" class="details">
+                        <div id="os419_pg17_uitests_ui" class="details">
                             <h4>Test Details:</h4>
 <p class="no-details">No detailed test information available</p>
                         </div>
                     </div>
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_postgresql_uitests_ui')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_strimzi043_uitests_ui')">
                             <div>
-                                <div class="job-title">openshift-419_postgresql_uitests</div>
-                                <div class="job-config">UI Tests on OpenShift  with Postgresql</div>
+                                <div class="job-title">os419_strimzi043_uitests</div>
+                                <div class="job-config">UI Tests on OpenShift 4.19 with Strimzi Kafka 0.04.3</div>
                             </div>
                             <div class="status-section">
-                                <a href="openshift-419_postgresql_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
+                                <a href="os419_strimzi043_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
                                 <span class="status-badge status-failed">FAILED</span>
                             </div>
                         </div>
@@ -1055,7 +1274,51 @@
 
                         </div>
 
-                        <div id="openshift-419_postgresql_uitests_ui" class="details">
+                        <div id="os419_strimzi043_uitests_ui" class="details">
+                            <h4>Test Details:</h4>
+<p class="no-details">No detailed test information available</p>
+                        </div>
+                    </div>
+
+                    <div class="job-card">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_strimzi047_uitests_ui')">
+                            <div>
+                                <div class="job-title">os419_strimzi047_uitests</div>
+                                <div class="job-config">UI Tests on OpenShift 4.19 with Strimzi Kafka 0.04.7</div>
+                            </div>
+                            <div class="status-section">
+                                <a href="os419_strimzi047_uitests/test-results/index.html" target="_blank" class="report-icon" title="View Playwright Report">📊</a>
+                                <span class="status-badge status-failed">FAILED</span>
+                            </div>
+                        </div>
+                        <div class="job-content">
+
+                            <div class="test-results">
+                                <div class="test-stat">
+                                    <div class="test-stat-number total">0</div>
+                                    <div class="test-stat-label">Total</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number passed">0</div>
+                                    <div class="test-stat-label">Passed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number failed">0</div>
+                                    <div class="test-stat-label">Failed</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number flaky">0</div>
+                                    <div class="test-stat-label">Flaky</div>
+                                </div>
+                                <div class="test-stat">
+                                    <div class="test-stat-number skipped">0</div>
+                                    <div class="test-stat-label">Skipped</div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div id="os419_strimzi047_uitests_ui" class="details">
                             <h4>Test Details:</h4>
 <p class="no-details">No detailed test information available</p>
                         </div>
@@ -1069,25 +1332,43 @@
                 <div class="job-grid">
 
                     <div class="job-card">
-                        <div class="job-header expandable" onclick="toggleDetails('openshift-419_inmemory_dastscan_dast')">
+                        <div class="job-header expandable" onclick="toggleDetails('os419_authn_dastscan_dast')">
                             <div>
-                                <div class="job-title">openshift-419_inmemory_dastscan</div>
-                                <div class="job-config">DAST Security Scan on OpenShift  with In-Memory</div>
+                                <div class="job-title">os419_authn_dastscan</div>
+                                <div class="job-config">DAST Security Scan on OpenShift 4.19 with Authentication Tests</div>
                             </div>
                             <span class="status-badge status-success">Clean</span>
                         </div>
                         <div class="job-content">
                             <p><strong>Total Issues Found:</strong> 0</p>
-                            <p><strong>Scans Completed:</strong> 1</p>
+                            <p><strong>Scans Completed:</strong> 3</p>
                         </div>
-                        <div id="openshift-419_inmemory_dastscan_dast" class="details">
+                        <div id="os419_authn_dastscan_dast" class="details">
                             <h4>Scan Details:</h4>
 
                             <div class="suite-item">
-                                <span class="suite-name">ApicurioRegistry</span>
+                                <span class="suite-name">ccompat-v7-authenticated</span>
                                 
                                 <div class="status-section">
-                                    <a href="openshift-419_inmemory_dastscan/dast-results/ApicurioRegistry/DAST-20250731-204334-RapiDAST-ApicurioRegistry/zap/zap-report.html" target="_blank" class="report-icon" title="View ZAP Security Report">🛡️</a>
+                                    <a href="os419_authn_dastscan/dast-results/ccompat-v7-authenticated/ApicurioRegistry/DAST-20250806-191200-RapiDAST-ApicurioRegistry/zap/zap-report.html" target="_blank" class="report-icon" title="View ZAP Security Report">🛡️</a>
+                                    <span class="suite-stats">0 issues</span>
+                                </div>
+                            </div>
+
+                            <div class="suite-item">
+                                <span class="suite-name">registry-v2-authenticated</span>
+                                
+                                <div class="status-section">
+                                    <a href="os419_authn_dastscan/dast-results/registry-v2-authenticated/ApicurioRegistry/DAST-20250806-190825-RapiDAST-ApicurioRegistry/zap/zap-report.html" target="_blank" class="report-icon" title="View ZAP Security Report">🛡️</a>
+                                    <span class="suite-stats">0 issues</span>
+                                </div>
+                            </div>
+
+                            <div class="suite-item">
+                                <span class="suite-name">registry-v3-authenticated</span>
+                                
+                                <div class="status-section">
+                                    <a href="os419_authn_dastscan/dast-results/registry-v3-authenticated/ApicurioRegistry/DAST-20250806-190252-RapiDAST-ApicurioRegistry/zap/zap-report.html" target="_blank" class="report-icon" title="View ZAP Security Report">🛡️</a>
                                     <span class="suite-stats">0 issues</span>
                                 </div>
                             </div>
@@ -1101,9 +1382,9 @@
         </div>
         
         <div class="footer">
-            <p>Generated on 2025-08-06 16:11:22 | 
-            Workflow Run ID: 16658524629 | 
-            Total Jobs: 11</p>
+            <p>Generated on 2025-08-06 16:11:46 | 
+            Workflow Run ID: 16784598619 | 
+            Total Jobs: 14</p>
         </div>
     </div>
     
