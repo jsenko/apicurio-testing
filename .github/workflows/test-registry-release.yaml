@@ -1675,10 +1675,11 @@ jobs:
 
       - name: Generate Summary
         run: |
+          cd workflow-results
           RUN_DATE=$(date +%Y-%m-%d)
           WORKFLOW_RESULTS_DIR="${RUN_DATE}-${{ github.run_id }}"
-          python workflow-results/generate-workflow-summary.py $WORKFLOW_RESULTS_DIR
-          python workflow-results/update-index.py
+          python generate-workflow-summary.py $WORKFLOW_RESULTS_DIR
+          python update-index.py
 
       - name: Commit Workflow Summary
         run: |
