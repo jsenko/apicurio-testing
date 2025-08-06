@@ -156,6 +156,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     needs: os419_inmemory
+    if: always()
 
     env:
       CLUSTER_NAME: ci419
@@ -209,6 +210,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     needs: os419_pg17
+    if: always()
 
     env:
       CLUSTER_NAME: ci419
@@ -262,6 +264,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     needs: os419_pg12
+    if: always()
 
     env:
       CLUSTER_NAME: ci419
@@ -314,6 +317,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 40
     needs: os419_mysql
+    if: always()
 
     env:
       CLUSTER_NAME: ci419
@@ -375,6 +379,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 40
     needs: os419_strimzi047
+    if: always()
 
     env:
       CLUSTER_NAME: ci419
@@ -436,7 +441,8 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 40
     needs: os419_strimzi043
-
+    if: always()
+    
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: authn
