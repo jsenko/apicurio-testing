@@ -1,0 +1,352 @@
+[
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/api-specifications/registry/v2/openapi.json",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/artifactTypes",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/config/properties",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/config/properties/(.+?)",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/config/properties/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/config/properties/(.+?)",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/export",
+        "method": "GET",
+        "status": 500
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/import",
+        "method": "POST",
+        "status": 415
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/roleMappings",
+        "method": "GET",
+        "status": 403
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/roleMappings/(.+?)",
+        "method": "DELETE",
+        "status": 403
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/roleMappings/(.+?)",
+        "method": "GET",
+        "status": 403
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/roleMappings/(.+?)",
+        "method": "PUT",
+        "status": 403
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/roleMappings",
+        "method": "POST",
+        "status": 403
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/rules",
+        "method": "DELETE",
+        "status": 204
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/rules",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/rules/(.+?)",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/rules/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/rules/(.+?)",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/admin/rules",
+        "method": "POST",
+        "status": 409
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)",
+        "method": "PUT",
+        "status": 400
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/meta",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/meta",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/meta",
+        "method": "POST",
+        "status": 400
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/owner",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/owner",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/rules",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/rules",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/rules/(.+?)",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/rules/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/rules/(.+?)",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/rules",
+        "method": "POST",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/state",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/test",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/comments",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/comments/(.+?)",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/comments/(.+?)",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/comments",
+        "method": "POST",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/meta",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/meta",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/meta",
+        "method": "PUT",
+        "status": 400
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/references",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)/state",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions",
+        "method": "POST",
+        "status": 400
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)/versions",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts",
+        "method": "POST",
+        "status": 400
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups/(.+?)/artifacts",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups",
+        "method": "POST",
+        "status": 409
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/groups",
+        "method": "GET",
+        "status": 500
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/ids/contentHashes/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/ids/contentHashes/(.+?)/references",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/ids/contentIds/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/ids/contentIds/(.+?)/references",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/ids/globalIds/(.+?)/references",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/ids/globalIds/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/search/artifacts",
+        "method": "POST",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/search/artifacts",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/system/info",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/system/limits",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/apis/registry/v2/users/me",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/resources/css/apidocs.css",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/resources/css/fonts.css",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "http://registry-app-inmemory.apps.ci419.apicurio-testing.org/resources/js/redoc.standalone.js",
+        "method": "GET",
+        "status": 200
+    }
+]
