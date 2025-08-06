@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: io.apicurio.tests.serdes.apicurio.AvroSerdeIT
--------------------------------------------------------------------------------
-Tests run: 21, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 49.84 s -- in io.apicurio.tests.serdes.apicurio.AvroSerdeIT
