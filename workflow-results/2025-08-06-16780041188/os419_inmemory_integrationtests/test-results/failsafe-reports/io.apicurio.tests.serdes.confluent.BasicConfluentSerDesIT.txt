@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: io.apicurio.tests.serdes.confluent.BasicConfluentSerDesIT
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 41.62 s -- in io.apicurio.tests.serdes.confluent.BasicConfluentSerDesIT
