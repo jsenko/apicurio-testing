@@ -1,0 +1,212 @@
+[
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/api-specifications/ccompat/v7/openapi.json",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/compatibility/subjects/(.+?)/versions/(.+?)",
+        "method": "POST",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/compatibility/subjects/(.+?)/versions",
+        "method": "POST",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/config",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/config",
+        "method": "PUT",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/config/(.+?)",
+        "method": "DELETE",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/config/(.+?)",
+        "method": "PUT",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/config/(.+?)",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/contexts",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)",
+        "method": "DELETE",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)/config",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)/config",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)/pause",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)/reset",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)/resume",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters/(.+?)/status",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/exporters",
+        "method": "POST",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/mode",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/mode/(.+?)",
+        "method": "GET",
+        "status": 204
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/mode/(.+?)",
+        "method": "PUT",
+        "status": 204
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/mode",
+        "method": "PUT",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/schemas/ids/(.+?)/schema",
+        "method": "GET",
+        "status": 404
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/schemas/ids/(.+?)/versions",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/schemas/ids/(.+?)",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/schemas/types",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)/metadata",
+        "method": "GET",
+        "status": 204
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)/versions/(.+?)/referencedby",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)/versions/(.+?)/schema",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)/versions/(.+?)",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)/versions/(.+?)",
+        "method": "DELETE",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)/versions",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)/versions",
+        "method": "POST",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)",
+        "method": "POST",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects/(.+?)",
+        "method": "DELETE",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/apis/ccompat/v7/subjects",
+        "method": "GET",
+        "status": 401
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/resources/css/apidocs.css",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/resources/css/fonts.css",
+        "method": "GET",
+        "status": 200
+    },
+    {
+        "name": "https://registry-app-authn.apps.ci419.apicurio-testing.org/resources/js/redoc.standalone.js",
+        "method": "GET",
+        "status": 200
+    }
+]
