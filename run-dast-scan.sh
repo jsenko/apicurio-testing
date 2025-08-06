@@ -2,6 +2,10 @@
 
 # Function to display usage information
 show_usage() {
+    # Get the directory where this script is located for dynamic config file listing
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local rapidast_templates_dir="$script_dir/templates/rapidast"
+    
     echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [--config <config_file>] [--tag <rapidast_tag>] [--authEnabled <true|false>]"
     echo ""
     echo "This script runs RapiDAST (Rapid DAST) security scanning against a deployed application."
@@ -11,11 +15,25 @@ show_usage() {
     echo "  --cluster           Required. The OpenShift cluster name"
     echo "  --namespace         Required. The namespace where the target application is deployed"
     echo "  --config            Optional. Path to the rapidast YAML configuration file (default: registry_v3_unauthenticated.yaml)"
+    
+    # Dynamically list available configuration files
+    if [ -d "$rapidast_templates_dir" ]; then
+        echo "                      Valid values:"
+        for config_file in "$rapidast_templates_dir"/*.yaml; do
+            if [ -f "$config_file" ]; then
+                local filename=$(basename "$config_file")
+                echo "                        - $filename"
+            fi
+        done
+    else
+        echo "                      (Configuration files directory not found: $rapidast_templates_dir)"
+    fi
+    
     echo "  --tag               Optional. Git branch/tag of rapidast to use (default: development)"
     echo "  --authEnabled       Optional. Enable OAuth2 authentication (true|false). When enabled, automatically derives auth settings."
     echo ""
     echo "Example: $0 --cluster okd419 --namespace testns1"
-    echo "Example: $0 --cluster okd419 --namespace testns1 --config registry_v3_basicauth.yaml --tag 2.12.1"
+    echo "Example: $0 --cluster okd419 --namespace testns1 --config registry_v3_authenticated.yaml --tag 2.12.1"
     echo "Example: $0 --cluster okd419 --namespace testns1 --authEnabled true"
 }
 

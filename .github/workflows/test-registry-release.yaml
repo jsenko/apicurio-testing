@@ -482,7 +482,7 @@ jobs:
 
       - name: Install Keycloak
         run: |
-          ./install-keycloak.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --keycloakVersion $KEYCLOAK_VERSION
+          ./install-keycloak.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |

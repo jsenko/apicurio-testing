@@ -246,27 +246,34 @@ else
     kubectl create namespace "$NAMESPACE"
 fi
 
-# Set the Kafka template directory
-KAFKA_TEMPLATE_DIR="$BASE_DIR/templates/strimzi"
-if [ ! -d "$KAFKA_TEMPLATE_DIR" ]; then
-    echo "Error: Kafka templates not found at '$KAFKA_TEMPLATE_DIR'"
+# Search for the kafka-single-node.yaml file in the Strimzi installation
+echo "Searching for kafka-single-node.yaml in Strimzi installation..."
+STRIMZI_APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps/strimzi"
+
+if [ ! -d "$STRIMZI_APPS_DIR" ]; then
+    echo "Error: Strimzi installation directory not found at '$STRIMZI_APPS_DIR'"
+    echo "Make sure install-strimzi.sh has been run first"
     exit 1
 fi
 
-# Install all YAML files from the Kafka template directory
-echo "Installing all Kafka YAML files from template directory..."
-for template_file in "$KAFKA_TEMPLATE_DIR"/*.yaml; do
-    if [ -f "$template_file" ]; then
-        # Get the filename without the path
-        filename=$(basename "$template_file")
-        echo "Processing template: $filename"
-        
-        # Create the processed file in the app directory
-        processed_file="$APP_DIR/$filename"
-        envsubst < "$template_file" > "$processed_file"
-        kubectl apply -f "$processed_file" -n $NAMESPACE
-    fi
-done
+# Find the kafka-single-node.yaml file
+KAFKA_SINGLE_NODE_FILE=$(find "$STRIMZI_APPS_DIR" -name "kafka-single-node.yaml" -type f | head -1)
+
+if [ -z "$KAFKA_SINGLE_NODE_FILE" ]; then
+    echo "Error: kafka-single-node.yaml file not found in Strimzi installation"
+    echo "Searched in: $STRIMZI_APPS_DIR"
+    echo "Make sure install-strimzi.sh has been run first and the Strimzi version includes this file"
+    exit 1
+fi
+
+echo "Found kafka-single-node.yaml at: $KAFKA_SINGLE_NODE_FILE"
+
+# Process and apply the kafka-single-node.yaml file
+echo "Installing Kafka using kafka-single-node.yaml..."
+filename=$(basename "$KAFKA_SINGLE_NODE_FILE")
+processed_file="$APP_DIR/$filename"
+envsubst < "$KAFKA_SINGLE_NODE_FILE" > "$processed_file"
+kubectl apply -f "$processed_file" -n $NAMESPACE
 
 # Wait for the Kafka cluster to be ready
 if ! wait_for_kafka_ready $NAMESPACE; then
