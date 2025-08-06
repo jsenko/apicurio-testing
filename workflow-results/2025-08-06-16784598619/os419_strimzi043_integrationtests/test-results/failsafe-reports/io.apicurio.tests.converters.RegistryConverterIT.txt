@@ -1,0 +1,36 @@
+-------------------------------------------------------------------------------
+Test set: io.apicurio.tests.converters.RegistryConverterIT
+-------------------------------------------------------------------------------
+Tests run: 9, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 11.15 s <<< FAILURE! -- in io.apicurio.tests.converters.RegistryConverterIT
+io.apicurio.tests.converters.RegistryConverterIT.testDebeziumEventSerialization -- Time elapsed: 0.312 s <<< ERROR!
+java.lang.RuntimeException: io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.resolver.cache.ERCache.retry(ERCache.java:242)
+	at io.apicurio.registry.resolver.cache.ERCache.getValue(ERCache.java:173)
+	at io.apicurio.registry.resolver.cache.ERCache.getByContent(ERCache.java:147)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.handleAutoCreateArtifact(DefaultSchemaResolver.java:295)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.handleArtifactReferences(DefaultSchemaResolver.java:153)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.getSchemaFromRegistry(DefaultSchemaResolver.java:118)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.lambda$resolveSchema$0(DefaultSchemaResolver.java:84)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.resolveSchema(DefaultSchemaResolver.java:84)
+	at io.apicurio.registry.serde.AbstractSerializer.serializeData(AbstractSerializer.java:62)
+	at io.apicurio.registry.serde.KafkaSerializer.serialize(KafkaSerializer.java:57)
+	at io.apicurio.registry.utils.converter.SerdeBasedConverter.fromConnectData(SerdeBasedConverter.java:98)
+	at io.apicurio.tests.converters.RegistryConverterIT.testDebeziumEventSerialization(RegistryConverterIT.java:464)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: io.apicurio.registry.rest.client.models.RuleViolationProblemDetails
+	at io.apicurio.registry.rest.client.models.RuleViolationProblemDetails.createFromDiscriminatorValue(RuleViolationProblemDetails.java:62)
+	at io.kiota.serialization.json.JsonParseNode.getObjectValue(JsonParseNode.java:247)
+	at io.kiota.http.vertx.VertXRequestAdapter.lambda$throwIfFailedResponse$0(VertXRequestAdapter.java:400)
+	at com.microsoft.kiota.ApiExceptionBuilder.<init>(ApiExceptionBuilder.java:26)
+	at io.kiota.http.vertx.VertXRequestAdapter.throwIfFailedResponse(VertXRequestAdapter.java:399)
+	at io.kiota.http.vertx.VertXRequestAdapter.send(VertXRequestAdapter.java:170)
+	at io.apicurio.registry.rest.client.groups.item.artifacts.ArtifactsRequestBuilder.post(ArtifactsRequestBuilder.java:130)
+	at io.apicurio.registry.resolver.client.RegistryClientFacadeImpl.createSchema(RegistryClientFacadeImpl.java:144)
+	at io.apicurio.registry.resolver.DefaultSchemaResolver.lambda$handleAutoCreateArtifact$4(DefaultSchemaResolver.java:307)
+	at io.apicurio.registry.resolver.cache.ERCache.lambda$getValue$0(ERCache.java:174)
+	at io.apicurio.registry.resolver.cache.ERCache.retry(ERCache.java:227)
+	... 15 more
+
