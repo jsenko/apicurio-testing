@@ -19,6 +19,18 @@ runs:
     - name: Download and commit pod logs
       shell: bash
       run: |
+        # Clone the results repository if it doesn't already exist
+        if [ ! -d "workflow-results" ]; then
+          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
+          cd workflow-results
+          # Configure git for the results repository
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          cd ..
+        else
+          echo "workflow-results directory already exists, skipping clone"
+        fi
+        
         # Download pod logs
         ./download-pod-logs.sh --cluster ${{ inputs.cluster-name }} --namespace ${{ inputs.namespace }}
 
@@ -34,12 +46,14 @@ runs:
         mkdir -p "$RESULTS_DIR"
         cp -r $LOGS_DIR/* "$RESULTS_DIR/" 2>/dev/null || true
         
-        # Configure git and commit logs
+        # Commit and push pod logs to the results repository
+        cd workflow-results
         git pull origin main
-        git add workflow-results
+        git add .
         if git diff --cached --quiet; then
           echo "No pod logs to commit."
         else
           git commit -m "Add pod logs for job ${{ inputs.job-name }} from workflow run ${{ inputs.run-id }}"
           git push origin main
         fi
+        cd ..

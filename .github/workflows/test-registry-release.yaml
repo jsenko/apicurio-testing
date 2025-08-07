@@ -149,6 +149,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_pg17:
@@ -203,6 +204,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_pg12:
@@ -257,6 +259,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_mysql:
@@ -310,6 +313,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_strimzi047:
@@ -372,6 +376,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_strimzi043:
@@ -434,6 +439,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_authn:
@@ -496,6 +502,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_inmemory_uitests:
@@ -540,6 +547,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -549,6 +557,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_inmemory_integrationtests:
@@ -599,6 +608,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -608,6 +618,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_inmemory_dastscan:
@@ -658,6 +669,7 @@ jobs:
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
           subdirectory-name: registry-v3-unauthenticated
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Run DAST Scanner (v2)
         run: |
@@ -671,6 +683,7 @@ jobs:
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
           subdirectory-name: registry-v2-unauthenticated
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Run DAST Scanner (ccompat v7)
         run: |
@@ -684,6 +697,7 @@ jobs:
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
           subdirectory-name: ccompat-v7-unauthenticated
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_pg17_uitests:
@@ -728,6 +742,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -737,6 +752,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_pg17_integrationtests:
@@ -788,6 +804,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -797,6 +814,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_pg12_integrationtests:
@@ -848,6 +866,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -857,6 +876,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_mysql_uitests:
@@ -901,6 +921,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -910,6 +931,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_mysql_integrationtests:
@@ -960,6 +982,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -969,6 +992,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_strimzi047_uitests:
@@ -1013,6 +1037,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -1022,6 +1047,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_strimzi047_integrationtests:
@@ -1072,6 +1098,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -1081,6 +1108,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_strimzi043_uitests:
@@ -1125,6 +1153,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -1134,6 +1163,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_strimzi043_integrationtests:
@@ -1184,6 +1214,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -1193,6 +1224,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_authn_integrationtests:
@@ -1243,6 +1275,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit pod logs to repository
         if: failure()
@@ -1252,6 +1285,7 @@ jobs:
           namespace: ${{ env.NAMESPACE }}
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_authn_dastscan:
@@ -1302,6 +1336,7 @@ jobs:
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
           subdirectory-name: registry-v3-authenticated
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Run DAST Scanner (v2)
         run: |
@@ -1315,6 +1350,7 @@ jobs:
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
           subdirectory-name: registry-v2-authenticated
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Run DAST Scanner (ccompat v7)
         run: |
@@ -1328,7 +1364,7 @@ jobs:
           job-name: ${{ github.job }}
           run-id: ${{ github.run_id }}
           subdirectory-name: ccompat-v7-authenticated
-
+          github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
   os419_inmemory_teardown:

@@ -19,13 +19,17 @@ runs:
     - name: Collect and commit UI test results
       shell: bash
       run: |
-        # Clone the results repository
-        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
-        cd workflow-results
-        # Configure git for the results repository
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        cd ..
+        # Clone the results repository if it doesn't already exist
+        if [ ! -d "workflow-results" ]; then
+          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
+          cd workflow-results
+          # Configure git for the results repository
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          cd ..
+        else
+          echo "workflow-results directory already exists, skipping clone"
+        fi
         
         # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
