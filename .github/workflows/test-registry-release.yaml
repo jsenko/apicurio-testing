@@ -1667,6 +1667,12 @@ jobs:
         run: |
           unzip clusters.zip
 
+      - name: Commit workflow metadata to repository
+        uses: ./.github/actions/commit-workflow-metadata
+        with:
+          run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
       - name: Destroy OpenShift cluster
         run: |
           ./destroy-cluster.sh --cluster $CLUSTER_NAME

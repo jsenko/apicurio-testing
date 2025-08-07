@@ -1,0 +1,110 @@
+name: 'Commit Workflow Metadata'
+description: 'Collects workflow metadata and commits it to the results repository'
+inputs:
+  run-id:
+    description: 'GitHub workflow run ID'
+    required: true
+  github-token:
+    description: 'GitHub access token for API calls and pushing to the results repository'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Collect and commit workflow metadata
+      shell: bash
+      run: |
+        # Clone the results repository if it doesn't already exist
+        if [ ! -d "workflow-results" ]; then
+          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
+          cd workflow-results
+          # Configure git for the results repository
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          cd ..
+        else
+          echo "workflow-results directory already exists, skipping clone"
+        fi
+        
+        # Create directory structure in the results repository
+        RUN_DATE=$(date +%Y-%m-%d)
+        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ inputs.run-id }}"
+        mkdir -p "$RESULTS_DIR"
+        
+        WORKFLOW_END_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        
+        # Collect job information using GitHub API
+        echo "Fetching job information from GitHub API..."
+        JOBS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ inputs.github-token }}" \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ inputs.run-id }}/jobs")
+        
+        if [ $? -ne 0 ]; then
+          echo "Warning: Failed to fetch job information from GitHub API"
+          JOBS_RESPONSE='{"jobs":[]}'
+        fi
+        
+        # Create the workflow metadata JSON file
+        cat > "$RESULTS_DIR/workflow-metadata.json" << EOF
+{
+  "workflow": {
+    "name": "${{ github.workflow }}",
+    "run_id": "${{ inputs.run-id }}",
+    "run_number": "${{ github.run_number }}",
+    "run_attempt": "${{ github.run_attempt }}",
+    "workflow_ref": "${{ github.workflow_ref }}",
+    "sha": "${{ github.sha }}",
+    "ref": "${{ github.ref }}",
+    "repository": "${{ github.repository }}",
+    "actor": "${{ github.actor }}",
+    "triggering_actor": "${{ github.triggering_actor }}",
+    "event_name": "${{ github.event_name }}"
+  },
+  "inputs": {
+    "release_version": "${{ github.event.inputs.release-version }}",
+    "tests_tag": "${{ github.event.inputs.tests-tag }}"
+  },
+  "environment": {
+    "openshift_version": "4.19",
+    "cluster_name": "ci419",
+    "control_plane_nodes": 3,
+    "compute_nodes": 6,
+    "aws_region": "us-east-1",
+    "keycloak_version": "26.3.1",
+    "rapidast_tag": "development"
+  },
+  "execution": {
+    "started_at": "${{ github.run_started_at }}",
+    "completed_at": "$WORKFLOW_END_TIME",
+    "timezone": "UTC"
+  },
+  "status": {
+    "overall_result": "unknown"
+  },
+  "jobs": $(echo "$JOBS_RESPONSE" | jq -r '.jobs // [] | map({
+    name: .name,
+    id: .id,
+    status: .status,
+    conclusion: .conclusion,
+    started_at: .started_at,
+    completed_at: .completed_at,
+    runner_name: .runner_name,
+    runner_group_name: .runner_group_name
+  })')
+}
+EOF
+        
+        echo "Generated workflow metadata:"
+        cat "$RESULTS_DIR/workflow-metadata.json" | jq '.'
+        
+        # Commit and push workflow metadata to the results repository
+        cd workflow-results
+        git pull origin main
+        git add .
+        if git diff --cached --quiet; then
+          echo "No workflow metadata to commit."
+        else
+          git commit -m "Add workflow metadata for workflow run ${{ inputs.run-id }}"
+          git push origin main
+        fi
+        cd ..
