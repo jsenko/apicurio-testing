@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: io.apicurio.tests.smokeTests.apicurio.AllArtifactTypesIT
--------------------------------------------------------------------------------
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 32.66 s -- in io.apicurio.tests.smokeTests.apicurio.AllArtifactTypesIT

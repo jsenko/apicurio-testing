@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: io.apicurio.tests.smokeTests.confluent.RulesResourceConfluentIT
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.594 s -- in io.apicurio.tests.smokeTests.confluent.RulesResourceConfluentIT

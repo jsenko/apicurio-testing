@@ -19,7 +19,15 @@ runs:
     - name: Collect and commit integration test results
       shell: bash
       run: |
-        # Create workflow-results directory structure
+        # Clone the results repository
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
+        cd workflow-results
+        # Configure git for the results repository
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        cd ..
+        
+        # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
         RESULTS_DIR="workflow-results/${RUN_DATE}-${{ inputs.run-id }}/${{ inputs.job-name }}"
         mkdir -p "$RESULTS_DIR/test-results"
@@ -50,12 +58,14 @@ runs:
           echo "Copied Failsafe test reports from $INTEGRATION_TESTS_DIR/target/failsafe-reports/"
         fi
 
-        # Configure git and commit test results
+        # Commit and push integration test results to the results repository
+        cd workflow-results
         git pull origin main
-        git add workflow-results
+        git add .
         if git diff --cached --quiet; then
           echo "No integration test results to commit."
         else
           git commit -m "Add integration test results for job ${{ inputs.job-name }} from workflow run ${{ inputs.run-id }}"
           git push origin main
         fi
+        cd ..
