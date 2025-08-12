@@ -1,6 +1,9 @@
 name: 'Commit Workflow Metadata'
 description: 'Collects workflow metadata and commits it to the results repository'
 inputs:
+  workflow-start-time:
+    description: 'Start time of the workflow'
+    required: true
   github-token:
     description: 'GitHub access token for API calls and pushing to the results repository'
     required: true
@@ -27,7 +30,7 @@ runs:
         RESULTS_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}"
         mkdir -p "$RESULTS_DIR"
         
-        WORKFLOW_START_TIME=${{ github.event.created_at }}
+        WORKFLOW_START_TIME=${{ inputs.workflow-start-time }}
         WORKFLOW_END_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
         
         # Calculate workflow duration in seconds

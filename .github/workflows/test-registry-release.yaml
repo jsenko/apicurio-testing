@@ -11,6 +11,15 @@ on:
         default: main
 
 jobs:
+  record-start-time:
+    runs-on: ubuntu-latest
+    outputs:
+      start-time: ${{ steps.get-start-time.outputs.start-time }}
+    steps:
+      - name: Get Workflow Start Time
+        id: get-start-time
+        run: echo "start-time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
   os419:
     name: OpenShift 4.19
     runs-on: ubuntu-22.04
@@ -29,7 +38,7 @@ jobs:
       COMPUTE_NODES: 6
 
     steps:
-      - name: Check Required toolsConfigure Git
+      - name: Check Required tools
         run: |
           curl --version
           jq --version
@@ -39,11 +48,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Install OpenShift cluster
         run: |
@@ -1392,11 +1396,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Restore cluster state
         if: always()
@@ -1407,7 +1406,6 @@ jobs:
       - name: Commit workflow metadata to repository
         uses: ./.github/actions/commit-workflow-metadata
         with:
-
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Destroy OpenShift cluster
@@ -1444,11 +1442,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Install OpenShift cluster
         run: |
@@ -1674,11 +1667,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Restore cluster state
         if: always()
@@ -1689,7 +1677,6 @@ jobs:
       - name: Commit workflow metadata to repository
         uses: ./.github/actions/commit-workflow-metadata
         with:
-
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Destroy OpenShift cluster
@@ -1721,5 +1708,5 @@ jobs:
       - name: Commit workflow metadata to repository
         uses: ./.github/actions/commit-workflow-metadata
         with:
-
+          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
           github-token: ${{ secrets.ACCESS_TOKEN }}
