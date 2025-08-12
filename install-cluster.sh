@@ -94,9 +94,15 @@ resolve_okd_version() {
     echo "$matching_releases" | sed 's/^/  /' >&2
     
     # Sort versions to get the latest one
-    # We'll use version sort which handles the semantic versioning correctly
+    # For OKD versions like "4.19.0-okd-scos.15", we need to sort by the numeric suffix
+    # Prioritize stable releases (without 'ec') over early candidate releases
     local latest_version
-    latest_version=$(echo "$matching_releases" | head -1)
+    # First try to get the latest stable release (without 'ec')
+    latest_version=$(echo "$matching_releases" | grep -v '\.ec\.' | sort -t. -k4 -n | tail -1)
+    # If no stable releases found, fall back to ec releases sorted by field 5
+    if [[ -z "$latest_version" ]]; then
+        latest_version=$(echo "$matching_releases" | grep '\.ec\.' | sort -t. -k5 -n | tail -1)
+    fi
     
     if [[ -z "$latest_version" ]]; then
         echo "Error: Failed to determine latest version" >&2
