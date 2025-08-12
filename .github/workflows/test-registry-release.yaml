@@ -29,7 +29,7 @@ jobs:
       COMPUTE_NODES: 6
 
     steps:
-      - name: Check Required tools
+      - name: Check Required toolsConfigure Git
         run: |
           curl --version
           jq --version
@@ -115,11 +115,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -170,11 +165,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -225,11 +215,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -279,11 +264,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -334,11 +314,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -397,11 +372,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -460,11 +430,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -521,11 +486,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -576,11 +536,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -637,11 +592,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -716,11 +666,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -772,11 +717,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -834,11 +774,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -895,11 +830,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -950,11 +880,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1011,11 +936,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1066,11 +986,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1127,11 +1042,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1182,11 +1092,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1243,11 +1148,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1304,11 +1204,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1386,11 +1281,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1423,11 +1313,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1459,11 +1344,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1496,11 +1376,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1533,11 +1408,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1570,11 +1440,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1607,11 +1472,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-      - name: Configure Git
-        run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Copy cluster state from repository
         run: |
@@ -1688,3 +1548,358 @@ jobs:
             git commit -m "Remove clusters.zip for workflow run ${{ github.run_id }} after cluster teardown"
             git push origin main
           fi
+
+
+  os414:
+    name: OpenShift 4.14
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    needs:
+      - os419_teardown
+
+    env:
+      OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1"
+      OPENSHIFT_VERSION: "4.14"
+      CLUSTER_NAME: ci414
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      CONTROL_PLANE_NODES: 3
+      COMPUTE_NODES: 3
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Install OpenShift cluster
+        run: |
+          ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION --controlPlaneNodes $CONTROL_PLANE_NODES --computeNodes $COMPUTE_NODES
+
+      - name: Install Apicurio Registry Operator
+        run: |
+          ./install-apicurio-operator.sh --cluster $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
+
+      - name: Commit TLS Certs (if necessary)
+        run: |
+          git pull origin main
+          git add certificates
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+          else
+            git commit -m '(re)generated TLS certificate for cluster $CLUSTER_NAME'
+            git push origin main
+          fi
+
+      - name: Package up the "clusters" directory
+        if: always()
+        run: |
+          rm -f clusters/$CLUSTER_NAME/openshift-install.tar.gz
+          rm -f clusters/$CLUSTER_NAME/openshift-install
+          mkdir -p clusters
+          zip -r clusters.zip clusters/
+          echo ""
+          echo "***** Content of 'clusters.zip' *****"
+          unzip -l clusters.zip
+          echo ""
+
+      - name: Copy clusters.zip to workflow-cache
+        if: always()
+        run: |
+          mkdir -p workflow-cache/runs/${{ github.run_id }}
+          cp clusters.zip workflow-cache/runs/${{ github.run_id }}/
+          echo ""
+          echo "**** Verifying copy ****"
+          echo "ls -al:: "
+          ls -al workflow-cache/runs | grep ${{ github.run_id }}
+          echo "find::  "
+          find workflow-cache/runs/${{ github.run_id }}
+          echo "git status"
+          git status
+
+      - name: Commit cluster state to repository
+        if: always()
+        run: |
+          git pull origin main
+          git add workflow-cache/runs
+          git commit -m "Add cluster state for workflow run ${{ github.run_id }}"
+          git push origin main
+
+
+  os414_inmemory:
+    name: Apicurio Registry (in-memory) [4.14]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    needs: os414
+
+    env:
+      CLUSTER_NAME: ci414
+      NAMESPACE: inmemory
+      PROFILE: inmemory
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+      - name: Commit pod logs to repository
+        if: always()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os414_inmemory_uitests:
+    name: UI Tests (in mem) [4.14]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    needs: os414_inmemory
+
+    env:
+      CLUSTER_NAME: ci414
+      NAMESPACE: inmemory
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Run UI Tests
+        run: |
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+
+      - name: Commit UI test results to repository
+        if: always()
+        uses: ./.github/actions/commit-ui-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os414_inmemory_integrationtests:
+    name: Integration Tests (in mem) [4.14]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    needs: os414_inmemory_uitests
+
+    env:
+      CLUSTER_NAME: ci414
+      NAMESPACE: inmemory
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os414_inmemory_teardown:
+    name: Destroy Registry (inmemory) [4.14]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    needs:
+      - os414_inmemory_uitests
+      - os414_inmemory_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci414
+      NAMESPACE: inmemory
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  os414_teardown:
+    name: Destroy OpenShift 4.14
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs:
+      - os414_inmemory_teardown
+    if: always()
+
+    env:
+      OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1"
+      CLUSTER_NAME: ci414
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
+
+      - name: Copy cluster state from repository
+        run: |
+          cp workflow-cache/runs/${{ github.run_id }}/clusters.zip .
+
+      - name: Unpack cluster state
+        run: |
+          unzip clusters.zip
+
+      - name: Commit workflow metadata to repository
+        uses: ./.github/actions/commit-workflow-metadata
+        with:
+          run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Destroy OpenShift cluster
+        run: |
+          ./destroy-cluster.sh --cluster $CLUSTER_NAME
+
+      - name: Remove clusters.zip from git
+        run: |
+          git pull origin main
+          rm -rf workflow-cache/runs/${{ github.run_id }}
+          git add workflow-cache/runs/${{ github.run_id }}
+          if git diff --cached --quiet; then
+            echo "clusters.zip file was already removed or does not exist."
+          else
+            git commit -m "Remove clusters.zip for workflow run ${{ github.run_id }} after cluster teardown"
+            git push origin main
+          fi
+
+
+  save_workflow_metadata:
+    name: Save Workflow Metadata
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    needs:
+      - os419_teardown
+      - os414_teardown
+    if: always()
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit workflow metadata to repository
+        uses: ./.github/actions/commit-workflow-metadata
+        with:
+          run-id: ${{ github.run_id }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
