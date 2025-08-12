@@ -1,5 +1,6 @@
 /clusters/
 /workflow-results/
+/workflow-cache/
 /clusters.zip
 /logs/
 /okd-installers/
