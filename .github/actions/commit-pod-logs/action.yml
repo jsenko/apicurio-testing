@@ -10,9 +10,6 @@ inputs:
   job-name:
     description: 'Name of the current job'
     required: true
-  run-id:
-    description: 'GitHub workflow run ID'
-    required: true
 runs:
   using: 'composite'
   steps:
@@ -42,7 +39,7 @@ runs:
 
         # Create workflow-results directory structure
         RUN_DATE=$(date +%Y-%m-%d)
-        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ inputs.run-id }}/${{ inputs.job-name }}/pod-logs"
+        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}/pod-logs"
         mkdir -p "$RESULTS_DIR"
         cp -r $LOGS_DIR/* "$RESULTS_DIR/" 2>/dev/null || true
         
@@ -53,7 +50,7 @@ runs:
         if git diff --cached --quiet; then
           echo "No pod logs to commit."
         else
-          git commit -m "Add pod logs for job ${{ inputs.job-name }} from workflow run ${{ inputs.run-id }}"
+          git commit -m "Add pod logs for job ${{ inputs.job-name }} from workflow run ${{ github.run_id }}"
           git push origin main
         fi
         cd ..

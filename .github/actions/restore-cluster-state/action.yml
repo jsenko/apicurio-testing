@@ -1,0 +1,59 @@
+name: 'Restore Cluster State'
+description: 'Restores the clusters directory from the apicurio-testing-cache repository'
+inputs:
+  github-token:
+    description: 'GitHub access token for API calls and accessing the cache repository'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Restore cluster state
+      shell: bash
+      run: |
+        # Clone the cache repository if it doesn't already exist
+        if [ ! -d "workflow-cache" ]; then
+          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git workflow-cache
+        else
+          echo "workflow-cache directory already exists, updating from remote"
+          cd workflow-cache
+          git pull origin main
+          cd ..
+        fi
+        
+        # Look for the cluster state in the cache repository
+        CACHE_DIR="workflow-cache/runs/${{ github.run_id }}
+        CLUSTERS_ZIP="$CACHE_DIR/clusters.zip"
+        
+        if [ -f "$CLUSTERS_ZIP" ]; then
+          echo "Found cluster state: $CLUSTERS_ZIP"
+          
+          # Remove existing clusters directory if it exists
+          if [ -d "clusters" ]; then
+            echo "Removing existing clusters directory"
+            rm -rf clusters
+          fi
+          
+          # Extract the clusters.zip file
+          echo "Extracting cluster state..."
+          unzip -q "$CLUSTERS_ZIP"
+          
+          if [ -d "clusters" ]; then
+            echo "Cluster state successfully restored"
+            echo "Contents of clusters directory:"
+            find clusters/
+          else
+            echo "Error: Failed to extract clusters directory"
+            exit 1
+          fi
+          
+        elif [ -f "$CACHE_DIR/no-clusters-found.txt" ]; then
+          echo "No cluster state was saved for run ID ${{ github.run_id }} (no-clusters-found.txt found)"
+          exit 1
+          
+        else
+          echo "Error: No cluster state found for run ID ${{ github.run_id }}"
+          echo "Expected to find: $CLUSTERS_ZIP"
+          echo "Available runs in cache:"
+          ls -la workflow-cache/runs/ 2>/dev/null || echo "No runs directory found"
+          exit 1
+        fi

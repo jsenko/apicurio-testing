@@ -10,9 +10,6 @@ inputs:
   job-name:
     description: 'Name of the current job'
     required: true
-  run-id:
-    description: 'GitHub workflow run ID'
-    required: true
   subdirectory-name:
     description: 'Name of the subdirectory within dast-results to save results'
     required: true
@@ -39,7 +36,7 @@ runs:
         
         # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
-        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ inputs.run-id }}/${{ inputs.job-name }}"
+        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
         mkdir -p "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}"
         
         BASE_DIR="."
@@ -87,7 +84,7 @@ runs:
         if git diff --cached --quiet; then
           echo "No DAST scan results to commit."
         else
-          git commit -m "Add DAST scan results for job ${{ inputs.job-name }} from workflow run ${{ inputs.run-id }}"
+          git commit -m "Add DAST scan results for job ${{ inputs.job-name }} from workflow run ${{ github.run_id }}"
           git push origin main
         fi
         cd ..

@@ -1,9 +1,6 @@
 name: 'Commit Workflow Metadata'
 description: 'Collects workflow metadata and commits it to the results repository'
 inputs:
-  run-id:
-    description: 'GitHub workflow run ID'
-    required: true
   github-token:
     description: 'GitHub access token for API calls and pushing to the results repository'
     required: true
@@ -27,7 +24,7 @@ runs:
         
         # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
-        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ inputs.run-id }}"
+        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}"
         mkdir -p "$RESULTS_DIR"
         
         WORKFLOW_START_TIME=${{ github.event.created_at }}
@@ -46,7 +43,7 @@ runs:
         JOBS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ inputs.github-token }}" \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ inputs.run-id }}/jobs")
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
         
         if [ $? -ne 0 ]; then
           echo "Warning: Failed to fetch job information from GitHub API"
@@ -58,7 +55,7 @@ runs:
         {
           "workflow": {
             "name": "${{ github.workflow }}",
-            "run_id": "${{ inputs.run-id }}",
+            "run_id": "${{ github.run_id }}",
             "run_number": "${{ github.run_number }}",
             "run_attempt": "${{ github.run_attempt }}",
             "workflow_ref": "${{ github.workflow_ref }}",
@@ -114,7 +111,7 @@ runs:
         if git diff --cached --quiet; then
           echo "No workflow metadata to commit."
         else
-          git commit -m "Add workflow metadata for workflow run ${{ inputs.run-id }}"
+          git commit -m "Add workflow metadata for workflow run ${{ github.run_id }}"
           git push origin main
         fi
         cd ..

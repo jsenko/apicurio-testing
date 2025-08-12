@@ -1,0 +1,59 @@
+name: 'Cleanup Cluster State'
+description: 'Deletes the previously saved cluster state from the apicurio-testing-cache repository'
+inputs:
+  github-token:
+    description: 'GitHub access token for API calls and pushing to the cache repository'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Delete cluster state from cache
+      shell: bash
+      run: |
+        # Clone the cache repository if it doesn't already exist
+        if [ ! -d "workflow-cache" ]; then
+          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git workflow-cache
+          cd workflow-cache
+          # Configure git for the cache repository
+          git config user.name "apicurio-ci"
+          git config user.email "apicurio.ci@gmail.com"
+          cd ..
+        else
+          echo "workflow-cache directory already exists, updating from remote"
+          cd workflow-cache
+          git pull origin main
+          cd ..
+        fi
+        
+        # Look for the cluster state directory to delete
+        CACHE_DIR="workflow-cache/runs/${{ github.run_id }}"
+        
+        if [ -d "$CACHE_DIR" ]; then
+          echo "Found cluster state directory: $CACHE_DIR"
+          echo "Contents before deletion:"
+          find "$CACHE_DIR/"
+          
+          # Remove the entire run directory
+          rm -rf "$CACHE_DIR"
+          echo "Cluster state directory deleted: $CACHE_DIR"
+          
+          # Commit and push the deletion to the cache repository
+          cd workflow-cache
+          git pull origin main
+          git add .
+          if git diff --cached --quiet; then
+            echo "No cluster state changes to commit (directory may have already been deleted)."
+          else
+            git commit -m "Cleanup cluster state for workflow run ${{ github.run_id }}"
+            git push origin main
+            echo "Cluster state cleanup committed and pushed"
+          fi
+          cd ..
+          
+        else
+          echo "No cluster state found to cleanup for run ID ${{ github.run_id }}"
+          echo "Expected directory: $CACHE_DIR"
+          echo "Available runs in cache:"
+          ls -la workflow-cache/runs/ 2>/dev/null || echo "No runs directory found"
+        fi
+        
