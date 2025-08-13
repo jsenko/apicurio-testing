@@ -10,22 +10,24 @@ runs:
     - name: Package and save cluster state
       shell: bash
       run: |
-        # Clone the cache repository if it doesn't already exist
-        if [ ! -d "workflow-cache" ]; then
-          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git workflow-cache
-          cd workflow-cache
-          # Configure git for the cache repository
-          git config user.name "apicurio-ci"
-          git config user.email "apicurio.ci@gmail.com"
-          cd ..
-        else
-          echo "workflow-cache directory already exists, skipping clone"
-        fi
-        
+        WORK_DIR=".work"
+        NAME="cache-for-save-cluster-state"
+        CACHE_DIR="$WORK_DIR/$NAME"
+
+        # Clone the cache repository
+        rm -rf $CACHE_DIR
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git $NAME
+        pushd .
+        cd $CACHE_DIR
+        # Configure git for the cache repository
+        git config user.name "apicurio-ci"
+        git config user.email "apicurio.ci@gmail.com"
+        popd
+
         # Create a timestamp-based directory name
         RUN_DATE=$(date +%Y-%m-%d)
-        CACHE_DIR="workflow-cache/runs/${{ github.run_id }}"
-        mkdir -p "$CACHE_DIR"
+        RUN_DIR="$CACHE_DIR/runs/${{ github.run_id }}"
+        mkdir -p "$RUN_DIR"
 
         # Check if clusters directory exists and has content
         if [ -d "clusters" ] && [ "$(ls -A clusters)" ]; then
@@ -36,22 +38,25 @@ runs:
           echo "Packaging clusters directory..."
           zip -r clusters.zip clusters/
           # Move zip file to cache directory
-          mv clusters.zip "$CACHE_DIR/"
+          mv clusters.zip "$RUN_DIR/"
           
-          echo "Cluster state packaged as: $CACHE_DIR/clusters.zip"
+          echo "Cluster state packaged as: $RUN_DIR/clusters.zip"
         else
           echo "Warning: clusters directory is empty or doesn't exist, creating placeholder"
-          touch "$CACHE_DIR/no-clusters-found.txt"
+          touch "$RUN_DIR/no-clusters-found.txt"
         fi
         
         # Commit and push cluster state to the cache repository
-        cd workflow-cache
-        git pull origin main
+        pushd .
+        cd $CACHE_DIR
         git add .
         if git diff --cached --quiet; then
           echo "No cluster state changes to commit."
         else
           git commit -m "Save cluster state for workflow run ${{ github.run_id }}"
+          git pull origin main
           git push origin main
         fi
-        cd ..
+        popd
+
+        rm -rf $CACHE_DIR

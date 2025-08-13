@@ -5,3 +5,4 @@
 /logs/
 /okd-installers/
 /configure-secrets.env
+/.work/

@@ -10,19 +10,17 @@ runs:
     - name: Restore cluster state
       shell: bash
       run: |
-        # Clone the cache repository if it doesn't already exist
-        if [ ! -d "workflow-cache" ]; then
-          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git workflow-cache
-        else
-          echo "workflow-cache directory already exists, updating from remote"
-          cd workflow-cache
-          git pull origin main
-          cd ..
-        fi
+        WORK_DIR=".work"
+        NAME="cache-for-restore-cluster-state"
+        CACHE_DIR="$WORK_DIR/$NAME"
+
+        # Clone the cache repository
+        rm -rf $CACHE_DIR
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git $NAME
         
         # Look for the cluster state in the cache repository
-        CACHE_DIR="workflow-cache/runs/${{ github.run_id }}"
-        CLUSTERS_ZIP="$CACHE_DIR/clusters.zip"
+        RUN_DIR="$CACHE_DIR/runs/${{ github.run_id }}"
+        CLUSTERS_ZIP="$RUN_DIR/clusters.zip"
         
         if [ -f "$CLUSTERS_ZIP" ]; then
           echo "Found cluster state: $CLUSTERS_ZIP"
@@ -46,7 +44,7 @@ runs:
             exit 1
           fi
           
-        elif [ -f "$CACHE_DIR/no-clusters-found.txt" ]; then
+        elif [ -f "$RUN_DIR/no-clusters-found.txt" ]; then
           echo "No cluster state was saved for run ID ${{ github.run_id }} (no-clusters-found.txt found)"
           exit 1
           
@@ -54,6 +52,8 @@ runs:
           echo "Error: No cluster state found for run ID ${{ github.run_id }}"
           echo "Expected to find: $CLUSTERS_ZIP"
           echo "Available runs in cache:"
-          ls -la workflow-cache/runs/ 2>/dev/null || echo "No runs directory found"
+          ls -la $CACHE_DIR/runs/ 2>/dev/null || echo "No runs directory found"
           exit 1
         fi
+
+        rm -rf $CACHE_DIR

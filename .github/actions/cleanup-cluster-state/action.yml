@@ -10,50 +10,52 @@ runs:
     - name: Delete cluster state from cache
       shell: bash
       run: |
-        # Clone the cache repository if it doesn't already exist
-        if [ ! -d "workflow-cache" ]; then
-          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git workflow-cache
-          cd workflow-cache
-          # Configure git for the cache repository
-          git config user.name "apicurio-ci"
-          git config user.email "apicurio.ci@gmail.com"
-          cd ..
-        else
-          echo "workflow-cache directory already exists, updating from remote"
-          cd workflow-cache
-          git pull origin main
-          cd ..
-        fi
+        WORK_DIR=".work"
+        NAME="cache-for-cleanup"
+        CACHE_DIR="$WORK_DIR/$NAME"
+
+        # Clone the cache repository
+        rm -rf $CACHE_DIR
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git $NAME
+        pushd .
+        cd $CACHE_DIR
+        # Configure git for the cache repository
+        git config user.name "apicurio-ci"
+        git config user.email "apicurio.ci@gmail.com"
+        popd
         
         # Look for the cluster state directory to delete
-        CACHE_DIR="workflow-cache/runs/${{ github.run_id }}"
+        RUN_DIR="$CACHE_DIR/runs/${{ github.run_id }}"
         
-        if [ -d "$CACHE_DIR" ]; then
-          echo "Found cluster state directory: $CACHE_DIR"
+        if [ -d "$RUN_DIR" ]; then
+          echo "Found cluster state directory: $RUN_DIR"
           echo "Contents before deletion:"
-          find "$CACHE_DIR/"
+          find "$RUN_DIR/"
           
           # Remove the entire run directory
-          rm -rf "$CACHE_DIR"
-          echo "Cluster state directory deleted: $CACHE_DIR"
-          
+          rm -rf "$RUN_DIR"
+          echo "Cluster state directory deleted: $RUN_DIR"
+
           # Commit and push the deletion to the cache repository
-          cd workflow-cache
-          git pull origin main
+          pushd .
+          cd $CACHE_DIR
           git add .
           if git diff --cached --quiet; then
             echo "No cluster state changes to commit (directory may have already been deleted)."
           else
             git commit -m "Cleanup cluster state for workflow run ${{ github.run_id }}"
+            git pull origin main
             git push origin main
             echo "Cluster state cleanup committed and pushed"
           fi
-          cd ..
+          popd
           
         else
           echo "No cluster state found to cleanup for run ID ${{ github.run_id }}"
-          echo "Expected directory: $CACHE_DIR"
+          echo "Expected directory: $RUN_DIR"
           echo "Available runs in cache:"
-          ls -la workflow-cache/runs/ 2>/dev/null || echo "No runs directory found"
+          ls -la $NAME/runs/ 2>/dev/null || echo "No runs directory found"
         fi
+
+        rm -rf $CACHE_DIR
         

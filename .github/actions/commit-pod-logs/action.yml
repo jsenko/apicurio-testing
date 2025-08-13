@@ -45,12 +45,12 @@ runs:
         
         # Commit and push pod logs to the results repository
         cd workflow-results
-        git pull origin main
         git add .
         if git diff --cached --quiet; then
           echo "No pod logs to commit."
         else
           git commit -m "Add pod logs for job ${{ inputs.job-name }} from workflow run ${{ github.run_id }}"
+          git pull origin main
           git push origin main
         fi
         cd ..
