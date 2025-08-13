@@ -21,7 +21,7 @@ runs:
         fi
         
         # Look for the cluster state in the cache repository
-        CACHE_DIR="workflow-cache/runs/${{ github.run_id }}
+        CACHE_DIR="workflow-cache/runs/${{ github.run_id }}"
         CLUSTERS_ZIP="$CACHE_DIR/clusters.zip"
         
         if [ -f "$CLUSTERS_ZIP" ]; then
