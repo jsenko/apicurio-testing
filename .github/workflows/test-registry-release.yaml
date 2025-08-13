@@ -51,6 +51,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "apicurio-ci"
+          git config --global user.email "apicurio.ci@gmail.com"
 
       - name: Install OpenShift cluster
         run: |
