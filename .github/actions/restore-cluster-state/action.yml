@@ -16,7 +16,7 @@ runs:
 
         # Clone the cache repository
         rm -rf $CACHE_DIR
-        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git $NAME
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git $CACHE_DIR
         
         # Look for the cluster state in the cache repository
         RUN_DIR="$CACHE_DIR/runs/${{ github.run_id }}"

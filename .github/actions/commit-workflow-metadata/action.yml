@@ -19,7 +19,7 @@ runs:
 
         # Clone the results repository
         rm -rf $RESULTS_DIR
-        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git $NAME
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git $RESULTS_DIR
         pushd .
         cd $RESULTS_DIR
         # Configure git for the results repository

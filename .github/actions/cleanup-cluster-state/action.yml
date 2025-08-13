@@ -16,7 +16,7 @@ runs:
 
         # Clone the cache repository
         rm -rf $CACHE_DIR
-        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git $NAME
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git $CACHE_DIR
         pushd .
         cd $CACHE_DIR
         # Configure git for the cache repository
@@ -54,7 +54,7 @@ runs:
           echo "No cluster state found to cleanup for run ID ${{ github.run_id }}"
           echo "Expected directory: $RUN_DIR"
           echo "Available runs in cache:"
-          ls -la $NAME/runs/ 2>/dev/null || echo "No runs directory found"
+          ls -la $CACHE_DIR/runs/ 2>/dev/null || echo "No runs directory found"
         fi
 
         rm -rf $CACHE_DIR
