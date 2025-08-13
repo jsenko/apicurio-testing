@@ -18,7 +18,10 @@ jobs:
     steps:
       - name: Get Workflow Start Time
         id: get-start-time
-        run: echo "start-time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+        run: |
+          START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "start-time=$START_TIME" >> $GITHUB_OUTPUT
+          echo "Workflow start time: $START_TIME"
 
   os419:
     name: OpenShift 4.19
@@ -1694,6 +1697,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     needs:
+      - record-start-time
       - os419_teardown
       - os414_teardown
     if: always()
@@ -1704,6 +1708,10 @@ jobs:
         with:
           ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Log Workflow Start Time
+        run: |
+          echo "Workflow Start Time: ${{ needs.record-start-time.outputs.start-time }}"
 
       - name: Commit workflow metadata to repository
         uses: ./.github/actions/commit-workflow-metadata
