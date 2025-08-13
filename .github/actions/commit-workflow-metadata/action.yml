@@ -29,7 +29,7 @@ runs:
 
         # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
-        JOB_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}"
+        JOB_DIR="$RESULTS_DIR/${RUN_DATE}-${{ github.run_id }}"
         mkdir -p "$JOB_DIR"
         
         WORKFLOW_START_TIME=${{ inputs.workflow-start-time }}

@@ -39,9 +39,9 @@ runs:
         NAMESPACE=${{ inputs.namespace }}
         LOGS_DIR="$BASE_DIR/logs/$CLUSTER_NAME/$NAMESPACE"
 
-        # Create workflow-results directory structure
+        # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
-        JOB_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}/pod-logs"
+        JOB_DIR="$RESULTS_DIR/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}/pod-logs"
         mkdir -p "$JOB_DIR"
         cp -r $LOGS_DIR/* "$JOB_DIR/" 2>/dev/null || true
         

@@ -32,7 +32,7 @@ runs:
         
         # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
-        JOB_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
+        JOB_DIR="$RESULTS_DIR/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
         mkdir -p "$JOB_DIR/test-results"
 
         BASE_DIR="."
