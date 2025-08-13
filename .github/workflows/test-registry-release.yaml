@@ -1427,6 +1427,7 @@ jobs:
     timeout-minutes: 90
     needs:
       - os419_teardown
+    if: always()
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
