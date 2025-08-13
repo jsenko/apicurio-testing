@@ -16,22 +16,24 @@ runs:
     - name: Collect and commit integration test results
       shell: bash
       run: |
-        # Clone the results repository if it doesn't already exist
-        if [ ! -d "workflow-results" ]; then
-          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
-          cd workflow-results
-          # Configure git for the results repository
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          cd ..
-        else
-          echo "workflow-results directory already exists, skipping clone"
-        fi
+        WORK_DIR=".work"
+        NAME="results-for-integration-tests"
+        RESULTS_DIR="$WORK_DIR/$NAME"
+
+        # Clone the results repository
+        rm -rf $RESULTS_DIR
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git $NAME
+        pushd .
+        cd $RESULTS_DIR
+        # Configure git for the results repository
+        git config user.name "apicurio-ci"
+        git config user.email "apicurio.ci@gmail.com"
+        popd
         
         # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
-        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
-        mkdir -p "$RESULTS_DIR/test-results"
+        JOB_DIR="$RESULTS_DIR/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
+        mkdir -p "$JOB_DIR/test-results"
 
         CLUSTER_NAME="${{ inputs.cluster-name }}"
         NAMESPACE="${{ inputs.namespace }}"
@@ -48,25 +50,28 @@ runs:
 
         # Collect Maven Surefire test results from integration-tests module
         if [ -d "$INTEGRATION_TESTS_DIR/target/surefire-reports" ]; then
-          cp -r $INTEGRATION_TESTS_DIR/target/surefire-reports/* "$RESULTS_DIR/test-results/" 2>/dev/null || true
+          cp -r $INTEGRATION_TESTS_DIR/target/surefire-reports/* "$JOB_DIR/test-results/" 2>/dev/null || true
           echo "Copied Surefire test reports from $INTEGRATION_TESTS_DIR/target/surefire-reports/"
         fi
 
         # Also look for failsafe reports (for integration tests)
         if [ -d "$INTEGRATION_TESTS_DIR/target/failsafe-reports" ]; then
-          mkdir -p "$RESULTS_DIR/test-results/failsafe-reports"
-          cp -r $INTEGRATION_TESTS_DIR/target/failsafe-reports/* "$RESULTS_DIR/test-results/failsafe-reports/" 2>/dev/null || true
+          mkdir -p "$JOB_DIR/test-results/failsafe-reports"
+          cp -r $INTEGRATION_TESTS_DIR/target/failsafe-reports/* "$JOB_DIR/test-results/failsafe-reports/" 2>/dev/null || true
           echo "Copied Failsafe test reports from $INTEGRATION_TESTS_DIR/target/failsafe-reports/"
         fi
 
         # Commit and push integration test results to the results repository
-        cd workflow-results
-        git pull origin main
+        pushd .
+        cd $RESULTS_DIR
         git add .
         if git diff --cached --quiet; then
           echo "No integration test results to commit."
         else
           git commit -m "Add integration test results for job ${{ inputs.job-name }} from workflow run ${{ github.run_id }}"
+          git pull origin main
           git push origin main
         fi
-        cd ..
+        popd
+
+        rm -rf $RESULTS_DIR

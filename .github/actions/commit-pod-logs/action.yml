@@ -16,18 +16,20 @@ runs:
     - name: Download and commit pod logs
       shell: bash
       run: |
-        # Clone the results repository if it doesn't already exist
-        if [ ! -d "workflow-results" ]; then
-          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
-          cd workflow-results
-          # Configure git for the results repository
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          cd ..
-        else
-          echo "workflow-results directory already exists, skipping clone"
-        fi
-        
+        WORK_DIR=".work"
+        NAME="results-for-pod-logs"
+        RESULTS_DIR="$WORK_DIR/$NAME"
+
+        # Clone the results repository
+        rm -rf $RESULTS_DIR
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git $NAME
+        pushd .
+        cd $RESULTS_DIR
+        # Configure git for the results repository
+        git config user.name "apicurio-ci"
+        git config user.email "apicurio.ci@gmail.com"
+        popd
+
         # Download pod logs
         ./download-pod-logs.sh --cluster ${{ inputs.cluster-name }} --namespace ${{ inputs.namespace }}
 
@@ -39,12 +41,13 @@ runs:
 
         # Create workflow-results directory structure
         RUN_DATE=$(date +%Y-%m-%d)
-        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}/pod-logs"
-        mkdir -p "$RESULTS_DIR"
-        cp -r $LOGS_DIR/* "$RESULTS_DIR/" 2>/dev/null || true
+        JOB_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}/pod-logs"
+        mkdir -p "$JOB_DIR"
+        cp -r $LOGS_DIR/* "$JOB_DIR/" 2>/dev/null || true
         
         # Commit and push pod logs to the results repository
-        cd workflow-results
+        pushd .
+        cd $RESULTS_DIR
         git add .
         if git diff --cached --quiet; then
           echo "No pod logs to commit."
@@ -53,4 +56,6 @@ runs:
           git pull origin main
           git push origin main
         fi
-        cd ..
+        popd
+
+        rm -rf $RESULTS_DIR

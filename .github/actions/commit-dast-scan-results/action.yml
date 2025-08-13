@@ -22,22 +22,24 @@ runs:
     - name: Collect and commit DAST scan results
       shell: bash
       run: |
-        # Clone the results repository if it doesn't already exist
-        if [ ! -d "workflow-results" ]; then
-          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
-          cd workflow-results
-          # Configure git for the results repository
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          cd ..
-        else
-          echo "workflow-results directory already exists, skipping clone"
-        fi
+        WORK_DIR=".work"
+        NAME="results-for-dast-scan"
+        RESULTS_DIR="$WORK_DIR/$NAME"
+
+        # Clone the results repository
+        rm -rf $RESULTS_DIR
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git $NAME
+        pushd .
+        cd $RESULTS_DIR
+        # Configure git for the results repository
+        git config user.name "apicurio-ci"
+        git config user.email "apicurio.ci@gmail.com"
+        popd
         
         # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
-        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
-        mkdir -p "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}"
+        JOB_DIR="$RESULTS_DIR/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
+        mkdir -p "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}"
         
         BASE_DIR="."
         CLUSTER_NAME=${{ inputs.cluster-name }}
@@ -61,33 +63,34 @@ runs:
 
         # Collect RapiDAST scan results
         if [ -d "$RAPIDAST_RESULTS_DIR" ]; then
-          cp -r $RAPIDAST_RESULTS_DIR/* "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}/" 2>/dev/null || true
+          cp -r $RAPIDAST_RESULTS_DIR/* "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}/" 2>/dev/null || true
           echo "Copied DAST scan results from $RAPIDAST_RESULTS_DIR/ to subdirectory: ${{ inputs.subdirectory-name }}"
           
           # List what was copied for verification
           echo "Files copied to workflow results:"
-          find "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | head -10
-          if [ $(find "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | wc -l) -gt 10 ]; then
-            echo "... and $(( $(find "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | wc -l) - 10 )) more files"
+          find "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | head -10
+          if [ $(find "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | wc -l) -gt 10 ]; then
+            echo "... and $(( $(find "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | wc -l) - 10 )) more files"
           fi
         else
           echo "No DAST results directory found at $RAPIDAST_RESULTS_DIR"
           # Create an empty results directory to indicate the scan was attempted
-          mkdir -p "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}"
-          echo "DAST scan was executed but no results directory was found" > "$RESULTS_DIR/dast-results/${{ inputs.subdirectory-name }}/scan-status.txt"
+          mkdir -p "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}"
+          echo "DAST scan was executed but no results directory was found" > "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}/scan-status.txt"
         fi
 
         # Commit and push DAST scan results to the results repository
-        cd workflow-results
-        git pull origin main
+        pushd .
+        cd $RESULTS_DIR
         git add .
         if git diff --cached --quiet; then
           echo "No DAST scan results to commit."
         else
           git commit -m "Add DAST scan results for job ${{ inputs.job-name }} from workflow run ${{ github.run_id }}"
+          git pull origin main
           git push origin main
         fi
-        cd ..
+        popd
 
         # Clean up rapidast results directory after successful commit
         if [ -d "$RAPIDAST_RESULTS_DIR" ]; then
@@ -97,3 +100,5 @@ runs:
         else
           echo "No rapidast results directory to clean up"
         fi
+
+        rm -rf $RESULTS_DIR

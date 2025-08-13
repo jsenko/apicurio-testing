@@ -16,22 +16,24 @@ runs:
     - name: Collect and commit UI test results
       shell: bash
       run: |
-        # Clone the results repository if it doesn't already exist
-        if [ ! -d "workflow-results" ]; then
-          git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git workflow-results
-          cd workflow-results
-          # Configure git for the results repository
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          cd ..
-        else
-          echo "workflow-results directory already exists, skipping clone"
-        fi
+        WORK_DIR=".work"
+        NAME="results-for-ui-tests"
+        RESULTS_DIR="$WORK_DIR/$NAME"
+
+        # Clone the results repository
+        rm -rf $RESULTS_DIR
+        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-results.git $NAME
+        pushd .
+        cd $RESULTS_DIR
+        # Configure git for the results repository
+        git config user.name "apicurio-ci"
+        git config user.email "apicurio.ci@gmail.com"
+        popd
         
         # Create directory structure in the results repository
         RUN_DATE=$(date +%Y-%m-%d)
-        RESULTS_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
-        mkdir -p "$RESULTS_DIR/test-results"
+        JOB_DIR="workflow-results/${RUN_DATE}-${{ github.run_id }}/${{ inputs.job-name }}"
+        mkdir -p "$JOB_DIR/test-results"
 
         BASE_DIR="."
         CLUSTER_NAME=${{ inputs.cluster-name }}
@@ -47,25 +49,28 @@ runs:
 
         # Collect Playwright test results
         if [ -d "$UI_TESTS_DIR/playwright-report" ]; then
-          cp -r $UI_TESTS_DIR/playwright-report/* "$RESULTS_DIR/test-results/" 2>/dev/null || true
+          cp -r $UI_TESTS_DIR/playwright-report/* "$JOB_DIR/test-results/" 2>/dev/null || true
           echo "Copied Playwright HTML report from $UI_TESTS_DIR/playwright-report/"
         fi
 
         # Collect test results JSON files
         if [ -d "$UI_TESTS_DIR/test-results" ]; then
-          mkdir -p "$RESULTS_DIR/test-results/raw-results"
-          cp -r $UI_TESTS_DIR/test-results/* "$RESULTS_DIR/test-results/raw-results/" 2>/dev/null || true
+          mkdir -p "$JOB_DIR/test-results/raw-results"
+          cp -r $UI_TESTS_DIR/test-results/* "$JOB_DIR/test-results/raw-results/" 2>/dev/null || true
           echo "Copied Playwright raw test results from $UI_TESTS_DIR/test-results/"
         fi
 
         # Commit and push ui test results to the results repository
-        cd workflow-results
-        git pull origin main
+        pushd .
+        cd $RESULTS_DIR
         git add .
         if git diff --cached --quiet; then
           echo "No UI test results to commit."
         else
           git commit -m "Add UI test results for job ${{ inputs.job-name }} from workflow run ${{ github.run_id }}"
+          git pull origin main
           git push origin main
         fi
-        cd ..
+        popd
+
+        rm -rf $RESULTS_DIR
