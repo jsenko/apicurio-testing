@@ -55,8 +55,9 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
+          git config user.name "apicurio-ci"
+          git config user.email "apicurio.ci@gmail.com"
+          git config pull.rebase true
 
       - name: Install OpenShift cluster
         run: |
