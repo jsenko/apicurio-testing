@@ -22,6 +22,7 @@ runs:
         # Configure git for the cache repository
         git config user.name "apicurio-ci"
         git config user.email "apicurio.ci@gmail.com"
+        git config pull.rebase true
         popd
         
         # Look for the cluster state directory to delete
@@ -44,8 +45,19 @@ runs:
             echo "No cluster state changes to commit (directory may have already been deleted)."
           else
             git commit -m "Cleanup cluster state for workflow run ${{ github.run_id }}"
-            git pull origin main
-            git push origin main
+            for attempt in {1..5}; do
+              if git pull origin main && git push origin main; then
+                break
+              else
+                if [ $attempt -lt 5 ]; then
+                  echo "Attempt $attempt failed. Retrying in $((attempt * 2)) seconds..."
+                  sleep $((attempt * 2))
+                else
+                  echo "All retry attempts failed"
+                  exit 1
+                fi
+              fi
+            done
             echo "Cluster state cleanup committed and pushed"
           fi
           popd
