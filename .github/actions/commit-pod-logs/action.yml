@@ -10,6 +10,9 @@ inputs:
   job-name:
     description: 'Name of the current job'
     required: true
+  github-token:
+    description: 'GitHub access token for API calls and accessing the results repository'
+    required: true
 runs:
   using: 'composite'
   steps:
