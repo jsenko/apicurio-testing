@@ -6,13 +6,13 @@ on:
         description: Released version to test
         required: true
       operatorImage:
-        description: The registry operator image to test (optional)
+        description: Operator image to test (optional)
         required: false
       appImage:
-        description: The registry application image to test (optional)
+        description: Application image to test (optional)
         required: false
       uiImage:
-        description: The registry UI image to test (optional)
+        description: UI image to test (optional)
         required: false
       tests-tag:
         description: git tag to use for running tests
