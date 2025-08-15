@@ -5,6 +5,15 @@ on:
       release-version:
         description: Released version to test
         required: true
+      operatorImage:
+        description: The registry operator image to test (optional)
+        required: false
+      appImage:
+        description: The registry application image to test (optional)
+        required: false
+      uiImage:
+        description: The registry UI image to test (optional)
+        required: false
       tests-tag:
         description: git tag to use for running tests
         required: true
@@ -39,6 +48,13 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
       CONTROL_PLANE_NODES: 3
       COMPUTE_NODES: 6
+      OPERATOR_IMAGE: ${{ github.event.inputs.operatorImage }}
+      APP_IMAGE: ${{ github.event.inputs.appImage }}
+      UI_IMAGE: ${{ github.event.inputs.uiImage }}
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Check Required tools
@@ -61,11 +77,22 @@ jobs:
 
       - name: Install OpenShift cluster
         run: |
-          ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION --controlPlaneNodes $CONTROL_PLANE_NODES --computeNodes $COMPUTE_NODES
+          ./install-cluster.sh --cluster $CLUSTER_NAME \
+              --okdVersion $OPENSHIFT_VERSION \
+              --controlPlaneNodes $CONTROL_PLANE_NODES \
+              --computeNodes $COMPUTE_NODES
+
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace apicurio-registry-operator
 
       - name: Install Apicurio Registry Operator
         run: |
-          ./install-apicurio-operator.sh --cluster $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
+          ./install-apicurio-operator.sh --cluster $CLUSTER_NAME \
+              --version $APICURIO_REGISTRY_VERSION \
+              --operatorImage "$OPERATOR_IMAGE" \
+              --appImage "$APP_IMAGE" \
+              --uiImage "$UI_IMAGE"
 
       - name: Commit TLS Certs (if necessary)
         run: |
@@ -95,6 +122,10 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
       PROFILE: inmemory
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -115,6 +146,10 @@ jobs:
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |
@@ -142,6 +177,10 @@ jobs:
       NAMESPACE: pg17
       PROFILE: postgresql
       POSTGRESQL_VERSION: 17
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -163,9 +202,16 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --postgresqlVersion $POSTGRESQL_VERSION
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --profile $PROFILE \
+              --postgresqlVersion $POSTGRESQL_VERSION
 
       - name: Commit pod logs to repository
         if: failure()
@@ -189,6 +235,10 @@ jobs:
       NAMESPACE: pg12
       PROFILE: postgresql
       POSTGRESQL_VERSION: 12
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -210,9 +260,16 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE --postgresqlVersion $POSTGRESQL_VERSION
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --profile $PROFILE \
+              --postgresqlVersion $POSTGRESQL_VERSION
 
       - name: Commit pod logs to repository
         if: failure()
@@ -235,6 +292,10 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
       PROFILE: mysql
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -255,6 +316,10 @@ jobs:
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |
@@ -282,6 +347,10 @@ jobs:
       NAMESPACE: ksql047
       PROFILE: kafkasql
       STRIMZI_VERSION: 0.47.0
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -310,6 +379,10 @@ jobs:
       - name: Install Kafka Cluster
         run: |
           ./install-kafka.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |
@@ -337,6 +410,10 @@ jobs:
       NAMESPACE: ksql043
       PROFILE: kafkasql
       STRIMZI_VERSION: 0.43.0
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -366,6 +443,10 @@ jobs:
         run: |
           ./install-kafka.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
       - name: Install Apicurio Registry
         run: |
           ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
@@ -392,6 +473,10 @@ jobs:
       NAMESPACE: authn
       PROFILE: authn
       KEYCLOAK_VERSION: 26.3.1
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -420,6 +505,10 @@ jobs:
       - name: Install Keycloak
         run: |
           ./install-keycloak.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |
@@ -1447,6 +1536,10 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
       CONTROL_PLANE_NODES: 3
       COMPUTE_NODES: 3
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -1465,9 +1558,17 @@ jobs:
         run: |
           ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION --controlPlaneNodes $CONTROL_PLANE_NODES --computeNodes $COMPUTE_NODES
 
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace apicurio-registry-operator
+
       - name: Install Apicurio Registry Operator
         run: |
-          ./install-apicurio-operator.sh --cluster $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION
+          ./install-apicurio-operator.sh --cluster $CLUSTER_NAME \
+              --version $APICURIO_REGISTRY_VERSION \
+              --operatorImage "$OPERATOR_IMAGE" \
+              --appImage "$APP_IMAGE" \
+              --uiImage "$UI_IMAGE"
 
       - name: Commit TLS Certs (if necessary)
         run: |
@@ -1497,6 +1598,10 @@ jobs:
       CLUSTER_NAME: ci414
       NAMESPACE: inmemory
       PROFILE: inmemory
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
 
     steps:
       - name: Checkout Code
@@ -1518,6 +1623,10 @@ jobs:
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |

@@ -14,6 +14,9 @@ show_usage() {
     echo "  --version <version>      Version of Apicurio Registry Operator to install (e.g., 3.0.9)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
+    echo "  --appImage <image>       Container image for the Apicurio Registry app (optional)"
+    echo "  --uiImage <image>        Container image for the Apicurio Registry UI (optional)"
+    echo "  --operatorImage <image>  Container image for the Apicurio Registry Operator (optional)"
     echo "  -h, --help               Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
@@ -30,6 +33,9 @@ show_usage() {
 # Parse command line arguments
 CLUSTER_NAME=""
 APICURIO_REGISTRY_VERSION=""
+REGISTRY_APP_IMAGE=""
+REGISTRY_UI_IMAGE=""
+REGISTRY_OPERATOR_IMAGE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -39,6 +45,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         --version)
             APICURIO_REGISTRY_VERSION="$2"
+            shift 2
+            ;;
+        --appImage)
+            REGISTRY_APP_IMAGE="$2"
+            shift 2
+            ;;
+        --uiImage)
+            REGISTRY_UI_IMAGE="$2"
+            shift 2
+            ;;
+        --operatorImage)
+            REGISTRY_OPERATOR_IMAGE="$2"
             shift 2
             ;;
         -h|--help)
@@ -67,6 +85,17 @@ if [ -z "$APICURIO_REGISTRY_VERSION" ]; then
     echo "Error: --version argument is required"
     show_usage
     exit 1
+fi
+
+# Set default image values (temporary placeholders)
+if [ -z "$REGISTRY_APP_IMAGE" ]; then
+    REGISTRY_APP_IMAGE="quay.io/apicurio/apicurio-registry:$APICURIO_REGISTRY_VERSION"
+fi
+if [ -z "$REGISTRY_UI_IMAGE" ]; then
+    REGISTRY_UI_IMAGE="quay.io/apicurio/apicurio-registry-ui:$APICURIO_REGISTRY_VERSION"
+fi
+if [ -z "$REGISTRY_OPERATOR_IMAGE" ]; then
+    REGISTRY_OPERATOR_IMAGE="quay.io/apicurio/apicurio-registry-3-operator:$APICURIO_REGISTRY_VERSION"
 fi
 
 # Set up environment variables
@@ -108,6 +137,9 @@ kubectl create namespace $OPERATOR_NAMESPACE --dry-run=client -o yaml | kubectl 
 # Deploy the Apicurio Registry operator to the namespace
 echo "Using Apicurio Registry Operator YAML from: $APICURIO_OPERATOR_YAML"
 export OPERATOR_NAMESPACE
+export REGISTRY_APP_IMAGE
+export REGISTRY_UI_IMAGE
+export REGISTRY_OPERATOR_IMAGE
 envsubst < "$APICURIO_OPERATOR_YAML" > $CLUSTER_DIR/apicurio-registry-operator.yaml
 echo "Installing Apicurio Registry Operator into namespace $OPERATOR_NAMESPACE"
 kubectl apply -f $CLUSTER_DIR/apicurio-registry-operator.yaml -n $OPERATOR_NAMESPACE
