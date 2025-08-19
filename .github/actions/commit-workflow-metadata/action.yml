@@ -72,10 +72,7 @@ runs:
             "triggering_actor": "${{ github.triggering_actor }}",
             "event_name": "${{ github.event_name }}"
           },
-          "inputs": {
-            "release_version": "${{ github.event.inputs.release-version }}",
-            "tests_tag": "${{ github.event.inputs.tests-tag }}"
-          },
+          "inputs": ${{ toJson(github.event.inputs) }},
           "environment": {
             "openshift_version": "4.19",
             "cluster_name": "ci419",
