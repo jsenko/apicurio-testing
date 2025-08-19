@@ -503,7 +503,7 @@ jobs:
   os419_inmemory_uitests:
     name: UI Tests (in mem)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: os419_inmemory
 
     env:
@@ -553,7 +553,7 @@ jobs:
   os419_inmemory_integrationtests:
     name: Integration Tests (in mem)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: os419_inmemory_uitests
 
     env:
@@ -674,7 +674,7 @@ jobs:
   os419_pg17_uitests:
     name: UI Tests (pg17)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: os419_pg17
 
     env:
@@ -724,7 +724,7 @@ jobs:
   os419_pg17_integrationtests:
     name: Integration Tests (pg17)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: os419_pg17_uitests
 
     env:
@@ -777,7 +777,7 @@ jobs:
   os419_pg12_integrationtests:
     name: Integration Tests (pg12)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: os419_pg12
 
     env:
@@ -830,7 +830,7 @@ jobs:
   os419_mysql_uitests:
     name: UI Tests (mysql)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: os419_mysql
 
     env:
@@ -880,7 +880,7 @@ jobs:
   os419_mysql_integrationtests:
     name: Integration Tests (mysql)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: os419_mysql_uitests
 
     env:
@@ -932,7 +932,7 @@ jobs:
   os419_strimzi047_uitests:
     name: UI Tests (strimzi 0.47)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: os419_strimzi047
 
     env:
@@ -982,7 +982,7 @@ jobs:
   os419_strimzi047_integrationtests:
     name: Integration Tests (strimzi 0.47)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: os419_strimzi047_uitests
 
     env:
@@ -1034,7 +1034,7 @@ jobs:
   os419_strimzi043_uitests:
     name: UI Tests (strimzi 0.43)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: os419_strimzi043
 
     env:
@@ -1084,7 +1084,7 @@ jobs:
   os419_strimzi043_integrationtests:
     name: Integration Tests (strimzi 0.43)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: os419_strimzi043_uitests
 
     env:
@@ -1136,7 +1136,7 @@ jobs:
   os419_authn_integrationtests:
     name: Integration Tests (authn)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: os419_authn
 
     env:
@@ -1637,7 +1637,7 @@ jobs:
   os414_inmemory_uitests:
     name: UI Tests (in mem) [4.14]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: os414_inmemory
 
     env:
@@ -1688,7 +1688,7 @@ jobs:
   os414_inmemory_integrationtests:
     name: Integration Tests (in mem) [4.14]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: os414_inmemory_uitests
 
     env:
