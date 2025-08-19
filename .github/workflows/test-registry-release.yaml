@@ -1519,7 +1519,6 @@ jobs:
     timeout-minutes: 90
     needs:
       - os419_teardown
-    if: always()
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
@@ -1745,7 +1744,6 @@ jobs:
     needs:
       - os414_inmemory_uitests
       - os414_inmemory_integrationtests
-    if: always()
 
     env:
       CLUSTER_NAME: ci414

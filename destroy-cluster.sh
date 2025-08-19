@@ -145,7 +145,7 @@ CLUSTER_DIR=$BASE_DIR/clusters/$CLUSTER_NAME
 if [[ ! -d "$CLUSTER_DIR" ]]; then
     echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
     echo "Cannot destroy a cluster that was never installed"
-    exit 1
+    exit 0
 fi
 
 # Change to cluster directory
