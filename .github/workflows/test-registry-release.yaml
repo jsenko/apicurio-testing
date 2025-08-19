@@ -84,7 +84,7 @@ jobs:
 
       - name: Install OpenShift Docker Pull Credentials
         run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace apicurio-registry-operator
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME
 
       - name: Install Apicurio Registry Operator
         run: |
@@ -147,10 +147,6 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
-
       - name: Install Apicurio Registry
         run: |
           ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
@@ -201,10 +197,6 @@ jobs:
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |
@@ -260,10 +252,6 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
-
       - name: Install Apicurio Registry
         run: |
           ./install-apicurio-registry.sh --cluster $CLUSTER_NAME \
@@ -316,10 +304,6 @@ jobs:
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |
@@ -380,10 +364,6 @@ jobs:
         run: |
           ./install-kafka.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
-
       - name: Install Apicurio Registry
         run: |
           ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
@@ -443,10 +423,6 @@ jobs:
         run: |
           ./install-kafka.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
-
       - name: Install Apicurio Registry
         run: |
           ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
@@ -505,10 +481,6 @@ jobs:
       - name: Install Keycloak
         run: |
           ./install-keycloak.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
-
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |
@@ -1560,7 +1532,7 @@ jobs:
 
       - name: Install OpenShift Docker Pull Credentials
         run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace apicurio-registry-operator
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME
 
       - name: Install Apicurio Registry Operator
         run: |
@@ -1623,10 +1595,6 @@ jobs:
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
       - name: Install Apicurio Registry
         run: |
