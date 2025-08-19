@@ -18,6 +18,10 @@ on:
         description: git tag to use for running tests
         required: true
         default: main
+      isDownstream:
+        description: Test downstream images
+        required: true
+        default: false
 
 jobs:
   record-start-time:
@@ -506,6 +510,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -521,7 +526,10 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --isDownstream $IS_DOWNSTREAM_VERSION \
+              --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -673,6 +681,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: pg17
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -688,7 +697,10 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --isDownstream $IS_DOWNSTREAM_VERSION \
+              --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -825,6 +837,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -840,7 +853,10 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --isDownstream $IS_DOWNSTREAM_VERSION \
+              --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -923,6 +939,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: ksql047
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -938,7 +955,10 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --isDownstream $IS_DOWNSTREAM_VERSION \
+              --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -1021,6 +1041,7 @@ jobs:
       CLUSTER_NAME: ci419
       NAMESPACE: ksql043
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -1036,7 +1057,10 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --isDownstream $IS_DOWNSTREAM_VERSION \
+              --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -1620,6 +1644,7 @@ jobs:
       CLUSTER_NAME: ci414
       NAMESPACE: inmemory
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -1636,7 +1661,10 @@ jobs:
 
       - name: Run UI Tests
         run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --isDownstream $IS_DOWNSTREAM_VERSION \
+              --tag ${{ github.event.inputs.tests-tag }}
 
       - name: Commit UI test results to repository
         if: always()
