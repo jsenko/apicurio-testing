@@ -7,12 +7,14 @@ BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> --version <version> [OPTIONS]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> --version <version> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --cluster <name>          Name of the OpenShift cluster where Strimzi will be installed"
     echo "  --namespace <namespace>   Kubernetes namespace to deploy Strimzi into"
     echo "  --version <ver>           Version of Strimzi Kafka operator to install"
+    echo ""
+    echo "OPTIONAL PARAMETERS:"
+    echo "  --cluster <name>          Name of the OpenShift cluster where Strimzi will be installed (default: \$USER)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
     echo "  -h, --help                Display this help message and exit"
@@ -126,7 +128,7 @@ wait_for_strimzi_ready() {
 
 
 # Parse command line arguments
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 NAMESPACE=""
 STRIMZI_VERSION=""
 
@@ -156,9 +158,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if required arguments are provided
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --cluster argument is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     show_usage
     exit 1
 fi

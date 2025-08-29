@@ -8,11 +8,13 @@ AVAILABLE_PROFILES=$(ls -1 "$BASE_DIR/templates/profiles" 2>/dev/null | tr '\n' 
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [OPTIONS]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --cluster <name>          Name of the OpenShift cluster where Apicurio Registry will be installed"
     echo "  --namespace <namespace>   Kubernetes namespace to deploy Apicurio Registry into"
+    echo ""
+    echo "OPTIONAL PARAMETERS:"
+    echo "  --cluster <name>          Name of the OpenShift cluster where Apicurio Registry will be installed (default: \$USER)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
     echo "  --appName <name>          Name of the application deployment (default: 'registry')"
@@ -26,8 +28,8 @@ show_usage() {
     echo "  -h, --help                Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
-    echo "  # Basic installation with inmemory profile:"
-    echo "  $0 --cluster okd419 --namespace simplens1"
+    echo "  # Basic installation with inmemory profile (using default cluster):"
+    echo "  $0 --namespace simplens1"
     echo ""
     echo "  # Installation with custom app name and kafkasql profile:"
     echo "  $0 --appName my-registry --cluster okd419 --namespace kafkans1 --profile kafkasql"
@@ -199,7 +201,7 @@ output_debug_info() {
 
 # Parse command line arguments
 APPLICATION_NAME=""
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 NAMESPACE=""
 PROFILE=""
 
@@ -251,9 +253,9 @@ if [ -z "$APPLICATION_NAME" ]; then
     echo "No application name specified, using default: $APPLICATION_NAME"
 fi
 
-# Check if required arguments are provided
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --cluster argument is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     show_usage
     exit 1
 fi

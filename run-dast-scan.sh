@@ -6,13 +6,13 @@ show_usage() {
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local rapidast_templates_dir="$script_dir/templates/rapidast"
     
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [--config <config_file>] [--tag <rapidast_tag>] [--authEnabled <true|false>]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [--config <config_file>] [--tag <rapidast_tag>] [--authEnabled <true|false>]"
     echo ""
     echo "This script runs RapiDAST (Rapid DAST) security scanning against a deployed application."
     echo "The target application URL should be configured in the provided rapidast YAML configuration file."
     echo ""
     echo "Arguments:"
-    echo "  --cluster           Required. The OpenShift cluster name"
+    echo "  --cluster           Optional. The OpenShift cluster name (default: \$USER)"
     echo "  --namespace         Required. The namespace where the target application is deployed"
     echo "  --config            Optional. Path to the rapidast YAML configuration file (default: registry_v3_unauthenticated.yaml)"
     
@@ -159,7 +159,7 @@ install_zap() {
 
 
 # Parse command line arguments
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 NAMESPACE=""
 CONFIG_FILE=""
 RAPIDAST_TAG="development"
@@ -199,9 +199,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if required arguments are provided
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --cluster argument is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     show_usage
     exit 1
 fi

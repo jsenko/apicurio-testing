@@ -2,13 +2,13 @@
 
 # Function to display usage information
 show_usage() {
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> --tag <registry_tag> [--isDownstream <true|false>]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> --tag <registry_tag> [--isDownstream <true|false>]"
     echo ""
     echo "This script runs the apicurio-registry UI tests against a deployed Registry instance."
     echo "The Registry UI URL is constructed as: http://registry-ui-NAMESPACE.apps.CLUSTER_NAME.apicurio-testing.org"
     echo ""
     echo "Arguments:"
-    echo "  --cluster <cluster_name>     Name of the cluster where the registry is deployed"
+    echo "  --cluster <cluster_name>     Name of the cluster where the registry is deployed (default: \$USER)"
     echo "  --namespace <namespace>      Kubernetes namespace where the registry is running"
     echo "  --tag <registry_tag>         Git branch or tag of the apicurio-registry repository to test"
     echo "  --isDownstream <true|false>  Whether this is a downstream build (optional, default: false)"
@@ -18,7 +18,7 @@ show_usage() {
 }
 
 # Parse command line arguments
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 NAMESPACE=""
 APICURIO_REGISTRY_TAG="main"
 IS_DOWNSTREAM="false"
@@ -53,9 +53,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if required arguments are provided
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --cluster argument is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     show_usage
     exit 1
 fi

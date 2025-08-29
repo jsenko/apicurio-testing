@@ -22,6 +22,10 @@ on:
         description: Test downstream images
         required: true
         default: false
+      skipClusterInstall:
+        description: Skip cluster install
+        required: true
+        default: false
 
 jobs:
   record-start-time:
@@ -80,6 +84,7 @@ jobs:
           git config pull.rebase true
 
       - name: Install OpenShift cluster
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           ./install-cluster.sh --cluster $CLUSTER_NAME \
               --okdVersion $OPENSHIFT_VERSION \
@@ -87,10 +92,12 @@ jobs:
               --computeNodes $COMPUTE_NODES
 
       - name: Install OpenShift Docker Pull Credentials
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           ./configure-pull-secret.sh --cluster $CLUSTER_NAME
 
       - name: Install Apicurio Registry Operator
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           ./install-apicurio-operator.sh --cluster $CLUSTER_NAME \
               --version $APICURIO_REGISTRY_VERSION \
@@ -99,6 +106,7 @@ jobs:
               --uiImage "$UI_IMAGE"
 
       - name: Commit TLS Certs (if necessary)
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           git pull origin main
           git add certificates
@@ -110,7 +118,7 @@ jobs:
           fi
 
       - name: Save cluster state
-        if: always()
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' && always() }}
         uses: ./.github/actions/save-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
@@ -1517,6 +1525,7 @@ jobs:
     name: OpenShift 4.14
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
     needs:
       - os419_teardown
 

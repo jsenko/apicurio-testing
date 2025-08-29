@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to configure Docker registry pull secret
-# Usage: ./configure-pull-secret.sh --cluster <cluster-name>
+# Usage: ./configure-pull-secret.sh [--cluster <cluster-name>]
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -45,12 +45,10 @@ validate_env_vars() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --cluster <cluster-name>"
-    echo ""
-    echo "Required Parameters:"
-    echo "  --cluster <cluster-name>    Name of the cluster to configure"
+    echo "Usage: $0 [--cluster <cluster-name>]"
     echo ""
     echo "Optional Parameters:"
+    echo "  --cluster <cluster-name>    Name of the cluster to configure (default: \$USER)"
     echo "  -h, --help                  Show this help message"
     echo ""
     echo "Required Environment Variables:"
@@ -64,7 +62,8 @@ usage() {
     echo "  export DOCKER_USERNAME=myuser"
     echo "  export DOCKER_PASSWORD=mypassword"
     echo "  export DOCKER_EMAIL=myuser@example.com"
-    echo "  $0 --cluster okd419"
+    echo "  $0                        # Uses default cluster (\$USER)"
+    echo "  $0 --cluster okd419       # Uses specific cluster"
     echo ""
     echo "Notes:"
     echo "  - The cluster must already exist and be properly configured"
@@ -73,7 +72,7 @@ usage() {
 }
 
 # Initialize variables
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -92,9 +91,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate required parameters
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: --cluster parameter is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     usage
 fi
 

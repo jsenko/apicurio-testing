@@ -1,18 +1,20 @@
 #!/bin/bash
 
 # Script to destroy a namespace in a Kubernetes cluster
-# Usage: ./destroy-namespace.sh --cluster <cluster-name> --namespace <namespace>
+# Usage: ./destroy-namespace.sh [--cluster <cluster-name>] --namespace <namespace>
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --cluster <cluster-name> --namespace <namespace>"
+    echo "Usage: $0 [--cluster <cluster-name>] --namespace <namespace>"
     echo ""
     echo "Required Parameters:"
-    echo "  --cluster <cluster-name>    Name of the cluster containing the namespace"
     echo "  --namespace <namespace>     Name of the namespace to delete"
+    echo ""
+    echo "Optional Parameters:"
+    echo "  --cluster <cluster-name>    Name of the cluster containing the namespace (default: \$USER)"
     echo ""
     echo "Optional Parameters:"
     echo "  -h, --help                  Show this help message"
@@ -29,7 +31,7 @@ usage() {
 }
 
 # Initialize variables
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 NAMESPACE=""
 
 # Parse command line arguments
@@ -53,9 +55,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate required parameters
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: --cluster parameter is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     usage
 fi
 

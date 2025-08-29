@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to generate Let's Encrypt TLS certificates using certbot in OpenShift
-# Usage: ./generate-tls-cert.sh --cluster <cluster-name> [OPTIONS]
+# Usage: ./generate-tls-cert.sh [--cluster <cluster-name>] [OPTIONS]
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -42,10 +42,10 @@ validate_env_vars() {
 
 # Function to display usage information
 show_usage() {
-    echo "Usage: $0 --cluster <cluster_name> [OPTIONS]"
+    echo "Usage: $0 [--cluster <cluster_name>] [OPTIONS]"
     echo ""
-    echo "REQUIRED PARAMETERS:"
-    echo "  --cluster <name>         Name of the OpenShift cluster to use for certificate generation"
+    echo "OPTIONAL PARAMETERS:"
+    echo "  --cluster <name>         Name of the OpenShift cluster to use for certificate generation (default: \$USER)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
     echo "  --domain <domain>        Domain to generate certificate for (default: '*.apps.<cluster_name>.apicurio-testing.org')"
@@ -56,7 +56,8 @@ show_usage() {
     echo ""
     echo "EXAMPLES:"
     echo "  # Basic usage with defaults:"
-    echo "  $0 --cluster okd419"
+    echo "  $0                        # Uses default cluster (\$USER)"
+    echo "  $0 --cluster okd419       # Uses specific cluster"
     echo ""
     echo "  # Custom domain and email:"
     echo "  $0 --cluster okd419 --domain '*.apps.mycompany.org' --email 'admin@mycompany.org'"
@@ -174,7 +175,7 @@ extract_certificates() {
 }
 
 # Parse command line arguments
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 DOMAIN=""  # Will be set after CLUSTER_NAME is parsed
 EMAIL="ewittman@ibm.com"
 OUTPUT_DIR="./certificates"
@@ -214,9 +215,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if required arguments are provided
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --cluster argument is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     show_usage
     exit 1
 fi

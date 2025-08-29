@@ -2,13 +2,13 @@
 
 # Function to display usage information
 show_usage() {
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace> [--tag <registry_tag>] [--testProfile <profile>] [--registryProtocol <protocol>] [--registryHost <host>] [--registryPort <port>] [--realmName <realm>]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [--tag <registry_tag>] [--testProfile <profile>] [--registryProtocol <protocol>] [--registryHost <host>] [--registryPort <port>] [--realmName <realm>]"
     echo ""
     echo "This script runs the apicurio-registry integration tests against a deployed Registry instance."
     echo "The Registry URL is constructed as: http://registry-app-NAMESPACE.apps.CLUSTER_NAME.apicurio-testing.org"
     echo ""
     echo "Arguments:"
-    echo "  --cluster           Required. The OpenShift cluster name"
+    echo "  --cluster           Optional. The OpenShift cluster name (default: \$USER)"
     echo "  --namespace         Required. The namespace where Registry is deployed"
     echo "  --tag               Optional. Git branch/tag to test against (default: main)"
     echo "  --testProfile       Optional. Test profile to run (default: all). Allowed values: all, smoke, auth"
@@ -22,7 +22,7 @@ show_usage() {
 }
 
 # Parse command line arguments
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 NAMESPACE=""
 APICURIO_REGISTRY_TAG="main"
 TEST_PROFILE="all"
@@ -77,9 +77,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if required arguments are provided
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --cluster argument is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     show_usage
     exit 1
 fi

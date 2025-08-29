@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Parse command line arguments
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 NAMESPACE=""
 
 while [[ $# -gt 0 ]]; do
@@ -15,33 +15,36 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -h|--help)
-            echo "Usage: $0 --cluster <cluster_name> --namespace <namespace>"
+            echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace>"
+            echo "Example: $0 --namespace testns1"
             echo "Example: $0 --cluster okd419 --namespace testns1"
             echo ""
             echo "This script downloads logs from all running pods in the specified namespace."
             echo "Logs are saved to a 'logs' directory organized by cluster and namespace."
+            echo "  --cluster <cluster_name>     Name of the cluster (default: \$USER)"
+            echo "  --namespace <namespace>      Required. The namespace to download logs from"
             exit 0
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 --cluster <cluster_name> --namespace <namespace>"
+            echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace>"
             exit 1
             ;;
     esac
 done
 
-# Check if required arguments are provided
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: --cluster argument is required"
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace>"
-    echo "Example: $0 --cluster okd419 --namespace testns1"
+    echo "Error: cluster name is empty (default: \$USER)"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace>"
+    echo "Example: $0 --namespace testns1"
     exit 1
 fi
 
 if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
-    echo "Usage: $0 --cluster <cluster_name> --namespace <namespace>"
-    echo "Example: $0 --cluster okd419 --namespace testns1"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace>"
+    echo "Example: $0 --namespace testns1"
     exit 1
 fi
 

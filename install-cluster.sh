@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to install OKD cluster
-# Usage: ./install-cluster.sh --cluster <cluster-name>
+# Usage: ./install-cluster.sh [--cluster <cluster-name>]
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -182,10 +182,10 @@ get_okd_installer_url() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --cluster <cluster-name> [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>]"
+    echo "Usage: $0 [--cluster <cluster-name>] [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>]"
     echo ""
-    echo "Required Parameters:"
-    echo "  --cluster <cluster-name>     Name of the cluster to install"
+    echo "Optional Parameters:"
+    echo "  --cluster <cluster-name>     Name of the cluster to install (default: \$USER)"
     echo "                               Must contain only letters and numbers"
     echo ""
     echo "Optional Parameters:"
@@ -199,7 +199,7 @@ usage() {
 }
 
 # Initialize variables
-CLUSTER_NAME=""
+CLUSTER_NAME="$USER"
 OKD_VERSION="4.19"
 REGION="us-east-1"
 COMPUTE_NODES="3"
@@ -243,9 +243,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate required parameters
+# Validate cluster name (should not be empty after defaulting to $USER)
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: --cluster parameter is required"
+    echo "Error: cluster name is empty (default: \$USER)"
     usage
 fi
 
