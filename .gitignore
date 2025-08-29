@@ -1,8 +1,10 @@
-/clusters/
-/workflow-results/
-/workflow-cache/
+.idea
+.trash~
+/.work/
 /clusters.zip
+/clusters/
 /logs/
 /okd-installers/
 /secrets.env
-/.work/
+/workflow-cache/
+/workflow-results/
