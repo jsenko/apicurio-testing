@@ -6,6 +6,12 @@
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Source secrets.env if it exists
+if [[ -f "$BASE_DIR/secrets.env" ]]; then
+    echo "Sourcing environment variables from secrets.env..."
+    source "$BASE_DIR/secrets.env"
+fi
+
 # Function to validate required environment variables
 validate_env_vars() {
     local missing_vars=()
