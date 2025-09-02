@@ -91,13 +91,17 @@ jobs:
               --controlPlaneNodes $CONTROL_PLANE_NODES \
               --computeNodes $COMPUTE_NODES
 
+      - name: Restore cluster state
+        if: ${{ github.event.inputs.skipClusterInstall == 'true' }}
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
       - name: Install OpenShift Docker Pull Credentials
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           ./configure-pull-secret.sh --cluster $CLUSTER_NAME
 
       - name: Install Apicurio Registry Operator
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           ./install-apicurio-operator.sh --cluster $CLUSTER_NAME \
               --version $APICURIO_REGISTRY_VERSION \
