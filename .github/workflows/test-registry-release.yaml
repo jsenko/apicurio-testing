@@ -181,7 +181,7 @@ jobs:
     name: Apicurio Registry (pg 17)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os419_inmemory
+    needs: os419
     if: always()
 
     env:
@@ -235,7 +235,7 @@ jobs:
     name: Apicurio Registry (pg12)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os419_pg17
+    needs: os419
     if: always()
 
     env:
@@ -289,7 +289,7 @@ jobs:
     name: Apicurio Registry (mysql)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os419_pg12
+    needs: os419
     if: always()
 
     env:
@@ -339,7 +339,7 @@ jobs:
     name: Apicurio Registry (strimzi 0.47)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_mysql
+    needs: os419
     if: always()
 
     env:
@@ -398,7 +398,7 @@ jobs:
     name: Apicurio Registry (strimzi 0.43)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_strimzi047
+    needs: os419
     if: always()
 
     env:
@@ -457,7 +457,7 @@ jobs:
     name: Apicurio Registry (authn)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_strimzi043
+    needs: os419
     if: always()
     
     env:
