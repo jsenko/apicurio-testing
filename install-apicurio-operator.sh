@@ -30,6 +30,7 @@ show_usage() {
     echo "  - The cluster must already exist and be properly configured"
     echo "  - Kubeconfig file must be present at clusters/<cluster_name>/auth/kubeconfig"
     echo "  - This script installs the Apicurio Registry Operator cluster-wide"
+    echo "  - If operator template doesn't exist locally, it will be downloaded from GitHub automatically"
 }
 
 # Parse command line arguments
@@ -120,11 +121,52 @@ if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
     exit 1
 fi
 
-# Check if operator YAML template exists
+# ##################################################
+# Function to download and process operator YAML template
+# ##################################################
+download_operator_template() {
+    local version="$1"
+    local template_dir="$BASE_DIR/templates/registry-operator/$version"
+    local template_file="$template_dir/apicurio-registry-operator.yaml"
+    local download_url="https://raw.githubusercontent.com/Apicurio/apicurio-registry/refs/tags/v$version/operator/install/install.yaml"
+    
+    echo "Operator YAML template not found locally. Downloading from GitHub..."
+    echo "URL: $download_url"
+    
+    # Create the directory if it doesn't exist
+    mkdir -p "$template_dir"
+    
+    # Download the template
+    if ! curl -s -f -L "$download_url" -o "$template_file.tmp"; then
+        echo "Error: Failed to download operator template from $download_url"
+        echo "Please check if version '$version' exists or download manually"
+        exit 1
+    fi
+    
+    # Process the template to replace placeholders with environment variable references
+    echo "Processing template to replace placeholders..."
+    sed -e 's/PLACEHOLDER_NAMESPACE/$OPERATOR_NAMESPACE/g' \
+        -e "s|quay.io/apicurio/apicurio-registry:$version|\$REGISTRY_APP_IMAGE|g" \
+        -e "s|quay.io/apicurio/apicurio-registry-ui:$version|\$REGISTRY_UI_IMAGE|g" \
+        -e "s|quay.io/apicurio/apicurio-registry-3-operator:$version|\$REGISTRY_OPERATOR_IMAGE|g" \
+        "$template_file.tmp" > "$template_file"
+    
+    # Remove temporary file
+    rm "$template_file.tmp"
+    
+    echo "Template downloaded and processed successfully: $template_file"
+}
+
+# Check if operator YAML template exists, download if not
 if [ ! -f "$APICURIO_OPERATOR_YAML" ]; then
-    echo "Error: Operator YAML template '$APICURIO_OPERATOR_YAML' does not exist"
-    echo "Make sure version '$APICURIO_REGISTRY_VERSION' is available in templates/registry-operator/"
-    exit 1
+    echo "Operator YAML template '$APICURIO_OPERATOR_YAML' does not exist locally"
+    download_operator_template "$APICURIO_REGISTRY_VERSION"
+    
+    # Verify the download was successful
+    if [ ! -f "$APICURIO_OPERATOR_YAML" ]; then
+        echo "Error: Failed to download or process operator template"
+        exit 1
+    fi
 fi
 
 cd $CLUSTER_DIR
