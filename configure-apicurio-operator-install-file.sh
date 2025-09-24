@@ -13,7 +13,8 @@ show_usage() {
     echo "  --version <version>      Version of Apicurio Registry Operator to configure (e.g., 3.0.9)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
-    echo "  --cluster <name>         Name of the OpenShift cluster (default: \$USER)"
+    echo "  --cluster <name>         Name of the OpenShift cluster (default: $USER)"
+    echo "  --namespace <namespace>  Namespace for the Apicurio Registry Operator (default: apicurio-registry-operator)"
     echo "  --appImage <image>       Container image for the Apicurio Registry app (optional)"
     echo "  --uiImage <image>        Container image for the Apicurio Registry UI (optional)"
     echo "  --operatorImage <image>  Container image for the Apicurio Registry Operator (optional)"
@@ -34,6 +35,7 @@ show_usage() {
 # ##################################################
 parse_arguments() {
     CLUSTER_NAME="$USER"
+    OPERATOR_NAMESPACE="apicurio-registry-operator"
     APICURIO_REGISTRY_VERSION=""
     REGISTRY_APP_IMAGE=""
     REGISTRY_UI_IMAGE=""
@@ -43,6 +45,10 @@ parse_arguments() {
         case $1 in
             --cluster)
                 CLUSTER_NAME="$2"
+                shift 2
+                ;;
+            --namespace)
+                OPERATOR_NAMESPACE="$2"
                 shift 2
                 ;;
             --version)
@@ -78,8 +84,10 @@ parse_arguments() {
 # Function to validate parameters and set defaults
 # ##################################################
 validate_and_set_defaults() {
-    # Set default values
-    OPERATOR_NAMESPACE="apicurio-registry-operator"
+    # Set default values if not set by arguments
+    if [ -z "$OPERATOR_NAMESPACE" ]; then
+        OPERATOR_NAMESPACE="apicurio-registry-operator"
+    fi
 
     # Validate cluster name (should not be empty after defaulting to $USER)
     if [ -z "$CLUSTER_NAME" ]; then

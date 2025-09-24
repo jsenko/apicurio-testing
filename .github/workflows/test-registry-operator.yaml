@@ -19,13 +19,40 @@ on:
         required: true
         default: main
       isDownstream:
+        type: boolean
         description: Test downstream images
         required: true
         default: false
       skipClusterInstall:
+        type: boolean
         description: Skip cluster install
         required: true
         default: false
+      cluster-name:
+        description: >-
+          Name of a cluster that will be created, or if the cluster installation is skipped, 
+          name of the existing cluster to use.
+        required: true
+        default: ci419
+
+env:
+  APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+  APP_IMAGE: ${{ github.event.inputs.appImage }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_DEFAULT_REGION: "us-east-1"
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  CLUSTER_NAME: ${{ inputs.cluster-name }}
+  COMPUTE_NODES: 6
+  CONTROL_PLANE_NODES: 3
+  DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
+  OPENSHIFT_VERSION: "4.19"
+  OPERATOR_IMAGE: ${{ github.event.inputs.operatorImage }}
+  SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+  UI_IMAGE: ${{ github.event.inputs.uiImage }}
 
 jobs:
 
@@ -34,6 +61,7 @@ jobs:
     outputs:
       start-time: ${{ steps.get-start-time.outputs.start-time }}
     steps:
+
       - name: Get Workflow Start Time
         id: get-start-time
         run: |
@@ -45,37 +73,21 @@ jobs:
     name: OpenShift 4.19
     runs-on: ubuntu-latest
     timeout-minutes: 90
-
-    env:
-      OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
-      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: "us-east-1"
-      OPENSHIFT_VERSION: "4.19"
-      CLUSTER_NAME: ci419
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-      CONTROL_PLANE_NODES: 3
-      COMPUTE_NODES: 6
-      OPERATOR_IMAGE: ${{ github.event.inputs.operatorImage }}
-      APP_IMAGE: ${{ github.event.inputs.appImage }}
-      UI_IMAGE: ${{ github.event.inputs.uiImage }}
-      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+    needs: record-start-time
+    if: |
+      !cancelled() && needs.record-start-time.result == 'success' && !inputs.skipClusterInstall
 
     steps:
+
       - name: Check Required tools
         run: |
           curl --version
           jq --version
           git --version
 
-      - name: Checkout Code
+      - name: Checkout $({{ github.ref }})
         uses: actions/checkout@v4
         with:
-          ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Configure Git
@@ -85,25 +97,25 @@ jobs:
           git config pull.rebase true
 
       - name: Install OpenShift cluster
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           ./install-cluster.sh --cluster $CLUSTER_NAME \
               --okdVersion $OPENSHIFT_VERSION \
               --controlPlaneNodes $CONTROL_PLANE_NODES \
               --computeNodes $COMPUTE_NODES
 
-      - name: Restore cluster state
-        if: ${{ github.event.inputs.skipClusterInstall == 'true' }}
-        uses: ./.github/actions/restore-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
       - name: Install OpenShift Docker Pull Credentials
         run: |
           ./configure-pull-secret.sh --cluster $CLUSTER_NAME
 
+      - name: Install Apicurio Registry Operator
+        run: |
+          ./install-apicurio-operator.sh --cluster $CLUSTER_NAME \
+              --version $APICURIO_REGISTRY_VERSION \
+              --operatorImage "$OPERATOR_IMAGE" \
+              --appImage "$APP_IMAGE" \
+              --uiImage "$UI_IMAGE"
+
       - name: Commit TLS Certs (if necessary)
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           git pull origin main
           git add certificates
@@ -115,20 +127,18 @@ jobs:
           fi
 
       - name: Save cluster state
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' && always() }}
         uses: ./.github/actions/save-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
-
   os419_operator:
     name: Apicurio Registry Operator
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: os419
-
-    env:
-      CLUSTER_NAME: ci419
+    # timeout-minutes: 30
+    needs:
+      - os419
+    if: |
+      !cancelled() && (needs.os419.result == 'success' || needs.os419.result == 'skipped')
 
     steps:
 
@@ -140,13 +150,6 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: temurin
-          cache: maven
-
       - name: Restore cluster state
         uses: ./.github/actions/restore-cluster-state
         with:
@@ -156,12 +159,13 @@ jobs:
         # TODO: Do this by the restore action.
         run: |
           echo "WORKSPACE=$PWD" >> $GITHUB_ENV
-          echo "KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig" >> $GITHUB_ENV
+          echo "KUBECONFIG=$PWD/clusters/$CLUSTER_NAME/auth/kubeconfig" >> $GITHUB_ENV
 
       - name: Configure operator install file
         run: |
           ./configure-apicurio-operator-install-file.sh --cluster $CLUSTER_NAME \
             --version $APICURIO_REGISTRY_VERSION \
+            --namespace PLACEHOLDER_NAMESPACE \
             --operatorImage "$OPERATOR_IMAGE" \
             --appImage "$APP_IMAGE" \
             --uiImage "$UI_IMAGE"
@@ -184,6 +188,14 @@ jobs:
           INGRESS_HOST=$(echo $CLUSTER_API_URL | sed 's|.*://api\.\(.*\):.*|apps.\1|')
           echo "INGRESS_HOST=$INGRESS_HOST" >> $GITHUB_ENV
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+          cache-dependency-path: apicurio-registry/operator/controller/pom.xml
+
       - name: Run remote and OLM v1 tests on Minikube
         working-directory: apicurio-registry/operator
         run: |
@@ -191,7 +203,7 @@ jobs:
           #   CATALOG_IMAGE=TODO
           #   make BUILD_OPTS="--no-transfer-progress -Dtest.operator.olm-version=0" test-remote-all
           mvn --no-transfer-progress verify -pl controller -am -DskipOperatorTests=false \
-            -Dtest.operator.deployment-type=remote
+            -Dtest.operator.deployment-type=remote \
             -Dtest.operator.install-file=$WORKSPACE/templates/registry-operator/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator-configured.yaml \
             -Dtest.operator.ingress-host=$INGRESS_HOST
 
@@ -201,41 +213,23 @@ jobs:
     timeout-minutes: 20
     needs:
       - os419_operator
-    if: always()
-
-    env:
-      OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
-      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: "us-east-1"
-      CLUSTER_NAME: ci419
+    if: |
+      !cancelled() && !inputs.skipClusterInstall
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
-        if: always()
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Commit workflow metadata to repository
-        uses: ./.github/actions/commit-workflow-metadata
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
-
       - name: Destroy OpenShift cluster
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         run: |
           ./destroy-cluster.sh --cluster $CLUSTER_NAME
 
       - name: Cleanup cluster state
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         uses: ./.github/actions/cleanup-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
@@ -247,7 +241,8 @@ jobs:
     needs:
       - record-start-time
       - os419_teardown
-    if: always()
+    if: |
+      !cancelled() && needs.record-start-time.result == 'success'
     steps:
 
       - name: Checkout Code
