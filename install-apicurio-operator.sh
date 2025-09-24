@@ -10,184 +10,221 @@ show_usage() {
     echo "Usage: $0 [--cluster <cluster_name>] --version <registry_version> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --version <version>      Version of Apicurio Registry Operator to install (e.g., 3.0.9)"
+    echo "  --version <version>      Version of Apicurio Registry Operator to deploy (e.g., 3.0.9)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
-    echo "  --cluster <name>         Name of the OpenShift cluster where Apicurio Registry Operator will be installed (default: \$USER)"
-    echo ""
-    echo "OPTIONAL PARAMETERS:"
+    echo "  --cluster <name>         Name of the OpenShift cluster where Apicurio Registry Operator will be deployed (default: \$USER)"
     echo "  --appImage <image>       Container image for the Apicurio Registry app (optional)"
     echo "  --uiImage <image>        Container image for the Apicurio Registry UI (optional)"
     echo "  --operatorImage <image>  Container image for the Apicurio Registry Operator (optional)"
     echo "  -h, --help               Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
-    echo "  # Basic operator installation:"
+    echo "  # Basic operator deployment:"
     echo "  $0 --cluster okd419 --version 3.0.9"
-    echo ""
     echo ""
     echo "NOTES:"
     echo "  - The cluster must already exist and be properly configured"
     echo "  - Kubeconfig file must be present at clusters/<cluster_name>/auth/kubeconfig"
-    echo "  - This script installs the Apicurio Registry Operator cluster-wide"
-    echo "  - If operator template doesn't exist locally, it will be downloaded from GitHub automatically"
+    echo "  - This script deploys the Apicurio Registry Operator cluster-wide"
+    echo "  - Will automatically call configure-apicurio-operator.sh if configured template doesn't exist"
 }
 
-# Parse command line arguments
-CLUSTER_NAME="$USER"
-APICURIO_REGISTRY_VERSION=""
-REGISTRY_APP_IMAGE=""
-REGISTRY_UI_IMAGE=""
-REGISTRY_OPERATOR_IMAGE=""
+# ##################################################
+# Function to parse command line arguments
+# ##################################################
+parse_arguments() {
+    CLUSTER_NAME="$USER"
+    APICURIO_REGISTRY_VERSION=""
+    REGISTRY_APP_IMAGE=""
+    REGISTRY_UI_IMAGE=""
+    REGISTRY_OPERATOR_IMAGE=""
 
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --cluster)
-            CLUSTER_NAME="$2"
-            shift 2
-            ;;
-        --version)
-            APICURIO_REGISTRY_VERSION="$2"
-            shift 2
-            ;;
-        --appImage)
-            REGISTRY_APP_IMAGE="$2"
-            shift 2
-            ;;
-        --uiImage)
-            REGISTRY_UI_IMAGE="$2"
-            shift 2
-            ;;
-        --operatorImage)
-            REGISTRY_OPERATOR_IMAGE="$2"
-            shift 2
-            ;;
-        -h|--help)
-            show_usage
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            show_usage
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --cluster)
+                CLUSTER_NAME="$2"
+                shift 2
+                ;;
+            --version)
+                APICURIO_REGISTRY_VERSION="$2"
+                shift 2
+                ;;
+            --appImage)
+                REGISTRY_APP_IMAGE="$2"
+                shift 2
+                ;;
+            --uiImage)
+                REGISTRY_UI_IMAGE="$2"
+                shift 2
+                ;;
+            --operatorImage)
+                REGISTRY_OPERATOR_IMAGE="$2"
+                shift 2
+                ;;
+            -h|--help)
+                show_usage
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+}
+
+# ##################################################
+# Function to validate parameters and set defaults
+# ##################################################
+validate_and_set_defaults() {
+    # Set default values
+    OPERATOR_NAMESPACE="apicurio-registry-operator"
+
+    # Validate cluster name (should not be empty after defaulting to $USER)
+    if [ -z "$CLUSTER_NAME" ]; then
+        echo "Error: cluster name is empty (default: \$USER)"
+        show_usage
+        exit 1
+    fi
+
+    if [ -z "$APICURIO_REGISTRY_VERSION" ]; then
+        echo "Error: --version argument is required"
+        show_usage
+        exit 1
+    fi
+
+    # Set up environment variables
+    export CLUSTER_NAME
+    export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
+    export APICURIO_REGISTRY_VERSION
+    export CONFIGURED_OPERATOR_YAML="$BASE_DIR/templates/registry-operator/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator-configured.yaml"
+}
+
+# ##################################################
+# Function to validate cluster setup
+# ##################################################
+validate_cluster_setup() {
+    # Check if cluster directory exists
+    if [ ! -d "$CLUSTER_DIR" ]; then
+        echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
+        echo "Make sure the cluster '$CLUSTER_NAME' has been created"
+        exit 1
+    fi
+
+    # Check if kubeconfig exists
+    if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
+        echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
+        echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
+        exit 1
+    fi
+}
+
+# ##################################################
+# Function to configure operator template if needed
+# ##################################################
+configure_template_if_needed() {
+    # Check if configured operator YAML exists, configure it if not
+    if [ ! -f "$CONFIGURED_OPERATOR_YAML" ]; then
+        echo "Configured operator YAML '$CONFIGURED_OPERATOR_YAML' does not exist"
+        echo "Calling configure-apicurio-operator-install-file.sh to configure template..."
+
+        # Build arguments for configure script
+        CONFIGURE_ARGS="--cluster $CLUSTER_NAME --version $APICURIO_REGISTRY_VERSION"
+        if [ -n "$REGISTRY_APP_IMAGE" ]; then
+            CONFIGURE_ARGS="$CONFIGURE_ARGS --appImage $REGISTRY_APP_IMAGE"
+        fi
+        if [ -n "$REGISTRY_UI_IMAGE" ]; then
+            CONFIGURE_ARGS="$CONFIGURE_ARGS --uiImage $REGISTRY_UI_IMAGE"
+        fi
+        if [ -n "$REGISTRY_OPERATOR_IMAGE" ]; then
+            CONFIGURE_ARGS="$CONFIGURE_ARGS --operatorImage $REGISTRY_OPERATOR_IMAGE"
+        fi
+
+        # Call the configure script
+        if ! "$BASE_DIR/configure-apicurio-operator-install-file.sh" $CONFIGURE_ARGS; then
+            echo "Error: Failed to configure operator template"
             exit 1
-            ;;
-    esac
-done
+        fi
 
-# Set default values
-OPERATOR_NAMESPACE="apicurio-registry-operator"
-
-# Validate cluster name (should not be empty after defaulting to $USER)
-if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: cluster name is empty (default: \$USER)"
-    show_usage
-    exit 1
-fi
-
-if [ -z "$APICURIO_REGISTRY_VERSION" ]; then
-    echo "Error: --version argument is required"
-    show_usage
-    exit 1
-fi
-
-# Set default image values (temporary placeholders)
-if [ -z "$REGISTRY_APP_IMAGE" ]; then
-    REGISTRY_APP_IMAGE="quay.io/apicurio/apicurio-registry:$APICURIO_REGISTRY_VERSION"
-fi
-if [ -z "$REGISTRY_UI_IMAGE" ]; then
-    REGISTRY_UI_IMAGE="quay.io/apicurio/apicurio-registry-ui:$APICURIO_REGISTRY_VERSION"
-fi
-if [ -z "$REGISTRY_OPERATOR_IMAGE" ]; then
-    REGISTRY_OPERATOR_IMAGE="quay.io/apicurio/apicurio-registry-3-operator:$APICURIO_REGISTRY_VERSION"
-fi
-
-# Set up environment variables
-export CLUSTER_NAME
-export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
-export APICURIO_REGISTRY_VERSION
-export APICURIO_OPERATOR_YAML="$BASE_DIR/templates/registry-operator/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator.yaml"
-
-# Check if cluster directory exists
-if [ ! -d "$CLUSTER_DIR" ]; then
-    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been created"
-    exit 1
-fi
-
-# Check if kubeconfig exists
-if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
-    echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
-    exit 1
-fi
-
-# ##################################################
-# Function to download and process operator YAML template
-# ##################################################
-download_operator_template() {
-    local version="$1"
-    local template_dir="$BASE_DIR/templates/registry-operator/$version"
-    local template_file="$template_dir/apicurio-registry-operator.yaml"
-    local download_url="https://raw.githubusercontent.com/Apicurio/apicurio-registry/refs/tags/v$version/operator/install/install.yaml"
-    
-    echo "Operator YAML template not found locally. Downloading from GitHub..."
-    echo "URL: $download_url"
-    
-    # Create the directory if it doesn't exist
-    mkdir -p "$template_dir"
-    
-    # Download the template
-    if ! curl -s -f -L "$download_url" -o "$template_file.tmp"; then
-        echo "Error: Failed to download operator template from $download_url"
-        echo "Please check if version '$version' exists or download manually"
-        exit 1
+        # Verify the configuration was successful
+        if [ ! -f "$CONFIGURED_OPERATOR_YAML" ]; then
+            echo "Error: Failed to configure operator template"
+            exit 1
+        fi
+    else
+        echo "Using existing configured operator YAML: $CONFIGURED_OPERATOR_YAML"
     fi
-    
-    # Process the template to replace placeholders with environment variable references
-    echo "Processing template to replace placeholders..."
-    sed -e 's/PLACEHOLDER_NAMESPACE/$OPERATOR_NAMESPACE/g' \
-        -e "s|quay.io/apicurio/apicurio-registry:$version|\$REGISTRY_APP_IMAGE|g" \
-        -e "s|quay.io/apicurio/apicurio-registry-ui:$version|\$REGISTRY_UI_IMAGE|g" \
-        -e "s|quay.io/apicurio/apicurio-registry-3-operator:$version|\$REGISTRY_OPERATOR_IMAGE|g" \
-        "$template_file.tmp" > "$template_file"
-    
-    # Remove temporary file
-    rm "$template_file.tmp"
-    
-    echo "Template downloaded and processed successfully: $template_file"
 }
 
-# Check if operator YAML template exists, download if not
-if [ ! -f "$APICURIO_OPERATOR_YAML" ]; then
-    echo "Operator YAML template '$APICURIO_OPERATOR_YAML' does not exist locally"
-    download_operator_template "$APICURIO_REGISTRY_VERSION"
-    
-    # Verify the download was successful
-    if [ ! -f "$APICURIO_OPERATOR_YAML" ]; then
-        echo "Error: Failed to download or process operator template"
-        exit 1
-    fi
-fi
+# ##################################################
+# Function to setup kubectl environment
+# ##################################################
+setup_kubectl() {
+    cd "$CLUSTER_DIR" || exit 1
 
-cd $CLUSTER_DIR
+    # Set up kubectl auth
+    export KUBECONFIG="$CLUSTER_DIR/auth/kubeconfig"
+    echo "Using kubeconfig: $KUBECONFIG"
+}
 
-# Set up kubectl auth
-export KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig
+# ##################################################
+# Function to create namespace
+# ##################################################
+create_namespace() {
+    # Create the namespace if it doesn't exist
+    echo "Creating namespace: $OPERATOR_NAMESPACE (if it doesn't exist)"
+    kubectl create namespace "$OPERATOR_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+}
 
-# Create the namespace if it doesn't exist
-echo "Creating namespace: $OPERATOR_NAMESPACE (if it doesn't exist)"
-kubectl create namespace $OPERATOR_NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+# ##################################################
+# Function to deploy operator
+# ##################################################
+deploy_operator() {
+    # Deploy the Apicurio Registry operator to the namespace
+    echo "Using configured Apicurio Registry Operator YAML: $CONFIGURED_OPERATOR_YAML"
+    echo "Installing Apicurio Registry Operator into namespace $OPERATOR_NAMESPACE"
+    kubectl apply -f "$CONFIGURED_OPERATOR_YAML" -n "$OPERATOR_NAMESPACE"
+}
 
-# Deploy the Apicurio Registry operator to the namespace
-echo "Using Apicurio Registry Operator YAML from: $APICURIO_OPERATOR_YAML"
-export OPERATOR_NAMESPACE
-export REGISTRY_APP_IMAGE
-export REGISTRY_UI_IMAGE
-export REGISTRY_OPERATOR_IMAGE
-envsubst < "$APICURIO_OPERATOR_YAML" > $CLUSTER_DIR/apicurio-registry-operator.yaml
-echo "Installing Apicurio Registry Operator into namespace $OPERATOR_NAMESPACE"
-kubectl apply -f $CLUSTER_DIR/apicurio-registry-operator.yaml -n $OPERATOR_NAMESPACE
+# ##################################################
+# Function to display deployment summary
+# ##################################################
+display_summary() {
+    echo "Apicurio Registry Operator deployment completed successfully!"
+    echo "Operator deployed in namespace: $OPERATOR_NAMESPACE"
+    echo "Configured YAML used: $CONFIGURED_OPERATOR_YAML"
+}
 
-echo "Apicurio Registry Operator installation completed successfully!"
-echo "Operator installed in namespace: $OPERATOR_NAMESPACE"
-echo "Operator YAML saved to: $CLUSTER_DIR/apicurio-registry-operator.yaml"
+# ##################################################
+# Main execution
+# ##################################################
+main() {
+    # Parse command line arguments
+    parse_arguments "$@"
+
+    # Validate parameters and set defaults
+    validate_and_set_defaults
+
+    # Validate cluster setup
+    validate_cluster_setup
+
+    # Configure template if needed
+    configure_template_if_needed
+
+    # Setup kubectl environment
+    setup_kubectl
+
+    # Create namespace
+    create_namespace
+
+    # Deploy operator
+    deploy_operator
+
+    # Display summary
+    display_summary
+}
+
+# Execute main function with all arguments
+main "$@"

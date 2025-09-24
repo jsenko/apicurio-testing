@@ -1,0 +1,267 @@
+name: Release Tests - Apicurio Registry Operator
+on:
+  workflow_dispatch:
+    inputs:
+      release-version:
+        description: Released version to test
+        required: true
+      operatorImage:
+        description: Operator image to test (optional)
+        required: false
+      appImage:
+        description: Application image to test (optional)
+        required: false
+      uiImage:
+        description: UI image to test (optional)
+        required: false
+      tests-tag:
+        description: git tag to use for running tests
+        required: true
+        default: main
+      isDownstream:
+        description: Test downstream images
+        required: true
+        default: false
+      skipClusterInstall:
+        description: Skip cluster install
+        required: true
+        default: false
+
+jobs:
+
+  record-start-time:
+    runs-on: ubuntu-latest
+    outputs:
+      start-time: ${{ steps.get-start-time.outputs.start-time }}
+    steps:
+      - name: Get Workflow Start Time
+        id: get-start-time
+        run: |
+          START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "start-time=$START_TIME" >> $GITHUB_OUTPUT
+          echo "Workflow start time: $START_TIME"
+
+  os419:
+    name: OpenShift 4.19
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1"
+      OPENSHIFT_VERSION: "4.19"
+      CLUSTER_NAME: ci419
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      CONTROL_PLANE_NODES: 3
+      COMPUTE_NODES: 6
+      OPERATOR_IMAGE: ${{ github.event.inputs.operatorImage }}
+      APP_IMAGE: ${{ github.event.inputs.appImage }}
+      UI_IMAGE: ${{ github.event.inputs.uiImage }}
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+
+    steps:
+      - name: Check Required tools
+        run: |
+          curl --version
+          jq --version
+          git --version
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "apicurio-ci"
+          git config user.email "apicurio.ci@gmail.com"
+          git config pull.rebase true
+
+      - name: Install OpenShift cluster
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        run: |
+          ./install-cluster.sh --cluster $CLUSTER_NAME \
+              --okdVersion $OPENSHIFT_VERSION \
+              --controlPlaneNodes $CONTROL_PLANE_NODES \
+              --computeNodes $COMPUTE_NODES
+
+      - name: Restore cluster state
+        if: ${{ github.event.inputs.skipClusterInstall == 'true' }}
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster $CLUSTER_NAME
+
+      - name: Commit TLS Certs (if necessary)
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        run: |
+          git pull origin main
+          git add certificates
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+          else
+            git commit -m '(re)generated TLS certificate for cluster $CLUSTER_NAME'
+            git push origin main
+          fi
+
+      - name: Save cluster state
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' && always() }}
+        uses: ./.github/actions/save-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os419_operator:
+    name: Apicurio Registry Operator
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: os419
+
+    env:
+      CLUSTER_NAME: ci419
+
+    steps:
+
+      - name: Checkout ${{ github.ref }}
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+
+      - name: Restore cluster state
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Configure env. variables
+        # TODO: Do this by the restore action.
+        run: |
+          echo "WORKSPACE=$PWD" >> $GITHUB_ENV
+          echo "KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig" >> $GITHUB_ENV
+
+      - name: Configure operator install file
+        run: |
+          ./configure-apicurio-operator-install-file.sh --cluster $CLUSTER_NAME \
+            --version $APICURIO_REGISTRY_VERSION \
+            --operatorImage "$OPERATOR_IMAGE" \
+            --appImage "$APP_IMAGE" \
+            --uiImage "$UI_IMAGE"
+
+      - name: Checkout Registry
+        run: |
+          echo "Cloning apicurio-registry git repository at branch/tag: ${{ inputs.tests-tag }}"
+          if [ -d "apicurio-registry" ]; then
+            echo "Repository already exists, removing and re-cloning..."
+            rm -rf apicurio-registry
+          fi
+          git clone --branch ${{ inputs.tests-tag }} --depth 1 https://github.com/Apicurio/apicurio-registry.git
+
+      - name: Extract Ingress host
+        # TODO: Also do this by the restore action, or add it to the operator Makefile.
+        run: |
+          CONTEXT_NAME=$(kubectl config view -o json | jq -r '.["current-context"]')
+          CLUSTER_NAME=$(kubectl config view -o json | jq -r --arg context_name "$CONTEXT_NAME" '.contexts[] | select(.name == $context_name) | .context.cluster')
+          CLUSTER_API_URL=$(kubectl config view -o json | jq -r --arg cluster_name "$CLUSTER_NAME" '.clusters[] | select(.name == $cluster_name) | .cluster.server')
+          INGRESS_HOST=$(echo $CLUSTER_API_URL | sed 's|.*://api\.\(.*\):.*|apps.\1|')
+          echo "INGRESS_HOST=$INGRESS_HOST" >> $GITHUB_ENV
+
+      - name: Run remote and OLM v1 tests on Minikube
+        working-directory: apicurio-registry/operator
+        run: |
+          # TODO: Also run OLM tests
+          #   CATALOG_IMAGE=TODO
+          #   make BUILD_OPTS="--no-transfer-progress -Dtest.operator.olm-version=0" test-remote-all
+          mvn --no-transfer-progress verify -pl controller -am -DskipOperatorTests=false \
+            -Dtest.operator.deployment-type=remote
+            -Dtest.operator.install-file=$WORKSPACE/templates/registry-operator/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator-configured.yaml \
+            -Dtest.operator.ingress-host=$INGRESS_HOST
+
+  os419_teardown:
+    name: Destroy OpenShift 4.19
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs:
+      - os419_operator
+    if: always()
+
+    env:
+      OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1"
+      CLUSTER_NAME: ci419
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit workflow metadata to repository
+        uses: ./.github/actions/commit-workflow-metadata
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
+
+      - name: Destroy OpenShift cluster
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        run: |
+          ./destroy-cluster.sh --cluster $CLUSTER_NAME
+
+      - name: Cleanup cluster state
+        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        uses: ./.github/actions/cleanup-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+  save_workflow_metadata:
+    name: Save Workflow Metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - record-start-time
+      - os419_teardown
+    if: always()
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Log Workflow Start Time
+        run: |
+          echo "Workflow Start Time: ${{ needs.record-start-time.outputs.start-time }}"
+
+      - name: Commit workflow metadata to repository
+        uses: ./.github/actions/commit-workflow-metadata
+        with:
+          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
