@@ -182,10 +182,10 @@ get_okd_installer_url() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 [--cluster <cluster-name>] [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>]"
+    echo "Usage: $0 [--cluster <cluster-name>] [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>] [--debug] [--force]"
     echo ""
     echo "Optional Parameters:"
-    echo "  --cluster <cluster-name>     Name of the cluster to install (default: \$USER)"
+    echo "  --cluster <cluster-name>     Name of the cluster to install (default: $USER)"
     echo "                               Must contain only letters and numbers"
     echo ""
     echo "Optional Parameters:"
@@ -194,6 +194,8 @@ usage() {
     echo "  --computeNodes <count>       Number of compute/worker nodes (default: 3)"
     echo "  --controlPlaneNodes <count>  Number of control plane/master nodes (default: 3)"
     echo "  --baseDomain <domain>        Base domain name for the cluster (default: apicurio-testing.org)"
+    echo "  --debug                     Enable debug logging for openshift-install"
+    echo "  --force                     Force deletion of existing cluster directory (DANGEROUS: Might delete live cluster metadata!)"
     echo "  -h, --help                   Show this help message"
     exit 1
 }
@@ -205,6 +207,8 @@ REGION="us-east-1"
 COMPUTE_NODES="3"
 CONTROL_PLANE_NODES="3"
 BASE_DOMAIN="apicurio-testing.org"
+DEBUG="false"
+FORCE="false"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -232,6 +236,14 @@ while [[ $# -gt 0 ]]; do
         --baseDomain)
             BASE_DOMAIN="$2"
             shift 2
+            ;;
+        --debug)
+            DEBUG="true"
+            shift 1
+            ;;
+        --force)
+            FORCE="true"
+            shift 1
             ;;
         -h|--help)
             usage
@@ -292,10 +304,29 @@ echo "Cluster configuration: $CONTROL_PLANE_NODES control plane nodes, $COMPUTE_
 echo "Using base domain: $BASE_DOMAIN"
 CLUSTER_DIR=$BASE_DIR/clusters/$CLUSTER_NAME
 
+# Check if cluster directory already exists and handle it safely
+if [[ -d "$CLUSTER_DIR" ]]; then
+    echo "Warning: Cluster directory '$CLUSTER_DIR' already exists!"
+    echo "This may contain state from a live cluster."
+
+    if [[ "$FORCE" != "true" ]]; then
+        echo ""
+        echo "Error: Refusing to delete existing cluster directory without explicit confirmation."
+        echo "To proceed and DELETE the existing cluster directory, re-run with --force flag:"
+        echo "  $0 --cluster $CLUSTER_NAME --force"
+        echo ""
+        echo "WARNING: Using --force will permanently delete the existing cluster metadata!"
+        echo "Make sure the cluster is properly destroyed before using --force."
+        exit 1
+    else
+        echo "Force flag detected. Removing existing cluster directory..."
+        rm -rf "$CLUSTER_DIR"
+    fi
+fi
+
 # Create a work directory for installing the OKD cluster
-rm -rf $CLUSTER_DIR
 mkdir -p $CLUSTER_DIR
-cd $CLUSTER_DIR
+cd $CLUSTER_DIR || exit 1
 
 # Download the OKD installer
 INSTALLER_URL=$(get_okd_installer_url "$OKD_VERSION")
@@ -331,10 +362,14 @@ export BASE_DOMAIN
 envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
 
 # Install the cluster
-./openshift-install create cluster --log-level=info
+if [[ "$DEBUG" == "true" ]]; then
+    ./openshift-install create cluster --log-level=debug
+else
+    ./openshift-install create cluster
+fi
 
 # Generate a TLS cert for the cluster
-cd $BASE_DIR
+cd $BASE_DIR || exit 1
 ./generate-tls-cert.sh --cluster $CLUSTER_NAME
 
 # Update the cluster's default ingress to use the cert
