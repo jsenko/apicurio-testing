@@ -1353,6 +1353,9 @@ jobs:
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
       CONTROL_PLANE_NODES: 3
       COMPUTE_NODES: 3
+      OPERATOR_IMAGE: ${{ github.event.inputs.operatorImage }}
+      APP_IMAGE: ${{ github.event.inputs.appImage }}
+      UI_IMAGE: ${{ github.event.inputs.uiImage }}
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
