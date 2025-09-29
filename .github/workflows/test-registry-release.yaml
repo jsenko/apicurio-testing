@@ -394,65 +394,6 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_strimzi043:
-    name: Apicurio Registry (strimzi 0.43)
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    needs: os419
-    if: always()
-
-    env:
-      CLUSTER_NAME: ci419
-      NAMESPACE: ksql043
-      PROFILE: kafkasql
-      STRIMZI_VERSION: 0.43.0
-      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
-
-      - name: Verify kubectl
-        run: kubectl version --client
-
-      - name: Restore cluster state
-        if: always()
-        uses: ./.github/actions/restore-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Install Strimzi Operator
-        run: |
-          ./install-strimzi.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --version $STRIMZI_VERSION
-
-      - name: Install Kafka Cluster
-        run: |
-          ./install-kafka.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
-
-      - name: Install Apicurio Registry
-        run: |
-          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
-
-      - name: Commit pod logs to repository
-        if: failure()
-        uses: ./.github/actions/commit-pod-logs
-        with:
-          cluster-name: ${{ env.CLUSTER_NAME }}
-          namespace: ${{ env.NAMESPACE }}
-          job-name: ${{ github.job }}
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-
   os419_authn:
     name: Apicurio Registry (authn)
     runs-on: ubuntu-latest
@@ -1043,108 +984,6 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_strimzi043_uitests:
-    name: UI Tests (strimzi 0.43)
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs: os419_strimzi043
-
-    env:
-      CLUSTER_NAME: ci419
-      NAMESPACE: ksql043
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Restore cluster state
-        if: always()
-        uses: ./.github/actions/restore-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Run UI Tests
-        run: |
-          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
-              --namespace $NAMESPACE \
-              --isDownstream $IS_DOWNSTREAM_VERSION \
-              --tag ${{ github.event.inputs.tests-tag }}
-
-      - name: Commit UI test results to repository
-        if: always()
-        uses: ./.github/actions/commit-ui-test-results
-        with:
-          cluster-name: ${{ env.CLUSTER_NAME }}
-          namespace: ${{ env.NAMESPACE }}
-          job-name: ${{ github.job }}
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Commit pod logs to repository
-        if: failure()
-        uses: ./.github/actions/commit-pod-logs
-        with:
-          cluster-name: ${{ env.CLUSTER_NAME }}
-          namespace: ${{ env.NAMESPACE }}
-          job-name: ${{ github.job }}
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-
-  os419_strimzi043_integrationtests:
-    name: Integration Tests (strimzi 0.43)
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    needs: os419_strimzi043_uitests
-
-    env:
-      CLUSTER_NAME: ci419
-      NAMESPACE: ksql043
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Restore cluster state
-        if: always()
-        uses: ./.github/actions/restore-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Run Integration Tests
-        run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
-
-      - name: Commit integration test results to repository
-        if: always()
-        uses: ./.github/actions/commit-integration-test-results
-        with:
-          cluster-name: ${{ env.CLUSTER_NAME }}
-          namespace: ${{ env.NAMESPACE }}
-          job-name: ${{ github.job }}
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Commit pod logs to repository
-        if: failure()
-        uses: ./.github/actions/commit-pod-logs
-        with:
-          cluster-name: ${{ env.CLUSTER_NAME }}
-          namespace: ${{ env.NAMESPACE }}
-          job-name: ${{ github.job }}
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-
   os419_authn_integrationtests:
     name: Integration Tests (authn)
     runs-on: ubuntu-latest
@@ -1416,36 +1255,6 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_strimzi043_teardown:
-    name: Destroy Registry (strimzi 0.43)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs:
-      - os419_strimzi043_uitests
-      - os419_strimzi043_integrationtests
-    if: always()
-
-    env:
-      CLUSTER_NAME: ci419
-      NAMESPACE: ksql043
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Restore cluster state
-        if: always()
-        uses: ./.github/actions/restore-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Destroy Namespace
-        run: |
-          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
-
-
   os419_authn_teardown:
     name: Destroy Registry (authn)
     runs-on: ubuntu-latest
@@ -1486,7 +1295,6 @@ jobs:
       - os419_pg12_teardown
       - os419_mysql_teardown
       - os419_strimzi047_teardown
-      - os419_strimzi043_teardown
       - os419_authn_teardown
     if: always()
 
@@ -1533,8 +1341,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
-    needs:
-      - os419_teardown
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
@@ -1783,12 +1589,204 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
+  os414_strimzi043:
+    name: Apicurio Registry (strimzi 0.43)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os414
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci414
+      NAMESPACE: ksql043
+      PROFILE: kafkasql
+      STRIMZI_VERSION: 0.43.0
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install Strimzi Operator
+        run: |
+          ./install-strimzi.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --version $STRIMZI_VERSION
+
+      - name: Install Kafka Cluster
+        run: |
+          ./install-kafka.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os414_strimzi043_uitests:
+    name: UI Tests (strimzi 0.43)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: os414_strimzi043
+
+    env:
+      CLUSTER_NAME: ci414
+      NAMESPACE: ksql043
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Run UI Tests
+        run: |
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --isDownstream $IS_DOWNSTREAM_VERSION \
+              --tag ${{ github.event.inputs.tests-tag }}
+
+      - name: Commit UI test results to repository
+        if: always()
+        uses: ./.github/actions/commit-ui-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os414_strimzi043_integrationtests:
+    name: Integration Tests (strimzi 0.43)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os414_strimzi043_uitests
+
+    env:
+      CLUSTER_NAME: ci414
+      NAMESPACE: ksql043
+      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os414_strimzi043_teardown:
+    name: Destroy Registry (strimzi 0.43)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - os414_strimzi043_uitests
+      - os414_strimzi043_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci414
+      NAMESPACE: ksql043
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Destroy Namespace
+        run: |
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+
   os414_teardown:
     name: Destroy OpenShift 4.14
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs:
       - os414_inmemory_teardown
+      - os414_strimzi043_teardown
     if: always()
 
     env:
