@@ -1,0 +1,100 @@
+name: Provision a new OKD cluster
+on:
+  workflow_dispatch:
+    inputs:
+      cluster-name:
+        type: string
+        description: Cluster name
+        required: true
+      cluster-version:
+        type: string
+        description: OKD version to install
+        required: true
+        default: "4.19"
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_DEFAULT_REGION: "us-east-1"
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  COMPUTE_NODES: 6
+  CONTROL_PLANE_NODES: 3
+  DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
+  SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+
+jobs:
+
+  record-start-time:
+    runs-on: ubuntu-latest
+    outputs:
+      start-time: ${{ steps.get-start-time.outputs.start-time }}
+    steps:
+
+      - name: Get Workflow Start Time
+        id: get-start-time
+        run: |
+          START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "start-time=$START_TIME" >> $GITHUB_OUTPUT
+          echo "Workflow start time: $START_TIME"
+
+  provision-cluster:
+    name: Provision OpenShift ${{ inputs.cluster-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: record-start-time
+    steps:
+
+      - name: Checkout $({{ github.ref }})
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Load test cache
+        run: |
+          ./load-cache.sh --token "${{ secrets.ACCESS_TOKEN }}"
+
+      - name: Install OpenShift cluster
+        run: |
+          ./install-cluster.sh --cluster ${{ inputs.cluster-name }} \
+              --okdVersion ${{ inputs.cluster-version }} \
+              --controlPlaneNodes $CONTROL_PLANE_NODES \
+              --computeNodes $COMPUTE_NODES \
+              --log-level warn
+
+      - name: Install OpenShift Docker Pull Credentials
+        run: |
+          ./configure-pull-secret.sh --cluster ${{ inputs.cluster-name }}
+
+      - name: Save test cache
+        uses: ./.github/actions/save-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+  save_workflow_metadata:
+    name: Save Workflow Metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - record-start-time
+      - provision-cluster
+    if: |
+      !cancelled() && needs.record-start-time.result == 'success'
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Log Workflow Start Time
+        run: |
+          echo "Workflow Start Time: ${{ needs.record-start-time.outputs.start-time }}"
+
+      - name: Commit workflow metadata to repository
+        uses: ./.github/actions/commit-workflow-metadata
+        with:
+          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}

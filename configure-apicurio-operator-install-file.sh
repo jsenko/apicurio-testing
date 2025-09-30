@@ -115,7 +115,6 @@ validate_and_set_defaults() {
 
     # Set up environment variables
     export CLUSTER_NAME
-    export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
     export APICURIO_REGISTRY_VERSION
     export APICURIO_OPERATOR_YAML="$BASE_DIR/templates/registry-operator/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator.yaml"
     export CONFIGURED_OPERATOR_YAML="$BASE_DIR/templates/registry-operator/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator-configured.yaml"

@@ -6,6 +6,8 @@
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+source "$BASE_DIR/shared.sh"
+
 # Source secrets.env if it exists
 if [[ -f "$BASE_DIR/secrets.env" ]]; then
     echo "Sourcing environment variables from secrets.env..."
@@ -107,25 +109,7 @@ fi
 # Validate required environment variables
 validate_env_vars
 
-# Set up cluster and directory paths
-CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
-
-# Check if cluster directory exists
-if [[ ! -d "$CLUSTER_DIR" ]]; then
-    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been created"
-    exit 1
-fi
-
-# Check if kubeconfig exists
-if [[ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]]; then
-    echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
-    exit 1
-fi
-
-# Set up kubectl auth
-export KUBECONFIG="$CLUSTER_DIR/auth/kubeconfig"
+load_cluster_config "$CLUSTER_NAME"
 
 echo "Configuring Docker registry pull secret for cluster '$CLUSTER_NAME'"
 echo "Docker server: $DOCKER_SERVER"

@@ -3,6 +3,8 @@
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+source "$BASE_DIR/shared.sh"
+
 # ##################################################
 # Function to display usage information
 # ##################################################
@@ -82,13 +84,6 @@ validate_and_set_defaults() {
     # Set default values
     OPERATOR_NAMESPACE="apicurio-registry-operator"
 
-    # Validate cluster name (should not be empty after defaulting to $USER)
-    if [ -z "$CLUSTER_NAME" ]; then
-        echo "Error: cluster name is empty (default: \$USER)"
-        show_usage
-        exit 1
-    fi
-
     if [ -z "$APICURIO_REGISTRY_VERSION" ]; then
         echo "Error: --version argument is required"
         show_usage
@@ -97,28 +92,8 @@ validate_and_set_defaults() {
 
     # Set up environment variables
     export CLUSTER_NAME
-    export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
     export APICURIO_REGISTRY_VERSION
     export CONFIGURED_OPERATOR_YAML="$BASE_DIR/templates/registry-operator/$APICURIO_REGISTRY_VERSION/apicurio-registry-operator-configured.yaml"
-}
-
-# ##################################################
-# Function to validate cluster setup
-# ##################################################
-validate_cluster_setup() {
-    # Check if cluster directory exists
-    if [ ! -d "$CLUSTER_DIR" ]; then
-        echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-        echo "Make sure the cluster '$CLUSTER_NAME' has been created"
-        exit 1
-    fi
-
-    # Check if kubeconfig exists
-    if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
-        echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
-        echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
-        exit 1
-    fi
 }
 
 # ##################################################
@@ -159,17 +134,6 @@ configure_template_if_needed() {
 }
 
 # ##################################################
-# Function to setup kubectl environment
-# ##################################################
-setup_kubectl() {
-    cd "$CLUSTER_DIR" || exit 1
-
-    # Set up kubectl auth
-    export KUBECONFIG="$CLUSTER_DIR/auth/kubeconfig"
-    echo "Using kubeconfig: $KUBECONFIG"
-}
-
-# ##################################################
 # Function to create namespace
 # ##################################################
 create_namespace() {
@@ -207,14 +171,10 @@ main() {
     # Validate parameters and set defaults
     validate_and_set_defaults
 
-    # Validate cluster setup
-    validate_cluster_setup
+    load_cluster_config "$CLUSTER_NAME"
 
     # Configure template if needed
     configure_template_if_needed
-
-    # Setup kubectl environment
-    setup_kubectl
 
     # Create namespace
     create_namespace

@@ -6,6 +6,8 @@
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+source "$BASE_DIR/shared.sh"
+
 # Function to display usage
 usage() {
     echo "Usage: $0 [--cluster <cluster-name>] --namespace <namespace>"
@@ -66,13 +68,6 @@ if [[ -z "$NAMESPACE" ]]; then
     usage
 fi
 
-# Validate cluster name format (only letters and numbers allowed)
-if [[ ! "$CLUSTER_NAME" =~ ^[a-zA-Z0-9]+$ ]]; then
-    echo "Error: Cluster name '$CLUSTER_NAME' is invalid"
-    echo "Cluster name must contain only letters and numbers (no spaces, hyphens, or special characters)"
-    exit 1
-fi
-
 # Validate namespace format (only letters and numbers allowed)
 if [[ ! "$NAMESPACE" =~ ^[a-zA-Z0-9-]+$ ]]; then
     echo "Error: Namespace '$NAMESPACE' is invalid"
@@ -80,25 +75,7 @@ if [[ ! "$NAMESPACE" =~ ^[a-zA-Z0-9-]+$ ]]; then
     exit 1
 fi
 
-# Set up cluster directory path
-CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
-
-# Check if cluster directory exists
-if [[ ! -d "$CLUSTER_DIR" ]]; then
-    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been created"
-    exit 1
-fi
-
-# Check if kubeconfig exists
-if [[ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]]; then
-    echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
-    exit 1
-fi
-
-# Set up kubectl auth
-export KUBECONFIG="$CLUSTER_DIR/auth/kubeconfig"
+load_cluster_config "$CLUSTER_NAME"
 
 echo "Destroying namespace '$NAMESPACE' in cluster '$CLUSTER_NAME'"
 

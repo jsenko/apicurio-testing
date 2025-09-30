@@ -101,7 +101,8 @@ jobs:
           ./install-cluster.sh --cluster $CLUSTER_NAME \
               --okdVersion $OPENSHIFT_VERSION \
               --controlPlaneNodes $CONTROL_PLANE_NODES \
-              --computeNodes $COMPUTE_NODES
+              --computeNodes $COMPUTE_NODES \
+              --log-level warn
 
       - name: Install OpenShift Docker Pull Credentials
         run: |
@@ -159,7 +160,7 @@ jobs:
         # TODO: Do this by the restore action.
         run: |
           echo "WORKSPACE=$PWD" >> $GITHUB_ENV
-          echo "KUBECONFIG=$PWD/clusters/$CLUSTER_NAME/auth/kubeconfig" >> $GITHUB_ENV
+          echo "KUBECONFIG=$PWD/cache/clusters/$CLUSTER_NAME/auth/kubeconfig" >> $GITHUB_ENV
 
       - name: Configure operator install file
         run: |

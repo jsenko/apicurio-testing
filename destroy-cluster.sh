@@ -6,6 +6,8 @@
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+source "$BASE_DIR/shared.sh"
+
 # Source secrets.env if it exists
 if [[ -f "$BASE_DIR/secrets.env" ]]; then
     echo "Sourcing environment variables from secrets.env..."
@@ -47,64 +49,6 @@ validate_env_vars() {
     fi
 }
 
-# Function to ensure openshift-install binary is available
-ensure_installer() {
-    local cluster_dir="$1"
-    
-    # Check if openshift-install binary already exists
-    if [[ -f "$cluster_dir/openshift-install" ]]; then
-        echo "OpenShift installer already present"
-        return 0
-    fi
-    
-    echo "OpenShift installer not found, attempting to download..."
-    
-    # Check if installer-url.txt exists
-    if [[ ! -f "$cluster_dir/installer-url.txt" ]]; then
-        echo "Error: installer-url.txt not found in cluster directory"
-        echo "This file should have been created during cluster installation"
-        echo "Cannot proceed without knowing which installer version to download"
-        exit 1
-    fi
-    
-    # Read the installer URL from the file
-    local installer_url
-    installer_url=$(cat "$cluster_dir/installer-url.txt")
-    
-    if [[ -z "$installer_url" ]]; then
-        echo "Error: installer-url.txt is empty"
-        exit 1
-    fi
-    
-    echo "Downloading OpenShift installer from: $installer_url"
-    
-    # Download the installer
-    curl -sS -L -o "$cluster_dir/openshift-install.tar.gz" "$installer_url"
-    
-    if [[ $? -ne 0 ]]; then
-        echo "Error: Failed to download OpenShift installer"
-        exit 1
-    fi
-    
-    # Extract the installer
-    cd "$cluster_dir"
-    echo "Extracting OpenShift installer"
-    tar xfz openshift-install.tar.gz
-    
-    if [[ $? -ne 0 ]]; then
-        echo "Error: Failed to extract OpenShift installer"
-        exit 1
-    fi
-    
-    # Verify the installer was extracted successfully
-    if [[ ! -f "$cluster_dir/openshift-install" ]]; then
-        echo "Error: openshift-install binary not found after extraction"
-        exit 1
-    fi
-    
-    echo "OpenShift installer downloaded and extracted successfully"
-}
-
 # Function to display usage
 usage() {
     echo "Usage: $0 [--cluster <cluster-name>]"
@@ -144,24 +88,22 @@ validate_env_vars
 
 echo "Destroying OKD cluster with name: $CLUSTER_NAME"
 
-# Define cluster directory
-CLUSTER_DIR=$BASE_DIR/clusters/$CLUSTER_NAME
-
-# Check if cluster directory exists
-if [[ ! -d "$CLUSTER_DIR" ]]; then
-    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-    echo "Cannot destroy a cluster that was never installed"
-    exit 0
-fi
+load_cluster_config "$CLUSTER_NAME"
 
 # Change to cluster directory
 cd "$CLUSTER_DIR"
 
 # Ensure the openshift-install binary is available
-ensure_installer "$CLUSTER_DIR"
+OKD_VERSION=$(cat "$CLUSTER_DIR/version")
+"$BASE_DIR/download-okd-installer.sh" --version "$OKD_VERSION"
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to download openshift-install for OKD version $OKD_VERSION."
+    exit 1
+fi
+OPENSHIFT_INSTALLER="$BIN_DIR/$OKD_VERSION/openshift-install"
 
 # Destroy the cluster
-./openshift-install destroy cluster --log-level=info
+$OPENSHIFT_INSTALLER destroy cluster --log-level=info
 
 # Clean up local ./clusters directory
 rm -rf $CLUSTER_DIR

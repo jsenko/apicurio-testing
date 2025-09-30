@@ -3,6 +3,8 @@
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+source "$BASE_DIR/shared.sh"
+
 # ##################################################
 # Function to display usage information
 # ##################################################
@@ -54,13 +56,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate cluster name (should not be empty after defaulting to $USER)
-if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: cluster name is empty (default: \$USER)"
-    show_usage
-    exit 1
-fi
-
 if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
     show_usage
@@ -73,6 +68,8 @@ if [[ ! "$NAMESPACE" =~ ^[a-zA-Z0-9]+$ ]]; then
     show_usage
     exit 1
 fi
+
+load_cluster_config "$CLUSTER_NAME"
 
 # Export environment variables
 export CLUSTER_NAME
@@ -88,25 +85,7 @@ export CATALOG_SOURCE_NAMESPACE="openshift-marketplace"
 export SUBSCRIPTION_NAME="$OPERATOR_NAME-$NAMESPACE"
 export WAIT_TIMEOUT_SECONDS=300  # Max time to wait for the operator to be ready
 
-# Check if cluster directory exists
-if [ ! -d "$CLUSTER_DIR" ]; then
-    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been created"
-    exit 1
-fi
-
-# Check if kubeconfig exists
-if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
-    echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
-    exit 1
-fi
-# Set up kubectl auth
-export KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig
-
 mkdir -p $APP_DIR
-
-cd $CLUSTER_DIR
 
 # Create the namespace if it doesn't exist
 echo "Checking if namespace '$NAMESPACE' exists..."

@@ -33,14 +33,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate cluster name (should not be empty after defaulting to $USER)
-if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: cluster name is empty (default: \$USER)"
-    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace>"
-    echo "Example: $0 --namespace testns1"
-    exit 1
-fi
-
 if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
     echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace>"
@@ -51,32 +43,17 @@ fi
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-export CLUSTER_NAME
-export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
+source "$BASE_DIR/shared.sh"
+
+load_cluster_config "$CLUSTER_NAME"
+
 export NAMESPACE
 export LOGS_DIR="$BASE_DIR/logs/$CLUSTER_NAME/$NAMESPACE"
-
-# Check if cluster directory exists
-if [ ! -d "$CLUSTER_DIR" ]; then
-    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been created"
-    exit 1
-fi
-
-# Check if kubeconfig exists
-if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
-    echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
-    exit 1
-fi
 
 # Create logs directory
 mkdir -p "$LOGS_DIR"
 
 cd "$CLUSTER_DIR"
-
-# Set up kubectl auth
-export KUBECONFIG="$CLUSTER_DIR/auth/kubeconfig"
 
 echo "Downloading pod logs from namespace '$NAMESPACE' in cluster '$CLUSTER_NAME'"
 echo "Logs will be saved to: $LOGS_DIR"

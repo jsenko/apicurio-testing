@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Script to generate Let's Encrypt TLS certificates using certbot in OpenShift
-# Usage: ./generate-tls-cert.sh [--cluster <cluster-name>] [OPTIONS]
+# Usage: ./install-tls-cert.sh [--cluster <cluster-name>] [OPTIONS]
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$BASE_DIR/shared.sh"
 
 # Source secrets.env if it exists
 if [[ -f "$BASE_DIR/secrets.env" ]]; then
@@ -215,13 +217,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate cluster name (should not be empty after defaulting to $USER)
-if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: cluster name is empty (default: \$USER)"
-    show_usage
-    exit 1
-fi
-
 # Set default domain if not provided
 if [ -z "$DOMAIN" ]; then
     DOMAIN="*.apps.$CLUSTER_NAME.apicurio-testing.org"
@@ -230,36 +225,18 @@ fi
 # Validate required environment variables
 validate_env_vars
 
-# Set up environment variables
-export CLUSTER_NAME
-export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
+load_cluster_config "$CLUSTER_NAME"
+
 export DOMAIN
 export EMAIL
 export NAMESPACE
 export CREATED_NAMESPACE="false"
 
-# Check if cluster directory exists
-if [ ! -d "$CLUSTER_DIR" ]; then
-    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been created"
-    exit 1
+if [[ -z "$OUTPUT_DIR" ]]; then
+    CERT_DIR=$(cd "$OUTPUT_DIR/$CLUSTER_NAME" && pwd)
 fi
 
-# Check if kubeconfig exists
-if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
-    echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
-    exit 1
-fi
-
-# Resolve output directory to absolute path and include cluster subdirectory
-CERT_DIR="$OUTPUT_DIR/$CLUSTER_NAME"
-
-# Create certificate directory if it doesn't exist
 mkdir -p "$CERT_DIR"
-
-# Convert CERT_DIR to absolute path
-CERT_DIR=$(cd "$OUTPUT_DIR/$CLUSTER_NAME" && pwd)
 
 # Check if certificate already exists and is still valid (less than 60 days old)
 PRIVKEY_FILE="$CERT_DIR/privkey.pem"
@@ -287,7 +264,17 @@ if [ -f "$PRIVKEY_FILE" ]; then
             DAYS_OLD=$((AGE_IN_SECONDS / 86400))  # Convert seconds to days
             echo "Certificate already exists and is only $DAYS_OLD days old (less than 60 days)."
             echo "Certificate location: $PRIVKEY_FILE"
-            echo "Skipping certificate generation. Use --domain flag to generate for a different domain."
+            echo "Updating the cluster's default ingress to use the existing certificate."
+
+            kubectl create secret tls apicurio-tls-cert \
+              --cert=$CERT_DIR/fullchain.pem \
+              --key=$CERT_DIR/privkey.pem \
+              -n openshift-ingress
+            kubectl patch ingresscontroller default \
+              -n openshift-ingress-operator \
+              --type=merge \
+              -p '{"spec":{"defaultCertificate":{"name":"apicurio-tls-cert"}}}'
+
             exit 0
         else
             DAYS_OLD=$((AGE_IN_SECONDS / 86400))
@@ -297,11 +284,6 @@ if [ -f "$PRIVKEY_FILE" ]; then
         echo "Warning: Could not determine age of existing certificate. Proceeding with generation..."
     fi
 fi
-
-cd "$CLUSTER_DIR"
-
-# Set up kubectl auth
-export KUBECONFIG="$CLUSTER_DIR/auth/kubeconfig"
 
 echo "Generating Let's Encrypt TLS certificate using certbot"
 echo "Cluster: $CLUSTER_NAME"

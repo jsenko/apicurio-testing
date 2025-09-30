@@ -262,8 +262,11 @@ fi
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+source "$BASE_DIR/shared.sh"
+
+load_cluster_config "$CLUSTER_NAME"
+
 export CLUSTER_NAME
-export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export RAPIDAST_TAG
 export NAMESPACE
 export BASE_DOMAIN

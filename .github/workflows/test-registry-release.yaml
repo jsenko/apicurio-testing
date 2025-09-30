@@ -89,7 +89,8 @@ jobs:
           ./install-cluster.sh --cluster $CLUSTER_NAME \
               --okdVersion $OPENSHIFT_VERSION \
               --controlPlaneNodes $CONTROL_PLANE_NODES \
-              --computeNodes $COMPUTE_NODES
+              --computeNodes $COMPUTE_NODES \
+              --log-level warn
 
       - name: Restore cluster state
         if: ${{ github.event.inputs.skipClusterInstall == 'true' }}
@@ -1376,7 +1377,7 @@ jobs:
 
       - name: Install OpenShift cluster
         run: |
-          ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION --controlPlaneNodes $CONTROL_PLANE_NODES --computeNodes $COMPUTE_NODES
+          ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION --controlPlaneNodes $CONTROL_PLANE_NODES --computeNodes $COMPUTE_NODES --log-level warn
 
       - name: Install OpenShift Docker Pull Credentials
         run: |

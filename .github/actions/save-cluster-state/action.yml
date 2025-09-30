@@ -1,7 +1,7 @@
 name: 'Save Cluster State'
 description: 'Packages the clusters directory and saves it to the apicurio-testing-cache repository'
 inputs:
-  github-token:
+  github-token: # TODO: Remove
     description: 'GitHub access token for API calls and pushing to the cache repository'
     required: true
 runs:
@@ -10,65 +10,4 @@ runs:
     - name: Package and save cluster state
       shell: bash
       run: |
-        WORK_DIR=".work"
-        NAME="cache-for-save-cluster-state"
-        CACHE_DIR="$WORK_DIR/$NAME"
-
-        # Clone the cache repository
-        rm -rf $CACHE_DIR
-        git clone https://${{ inputs.github-token }}@github.com/Apicurio/apicurio-testing-cache.git $CACHE_DIR
-        pushd .
-        cd $CACHE_DIR
-        # Configure git for the cache repository
-        git config user.name "apicurio-ci"
-        git config user.email "apicurio.ci@gmail.com"
-        git config pull.rebase true
-        popd
-
-        # Create a timestamp-based directory name
-        RUN_DATE=$(date +%Y-%m-%d)
-        RUN_DIR="$CACHE_DIR/runs/${{ github.run_id }}"
-        mkdir -p "$RUN_DIR"
-
-        # Check if clusters directory exists and has content
-        if [ -d "clusters" ] && [ "$(ls -A clusters)" ]; then
-          echo "Removing openshift installer to minimize size of clusters.zip"
-          rm -f clusters/$CLUSTER_NAME/openshift-install.tar.gz
-          rm -f clusters/$CLUSTER_NAME/openshift-install
-
-          echo "Packaging clusters directory..."
-          zip -r clusters.zip clusters/
-          # Move zip file to cache directory
-          mv clusters.zip "$RUN_DIR/"
-          
-          echo "Cluster state packaged as: $RUN_DIR/clusters.zip"
-        else
-          echo "Warning: clusters directory is empty or doesn't exist, creating placeholder"
-          touch "$RUN_DIR/no-clusters-found.txt"
-        fi
-        
-        # Commit and push cluster state to the cache repository
-        pushd .
-        cd $CACHE_DIR
-        git add .
-        if git diff --cached --quiet; then
-          echo "No cluster state changes to commit."
-        else
-          git commit -m "Save cluster state for workflow run ${{ github.run_id }}"
-          for attempt in {1..5}; do
-            if git pull origin main && git push origin main; then
-              break
-            else
-              if [ $attempt -lt 5 ]; then
-                echo "Attempt $attempt failed. Retrying in $((attempt * 2)) seconds..."
-                sleep $((attempt * 2))
-              else
-                echo "All retry attempts failed"
-                exit 1
-              fi
-            fi
-          done
-        fi
-        popd
-
-        rm -rf $CACHE_DIR
+        ./save-cache.sh -m "save test cache for workflow run ${{ github.run_id }}"

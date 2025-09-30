@@ -2,6 +2,9 @@
 
 # Get the directory where this script is located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$BASE_DIR/shared.sh"
+
 AVAILABLE_PROFILES=$(ls -1 "$BASE_DIR/templates/profiles" 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
 
 # ##################################################
@@ -253,13 +256,6 @@ if [ -z "$APPLICATION_NAME" ]; then
     echo "No application name specified, using default: $APPLICATION_NAME"
 fi
 
-# Validate cluster name (should not be empty after defaulting to $USER)
-if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: cluster name is empty (default: \$USER)"
-    show_usage
-    exit 1
-fi
-
 if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
     show_usage
@@ -298,10 +294,10 @@ if [ -z "$MYSQL_VERSION" ]; then
     echo "No MySQL version specified, using default: $MYSQL_VERSION"
 fi
 
+load_cluster_config "$CLUSTER_NAME"
 
 export APPLICATION_NAME
 export CLUSTER_NAME
-export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export CERT_DIR="$BASE_DIR/certificates"
 export APICURIO_REGISTRY_VERSION
 export NAMESPACE
@@ -318,27 +314,7 @@ export UI_INGRESS_URL="registry-ui-$NAMESPACE.$APPS_URL"
 export KEYCLOAK_INGRESS_URL="keycloak-$NAMESPACE.$APPS_URL"
 export APICURIO_OPERATOR_URL="https://raw.githubusercontent.com/Apicurio/apicurio-registry/refs/heads/main/operator/install/apicurio-registry-operator-$APICURIO_REGISTRY_VERSION.yaml"
 
-# Check if cluster directory exists
-if [ ! -d "$CLUSTER_DIR" ]; then
-    echo "Error: Cluster directory '$CLUSTER_DIR' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been created"
-    exit 1
-fi
-
-# Check if kubeconfig exists
-if [ ! -f "$CLUSTER_DIR/auth/kubeconfig" ]; then
-    echo "Error: Kubeconfig file '$CLUSTER_DIR/auth/kubeconfig' does not exist"
-    echo "Make sure the cluster '$CLUSTER_NAME' has been properly configured"
-    exit 1
-fi
-
-
 mkdir -p $APP_DIR
-
-cd $CLUSTER_DIR
-
-# Set up kubectl auth
-export KUBECONFIG=$CLUSTER_DIR/auth/kubeconfig
 
 # Create the namespace if it doesn't exist
 echo "Checking if namespace '$NAMESPACE' exists..."
