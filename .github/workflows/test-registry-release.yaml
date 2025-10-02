@@ -55,7 +55,7 @@ jobs:
       CLUSTER_NAME: ci419
       APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
       CONTROL_PLANE_NODES: 3
-      COMPUTE_NODES: 6
+      COMPUTE_NODES: 3 # TODO: Increase if needed.
       OPERATOR_IMAGE: ${{ github.event.inputs.operatorImage }}
       APP_IMAGE: ${{ github.event.inputs.appImage }}
       UI_IMAGE: ${{ github.event.inputs.uiImage }}

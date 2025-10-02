@@ -42,7 +42,7 @@ env:
   AWS_DEFAULT_REGION: "us-east-1"
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   CLUSTER_NAME: ${{ inputs.cluster-name }}
-  COMPUTE_NODES: 6
+  COMPUTE_NODES: 2 # TODO: Increase if needed.
   CONTROL_PLANE_NODES: 3
   DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

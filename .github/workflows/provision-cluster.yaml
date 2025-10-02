@@ -6,6 +6,11 @@ on:
         type: string
         description: Cluster name
         required: true
+      compute-nodes:
+        type: number
+        description: Number of compute nodes (minimum of 2 is recommended).
+        default: 3
+        required: true
       cluster-version:
         type: string
         description: OKD version to install
@@ -16,7 +21,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_DEFAULT_REGION: "us-east-1"
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  COMPUTE_NODES: 6
+  COMPUTE_NODES: ${{ inputs.compute-nodes }}
   CONTROL_PLANE_NODES: 3
   DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
