@@ -55,10 +55,6 @@ jobs:
         run: |
           ./destroy-cluster.sh --cluster ${{ inputs.cluster-name }} \
 
-      - name: Install OpenShift Docker Pull Credentials
-        run: |
-          ./configure-pull-secret.sh --cluster ${{ inputs.cluster-name }}
-
       - name: Save test cache
         uses: ./.github/actions/save-cluster-state
         with:

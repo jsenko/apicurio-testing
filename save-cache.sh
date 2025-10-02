@@ -66,7 +66,6 @@ if ! git diff-index --quiet HEAD --; then
   if ! git pull origin main; then # Assuming pull.rebase is set to true
       error_exit "Failed to pull latest changes from the cache repository. You might need to resolve conflicts manually in: $CACHE_DIR"
   fi
-  success_exit "ok"
   if git push origin main; then
     success_exit "Cache saved successfully."
   else
@@ -83,7 +82,7 @@ else
     if ! git push origin main; then
       error_exit "Failed to push changes to the cache repository. You might need to resolve conflicts manually in: $CACHE_DIR"
     else
-      success_exit "Cache updated successfully."
+      success_exit "Cache saved successfully."
     fi
   fi
 fi
