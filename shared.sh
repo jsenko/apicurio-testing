@@ -84,31 +84,3 @@ function error_exit() {
     echo -e "${LIGHT_RED}[Error] $1\nExiting.${NO_COLOR}" >&2
     exit "${2:-1}"
 }
-
-function validate_kubernetes_name_format() {
-  local VALUE="$1"
-  local VARIABLE_NAME="$2"
-
-  # Validate Kubernetes name format (DNS subdomain format)
-  if [[ ${#VALUE} -gt 63 ]]; then
-      error_exit "$VARIABLE_NAME '$VALUE' is too long (maximum 63 characters)."
-  fi
-
-  # Check for consecutive hyphens
-  if [[ "$VALUE" =~ -- ]]; then
-      error_exit "$VARIABLE_NAME '$VALUE' is invalid. It cannot contain consecutive hyphens."
-  fi
-
-  if [[ ! "$VALUE" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]]; then
-MSG=$(cat <<EOF
-$VARIABLE_NAME '$VALUE' is invalid.
-Cluster name must follow DNS subdomain format:
-  - Only lowercase letters, numbers, and hyphens allowed
-  - Must start and end with an alphanumeric character
-  - Cannot have consecutive hyphens
-  - Maximum 63 characters
-EOF
-)
-    error_exit "$MSG"
-  fi
-}

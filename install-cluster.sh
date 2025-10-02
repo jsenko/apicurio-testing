@@ -57,8 +57,7 @@ usage() {
     echo    ""
     echo    "Optional Parameters:"
     echo    "  --cluster <cluster-name>     Name of the cluster to install (default: $USER)"
-    echo    "                               Must follow DNS subdomain format: lowercase letters, numbers,"
-    echo    "                               and hyphens; start/end with alphanumeric; max 63 characters"
+    echo    "                               Must contain only letters and numbers"
     echo    ""
     echo    "Optional Parameters:"
     echo    "  --okdVersion <version>       OKD version to install (default: 4.19)"
@@ -127,7 +126,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-validate_kubernetes_name_format "$CLUSTER_NAME" "Cluster name"
+# Validate cluster name format (only letters and numbers allowed)
+if [[ ! "$CLUSTER_NAME" =~ ^[a-zA-Z0-9]+$ ]]; then
+    echo "Error: Cluster name '$CLUSTER_NAME' is invalid"
+    echo "Cluster name must contain only letters and numbers (no spaces, hyphens, or special characters)"
+    exit 1
+fi
 
 # Validate node count parameters
 if [[ ! "$COMPUTE_NODES" =~ ^[0-9]+$ ]] || [[ "$COMPUTE_NODES" -lt 0 ]]; then
