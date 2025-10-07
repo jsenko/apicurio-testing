@@ -1,4 +1,4 @@
-name: Provision a new OCP cluster
+name: "[Infra] Provision OCP cluster"
 on:
   workflow_dispatch:
     inputs:

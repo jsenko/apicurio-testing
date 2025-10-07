@@ -1,0 +1,150 @@
+# IMPORTANT:
+#
+# Run `oc adm policy add-scc-to-user privileged -z default -n <namespace>` to allow deploying a privileged pod,
+# which is required to mount hostPath volumes properly.
+#
+# This is wildly insecure, but I've lost patience trying to solve it properly and this is an ephemeral cluster.
+#
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: image-registry-volume
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/data/image-registry
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: image-registry-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: manual
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: image-registry-config
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      level: debug
+    storage:
+      filesystem:
+        rootdirectory: /data
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options: [ nosniff ]
+    auth:
+      htpasswd:
+        realm: basic-realm
+        path: /auth/htpasswd
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: image-registry-auth
+type: Opaque
+data:
+  # Generate with: htpasswd -Bbn admin password | base64 -w 0
+  htpasswd: ${PASSWORD_ENCODED}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-registry
+  labels:
+    app: image-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-registry
+  template:
+    metadata:
+      labels:
+        app: image-registry
+    spec:
+      containers:
+        - name: registry
+          image: registry:2
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          env:
+            - name: REGISTRY_CONFIG_PATH
+              value: /etc/docker/registry/config.yml
+          volumeMounts:
+            - name: image-registry-config
+              mountPath: /etc/docker/registry
+            - name: image-registry-auth
+              mountPath: /auth
+            - name: image-registry-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 250m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+          securityContext:
+            privileged: true
+      volumes:
+        - name: image-registry-config
+          configMap:
+            name: image-registry-config
+        - name: image-registry-auth
+          secret:
+            secretName: image-registry-auth
+        - name: image-registry-data
+          persistentVolumeClaim:
+            claimName: image-registry-data
+      serviceAccountName: infra-privileged
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-registry
+  labels:
+    app: image-registry
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+      name: registry
+  selector:
+    app: image-registry
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: image-registry
+  labels:
+    app: image-registry
+spec:
+  to:
+    kind: Service
+    name: image-registry
+    weight: 100
+  port:
+    targetPort: registry
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

@@ -1,0 +1,39 @@
+# IMPORTANT:
+#
+# Run `oc adm policy add-scc-to-user privileged -z default -n <namespace>` to allow deploying a privileged pod.
+#
+# This is wildly insecure, but I've lost patience trying to solve it properly and this is an ephemeral cluster.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terminal
+  namespace: default
+  labels:
+    app: terminal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: terminal
+  template:
+    metadata:
+      labels:
+        app: terminal
+    spec:
+      containers:
+        - name: terminal
+          image: fedora
+          command: [ "/bin/bash" ]
+          args: [ "-c", "while true; do sleep 30; done" ]
+          stdin: true
+          tty: true
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            privileged: true

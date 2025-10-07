@@ -224,8 +224,6 @@ jobs:
 
       - name: Cleanup cluster state
         uses: ./.github/actions/cleanup-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
 
   save_workflow_metadata:
     name: Save Workflow Metadata

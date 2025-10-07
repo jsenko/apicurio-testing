@@ -1,0 +1,9 @@
+# Adapted from https://github.com/Apicurio/apicurio-registry/tree/main/operator/olm-tests/src/test/deploy/olmv0
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: apicurio-registry-operator-group
+  namespace: ${PLACEHOLDER_NAMESPACE}
+spec:
+  targetNamespaces:
+    - ${PLACEHOLDER_NAMESPACE}

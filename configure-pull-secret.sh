@@ -93,20 +93,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate cluster name (should not be empty after defaulting to $USER)
-if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Error: cluster name is empty (default: \$USER)"
-    usage
-fi
-
-# Validate cluster name format (only letters and numbers allowed)
-if [[ ! "$CLUSTER_NAME" =~ ^[a-zA-Z0-9]+$ ]]; then
-    echo "Error: Cluster name '$CLUSTER_NAME' is invalid"
-    echo "Cluster name must contain only letters and numbers (no spaces, hyphens, or special characters)"
-    exit 1
-fi
-
-# Validate required environment variables
 validate_env_vars
 
 load_cluster_config "$CLUSTER_NAME"
@@ -116,12 +102,6 @@ echo "Docker server: $DOCKER_SERVER"
 echo "Docker username: $DOCKER_USERNAME"
 echo "Docker email: $DOCKER_EMAIL"
 
-rm -rf $CLUSTER_DIR/.docker
-rm -f $CLUSTER_DIR/pull-secret.json
-rm -f $CLUSTER_DIR/config.json
-rm -f $CLUSTER_DIR/merged-config.json
-rm -f $CLUSTER_DIR/pull-secret-updated.json
-
 # Login to the docker container registry
 export DOCKER_CONFIG="$CLUSTER_DIR/.docker"
 echo "$DOCKER_PASSWORD" | docker login $DOCKER_SERVER -u $DOCKER_USERNAME --password-stdin
@@ -130,35 +110,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-# Export the current global pull secret to a local file
-echo "Getting the global pull secret from OpenShift..."
-kubectl get secret pull-secret -n openshift-config -o json > $CLUSTER_DIR/pull-secret.json
-echo "Decoding pull secret into OpenShift config.json..."
-cat $CLUSTER_DIR/pull-secret.json | jq -r '.data[".dockerconfigjson"]' | base64 -d > $CLUSTER_DIR/config.json
-
-# Merge the two docker configs (global from OpenShift and config from docker login above)
-echo "Merging new pull secret into existing OpenShift global config..."
-jq -s 'reduce .[] as $item ({}; .auths += ($item.auths // {}))' $CLUSTER_DIR/config.json $CLUSTER_DIR/.docker/config.json > $CLUSTER_DIR/merged-config.json
-
-# Encode the new config.json and update the pull-secret.json file with the new content
-ENCODED_CONFIG=$(cat $CLUSTER_DIR/merged-config.json | base64 -w0)
-jq --arg newcontent "$ENCODED_CONFIG" '.data.".dockerconfigjson" = $newcontent' $CLUSTER_DIR/pull-secret.json > $CLUSTER_DIR/pull-secret-updated.json
-
-# Update the global pull secret now that it has been configured
-echo "Updating OpenShift config pull secret..."
-kubectl replace -f $CLUSTER_DIR/pull-secret-updated.json
-if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to update global pull secret"
-    exit 1
-fi
-
-# Clean up temporary files and files with secrets
-rm -rf $CLUSTER_DIR/.docker
-rm -f $CLUSTER_DIR/pull-secret.json
-rm -f $CLUSTER_DIR/config.json
-rm -f $CLUSTER_DIR/merged-config.json
-rm -f $CLUSTER_DIR/pull-secret-updated.json
-
+./update-pull-secret.sh --cluster "$CLUSTER_NAME" --docker-config "$DOCKER_CONFIG"
 
 echo ""
 echo "Configuration completed successfully!"

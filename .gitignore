@@ -11,3 +11,4 @@
 /secrets.env
 /workflow-cache/
 /workflow-results/
+*-maven-repository.zip

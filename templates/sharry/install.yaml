@@ -1,0 +1,267 @@
+# IMPORTANT:
+#
+# Run `oc adm policy add-scc-to-user privileged -z default -n <namespace>` to allow deploying a privileged pod,
+# which is required to mount hostPath volumes properly.
+#
+# This is wildly insecure, but I've lost patience trying to solve it properly and this is an ephemeral cluster.
+#
+
+# PostgreSQL
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sharry-postgresql-database-volume
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/data/sharry-postgresql-database
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sharry-postgresql-database-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: manual
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sharry-postgresql-database
+  labels:
+    app: sharry-postgresql-database
+spec:
+  serviceName: sharry-postgresql-database
+  selector:
+    matchLabels:
+      app: sharry-postgresql-database
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sharry-postgresql-database
+    spec:
+      containers:
+        - name: sharry-postgresql-database
+          image: quay.io/sclorg/postgresql-15-c9s:latest
+          env:
+            - name: POSTGRESQL_USER
+              value: sharry
+            - name: POSTGRESQL_PASSWORD
+              value: ${POSTGRESQL_PASSWORD}
+            - name: POSTGRESQL_DATABASE
+              value: sharry
+          volumeMounts:
+            - mountPath: /var/lib/pgsql/data
+              name: sharry-postgresql-database-data
+          securityContext:
+            privileged: true
+      volumes:
+        - name: sharry-postgresql-database-data
+          persistentVolumeClaim:
+            claimName: sharry-postgresql-database-data
+      serviceAccountName: infra-privileged
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sharry-postgresql-database
+  labels:
+    app: sharry-postgresql-database
+spec:
+  selector:
+    app: sharry-postgresql-database
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+# Sharry
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sharry-volume
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/data/sharry
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sharry-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: manual
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sharry-config
+data:
+  sharry.conf: |
+    sharry.restserver {
+
+      // base-url = "http://localhost:9090"
+
+      bind {
+        address = "0.0.0.0"
+        port = 9090
+      }
+
+      backend {
+
+        auth {
+          fixed {
+            enabled = true
+            user = "admin"
+            password = "${PASSWORD}"
+          }
+        }
+    
+        jdbc {
+          url = "jdbc:postgresql://sharry-postgresql-database:5432/sharry"
+          user = "sharry"
+          password = "${POSTGRESQL_PASSWORD}"
+        }
+
+        files {
+          default-store = "filesystem"    
+          stores = {
+            filesystem = {
+                type = "file-system"
+                enabled = true
+                directory = "/data"
+                clean-empty-dirs = true
+            }    
+            database = {
+              type = "default-database"
+              enabled = false
+            }
+          }    
+        }
+
+        signup {
+          mode = "closed"
+        }
+      }
+
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sharry
+  labels:
+    app: sharry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sharry
+  template:
+    metadata:
+      labels:
+        app: sharry
+    spec:
+      containers:
+        - name: sharry
+          image: eikek0/sharry
+          command:
+            - /opt/sharry/bin/sharry-restserver
+            - /sharry-config/sharry.conf
+          ports:
+            - containerPort: 9090
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - name: sharry-config
+              mountPath: /sharry-config
+            - name: sharry-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 250m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - http://localhost:9090/api/v2/open/info/version
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - http://localhost:9090/api/v2/open/info/version
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          securityContext:
+            privileged: true
+      volumes:
+        - name: sharry-config
+          configMap:
+            name: sharry-config
+        - name: sharry-data
+          persistentVolumeClaim:
+            claimName: sharry-data
+      serviceAccountName: infra-privileged
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sharry
+  labels:
+    app: sharry
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 9090
+      protocol: TCP
+      name: http
+  selector:
+    app: sharry
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sharry
+  labels:
+    app: sharry
+spec:
+  to:
+    kind: Service
+    name: sharry
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

@@ -1,4 +1,4 @@
-name: Destroy an existing OCP cluster
+name: "[Infra] Destroy OCP cluster"
 on:
   workflow_dispatch:
     inputs:

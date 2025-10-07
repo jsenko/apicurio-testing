@@ -1,0 +1,15 @@
+# Adapted from https://github.com/Apicurio/apicurio-registry/tree/main/operator/olm-tests/src/test/deploy/olmv0
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: apicurio-registry-operator-qe-subscription
+  namespace: ${PLACEHOLDER_NAMESPACE}
+spec:
+  sourceNamespace: ${PLACEHOLDER_CATALOG_NAMESPACE}
+  source: apicurio-registry-operator-qe-catalog
+  name: apicurio-registry-3
+  # name: ${PLACEHOLDER_PACKAGE_NAME}
+  channel: 3.x
+  startingCSV: apicurio-registry-3.v3.0.15-r1
+  # startingCSV: ${PLACEHOLDER_PACKAGE}
+  installPlanApproval: Manual # Automatic

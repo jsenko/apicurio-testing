@@ -76,6 +76,11 @@ function warning() {
     echo -e "${LIGHT_YELLOW}[Warning] $1${NO_COLOR}"
 }
 
+function warning_exit() {
+    echo -e "${LIGHT_YELLOW}[Warning] $1\nExiting.${NO_COLOR}"
+    exit "${2:-0}"
+}
+
 function error() {
     echo -e "${LIGHT_RED}[Error] $1${NO_COLOR}" >&2
 }
@@ -83,4 +88,31 @@ function error() {
 function error_exit() {
     echo -e "${LIGHT_RED}[Error] $1\nExiting.${NO_COLOR}" >&2
     exit "${2:-1}"
+}
+
+function wait_for() {
+
+  local LABEL=$1
+  local TIMEOUT=$2
+  shift 2
+  if [[ -z "$LABEL" || -z "$TIMEOUT" || -z "$*" ]]; then
+      error_exit "wait function requires at least 3 arguments: LABEL TIMEOUT COMMAND... ."
+  fi
+
+  local START_TIME=$(date +%s)
+  while true; do
+      CURRENT_TIME=$(date +%s)
+      ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+      if [ $ELAPSED_TIME -ge "$TIMEOUT" ]; then
+          warning "Timeout of $TIMEOUT seconds reached, stopping wait."
+          return 1
+      fi
+      echo "Attempting $LABEL (elapsed: ${ELAPSED_TIME}s)..."
+      if "$@" > /dev/null 2>&1 ; then
+          success "Success!"
+          return
+      fi
+      # echo "Attempt failed, retrying in 5 seconds..."
+      sleep 5
+  done
 }

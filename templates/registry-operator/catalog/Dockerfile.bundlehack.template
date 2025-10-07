@@ -1,0 +1,14 @@
+# :o
+FROM ${PLACEHOLDER_SOURCE_BUNDLE_IMAGE}
+
+FROM registry.access.redhat.com/ubi9/ubi:latest
+
+RUN mkdir /manifests
+
+COPY --from=0 /manifests/apicurio-registry-3.clusterserviceversion.yaml /manifests/apicurio-registry-3.clusterserviceversion.yaml
+
+RUN sed -i 's/registry.redhat.io/brew.registry.redhat.io/' /manifests/apicurio-registry-3.clusterserviceversion.yaml
+
+FROM ${PLACEHOLDER_SOURCE_BUNDLE_IMAGE}
+
+COPY --from=1 /manifests/apicurio-registry-3.clusterserviceversion.yaml /manifests/apicurio-registry-3.clusterserviceversion.yaml
