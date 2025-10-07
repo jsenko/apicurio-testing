@@ -96,6 +96,10 @@ jobs:
           git config user.email "apicurio.ci@gmail.com"
           git config pull.rebase true
 
+      - name: Load test cache
+        run: |
+          ./load-cache.sh --token "${{ secrets.ACCESS_TOKEN }}"
+
       - name: Install OpenShift cluster
         run: |
           ./install-cluster.sh --cluster $CLUSTER_NAME \
@@ -116,19 +120,9 @@ jobs:
               --appImage "$APP_IMAGE" \
               --uiImage "$UI_IMAGE"
 
-      - name: Commit TLS Certs (if necessary)
-        run: |
-          git pull origin main
-          git add certificates
-          if git diff --cached --quiet; then
-            echo "Nothing to commit."
-          else
-            git commit -m '(re)generated TLS certificate for cluster $CLUSTER_NAME'
-            git push origin main
-          fi
-
       - name: Save cluster state
         uses: ./.github/actions/save-cluster-state
+        if: always()
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
@@ -248,9 +242,6 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Log Workflow Start Time
         run: |

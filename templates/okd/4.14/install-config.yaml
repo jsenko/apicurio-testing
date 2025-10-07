@@ -8,6 +8,9 @@ controlPlane:
   platform:
     aws:
       type: m5.xlarge
+      # AMI ID is required for older OKD versions.
+      # By what dark magic did I find this ID? See the README.md
+      amiID: ami-0be39e8378dd66858
       zones:
         - us-east-1a
 compute:
@@ -16,6 +19,8 @@ compute:
     platform:
       aws:
         type: m5.xlarge
+        # See above.
+        amiID: ami-0be39e8378dd66858
         zones:
           - us-east-1a
 platform:

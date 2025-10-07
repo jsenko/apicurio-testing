@@ -73,15 +73,16 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Configure Git
         run: |
           git config user.name "apicurio-ci"
           git config user.email "apicurio.ci@gmail.com"
           git config pull.rebase true
+
+      - name: Load test cache
+        run: |
+          ./load-cache.sh --token "${{ secrets.ACCESS_TOKEN }}"
 
       - name: Install OpenShift cluster
         if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
@@ -110,24 +111,9 @@ jobs:
               --appImage "$APP_IMAGE" \
               --uiImage "$UI_IMAGE"
 
-      - name: Commit TLS Certs (if necessary)
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
-        run: |
-          git pull origin main
-          git add certificates
-          if git diff --cached --quiet; then
-            echo "Nothing to commit."
-          else
-            git commit -m '(re)generated TLS certificate for cluster $CLUSTER_NAME'
-            git push origin main
-          fi
-
       - name: Save cluster state
         if: ${{ github.event.inputs.skipClusterInstall != 'true' && always() }}
         uses: ./.github/actions/save-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
 
   os419_inmemory:
     name: Apicurio Registry (in-memory)
@@ -147,8 +133,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -198,8 +182,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -252,8 +234,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -305,8 +285,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -356,8 +334,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -415,8 +391,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -469,8 +443,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -518,8 +490,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -570,8 +540,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -640,8 +608,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -690,8 +656,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -743,8 +707,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -796,8 +758,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -845,8 +805,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -898,8 +856,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -947,8 +903,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -999,8 +953,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1051,8 +1003,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1123,8 +1073,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1153,8 +1101,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1182,8 +1128,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1212,8 +1156,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1242,8 +1184,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1272,8 +1212,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1310,8 +1248,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1333,9 +1269,6 @@ jobs:
       - name: Cleanup cluster state
         if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         uses: ./.github/actions/cleanup-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
 
   os414:
     name: OpenShift 4.14
@@ -1365,15 +1298,16 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Configure Git
         run: |
           git config user.name "apicurio-ci"
           git config user.email "apicurio.ci@gmail.com"
           git config pull.rebase true
+
+      - name: Load test cache
+        run: |
+          ./load-cache.sh --token "${{ secrets.ACCESS_TOKEN }}"
 
       - name: Install OpenShift cluster
         run: |
@@ -1391,23 +1325,9 @@ jobs:
               --appImage "$APP_IMAGE" \
               --uiImage "$UI_IMAGE"
 
-      - name: Commit TLS Certs (if necessary)
-        run: |
-          git pull origin main
-          git add certificates
-          if git diff --cached --quiet; then
-            echo "Nothing to commit."
-          else
-            git commit -m '(re)generated TLS certificate for cluster $CLUSTER_NAME'
-            git push origin main
-          fi
-
       - name: Save cluster state
         if: always()
         uses: ./.github/actions/save-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
 
   os414_inmemory:
     name: Apicurio Registry (in-memory) [4.14]
@@ -1427,9 +1347,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -1474,9 +1391,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Restore cluster state
         if: always()
@@ -1524,9 +1438,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1578,9 +1489,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Restore cluster state
         if: always()
@@ -1613,8 +1521,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -1667,8 +1573,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1716,8 +1620,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -1770,8 +1672,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1804,8 +1704,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Restore cluster state
         if: always()
@@ -1827,9 +1725,6 @@ jobs:
       - name: Cleanup cluster state
         if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
         uses: ./.github/actions/cleanup-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-
 
   save_workflow_metadata:
     name: Save Workflow Metadata
@@ -1844,9 +1739,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Log Workflow Start Time
         run: |

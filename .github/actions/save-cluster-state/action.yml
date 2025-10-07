@@ -1,12 +1,9 @@
 name: 'Save Cluster State'
 description: 'Packages the clusters directory and saves it to the apicurio-testing-cache repository'
-inputs:
-  github-token: # TODO: Remove
-    description: 'GitHub access token for API calls and pushing to the cache repository'
-    required: true
 runs:
   using: 'composite'
   steps:
+
     - name: Package and save cluster state
       shell: bash
       run: |

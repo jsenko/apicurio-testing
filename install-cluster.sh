@@ -51,6 +51,35 @@ validate_env_vars() {
     fi
 }
 
+extract_console_password() {
+
+    if [[ ! -f "$CLUSTER_DIR/.openshift_install.log" ]]; then
+        error_exit "$CLUSTER_DIR/.openshift_install.log file not found."
+    fi
+
+    local console_password
+    console_password=$(grep -o 'Login to the console with user: \\"kubeadmin\\", and password: \\"[^"]*\\"' "$CLUSTER_DIR/.openshift_install.log" | sed 's/.*password: \\"\([^"]*\)\\".*/\1/')
+
+    if [[ -z "$console_password" ]]; then
+        warning "Could not extract console password from installation logs. Check $CLUSTER_DIR/.openshift_install.log for manual extraction."
+        return
+    fi
+
+    if [[ -f "$CLUSTER_DIR/auth/kubeadmin-password" ]]; then
+        local file_password
+        file_password=$(cat auth/kubeadmin-password)
+        if [[ "$console_password" != "$file_password" ]]; then
+            warning "Console password from logs differs from the password file."
+            important "Using password from logs as it's more reliable."
+            echo "$console_password" > "$CLUSTER_DIR/auth/kubeadmin-password"
+        fi
+    else
+        warning "$CLUSTER_DIR/auth/kubeadmin-password file not found, creating it with extracted password."
+        mkdir -p auth
+        echo "$console_password" > "$CLUSTER_DIR/auth/kubeadmin-password"
+    fi
+}
+
 # Function to display usage
 usage() {
     echo    "Usage: $0 [--cluster <cluster-name>] [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>] [--log-level <level>] [--force]"
@@ -171,8 +200,7 @@ CLUSTER_DIR=$CLUSTERS_DIR/$CLUSTER_NAME
 
 # Check if cluster directory already exists and handle it safely
 if [[ -d "$CLUSTER_DIR" ]]; then
-    echo "Warning: Cluster directory '$CLUSTER_DIR' already exists!"
-    echo "It might contain state from a live cluster."
+    warning "Cluster directory '$CLUSTER_DIR' already exists! It might contain state from a live cluster."
 
     if [[ "$FORCE" != "true" ]]; then
         echo ""
@@ -208,8 +236,13 @@ export BASE_DOMAIN
 envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
 
 echo -n "$OKD_VERSION" > "$CLUSTER_DIR/version"
+
+unset SSH_AUTH_SOCK
+
 # Install the cluster
 $OPENSHIFT_INSTALLER create cluster --log-level="$LOG_LEVEL"
+
+extract_console_password
 
 # Generate a TLS cert for the cluster
 cd $BASE_DIR || exit 1
