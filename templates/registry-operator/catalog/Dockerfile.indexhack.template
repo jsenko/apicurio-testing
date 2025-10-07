@@ -1,0 +1,18 @@
+FROM ${PLACEHOLDER_SOURCE_IMAGE}
+
+USER root
+
+RUN sed -i 's|registry-proxy.engineering.redhat.com/|${PLACEHOLDER_TARGET_HOST}/|' /configs/apicurio-registry-3/catalog.json
+
+RUN sed -i 's|@sha256:${PLACEHOLDER_SOURCE_BUNDLE_IMAGE_SHA_HASH}|:sha256-${PLACEHOLDER_SOURCE_BUNDLE_IMAGE_SHA_HASH}|' /configs/apicurio-registry-3/catalog.json
+
+# To allow installing previous versions for upgrade tests:
+RUN sed -i 's|registry.stage.redhat.io/|registry.redhat.io/|' /configs/apicurio-registry-3/catalog.json
+
+# OLM catalog data is cached in /tmp/cache which includes a hash of the original data.
+# The hash changes when we modify the catalog.json above, so we need to rebuild the cache
+# to ensure that OLM does not reject our modified catalog.
+# Don't ask me how long it took me to figure how to do this...
+RUN opm serve /configs --cache-only --cache-dir /tmp/cache
+
+USER 1001

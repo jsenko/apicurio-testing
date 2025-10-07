@@ -1,0 +1,15 @@
+# Adapted from https://github.com/Apicurio/apicurio-registry/tree/main/operator/olm-tests/src/test/deploy/olmv0
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: apicurio-registry-operator-qe-catalog
+  namespace: ${PLACEHOLDER_CATALOG_NAMESPACE} # openshift-marketplace
+spec:
+  sourceType: grpc
+  displayName: Apicurio Registry QE Catalog
+  publisher: Apicurio
+  image: ${PLACEHOLDER_CATALOG_IMAGE} # brew.registry.redhat.io/rh-osbs/iib:1057519
+  # Back-off pulling image "registry-proxy.engineering.redhat.com/rh-osbs/apicurio-apicurio-registry-3-operator-bundle@sha256:0c29e835e253ff6bc0dfb2a9ca01e94756c8995f3396ddca07dde95c9e16e633"
+  updateStrategy:
+    registryPoll:
+      interval: 30s # Intentional for development and testing.
