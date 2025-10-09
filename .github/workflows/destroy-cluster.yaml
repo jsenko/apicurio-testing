@@ -57,8 +57,6 @@ jobs:
 
       - name: Save test cache
         uses: ./.github/actions/save-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
 
   save_workflow_metadata:
     name: Save Workflow Metadata

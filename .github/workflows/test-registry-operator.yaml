@@ -123,8 +123,6 @@ jobs:
       - name: Save cluster state
         uses: ./.github/actions/save-cluster-state
         if: always()
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
 
   os419_operator:
     name: Apicurio Registry Operator
