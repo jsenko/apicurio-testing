@@ -16,6 +16,14 @@ on:
         description: OKD version to install
         required: true
         default: "4.19"
+      force:
+        type: boolean
+        description: |
+          Force the provisioning. This can happen for example if cluster data has remained in the cache
+          after the cluster has been automatically deleted. (In that case, do not forget to manually delete
+          the old DNS records in the apicurio-testing.org hosted zone in AWS Route53).
+        required: true
+        default: false
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -63,11 +71,17 @@ jobs:
 
       - name: Install OpenShift cluster
         run: |
+          if [ "${{ inputs.force }}" = "true" ]; then
+            INSTALL_ARGS="--force"
+          else
+            INSTALL_ARGS=""
+          fi
           ./install-cluster.sh --cluster ${{ inputs.cluster-name }} \
               --okdVersion ${{ inputs.cluster-version }} \
               --controlPlaneNodes $CONTROL_PLANE_NODES \
               --computeNodes $COMPUTE_NODES \
-              --log-level warn
+              --log-level warn \
+              $INSTALL_ARGS
 
       - name: Install OpenShift Docker Pull Credentials
         run: |
