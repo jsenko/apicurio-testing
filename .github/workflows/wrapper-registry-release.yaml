@@ -1,4 +1,4 @@
-name: QE Registry Release Tests (Wrapper)
+name: Test Apicurio Registry Release (Wrapper)
 
 on:
   workflow_dispatch:
