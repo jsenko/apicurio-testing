@@ -30,12 +30,78 @@ on:
         description: Dry run mode - skip committing results to apicurio-testing-results
         required: false
         default: ''
+  workflow_call:
+    inputs:
+      release-version:
+        description: Released version to test
+        required: true
+        type: string
+      operatorImage:
+        description: Operator image to test (optional)
+        required: false
+        type: string
+      appImage:
+        description: Application image to test (optional)
+        required: false
+        type: string
+      uiImage:
+        description: UI image to test (optional)
+        required: false
+        type: string
+      tests-tag:
+        description: git tag to use for running tests
+        required: false
+        type: string
+        default: main
+      isDownstream:
+        description: Test downstream images
+        required: false
+        type: string
+        default: 'false'
+      skipClusterInstall:
+        description: Skip cluster install
+        required: false
+        type: string
+        default: 'false'
+      dryRun:
+        description: Dry run mode - skip committing results to apicurio-testing-results
+        required: false
+        type: string
+        default: ''
+    outputs:
+      run-id:
+        description: The GitHub run ID for this workflow execution
+        value: ${{ jobs.record-start-time.outputs.run-id }}
+      run-date:
+        description: The date of this workflow execution (YYYY-MM-DD)
+        value: ${{ jobs.record-start-time.outputs.run-date }}
+    secrets:
+      ACCESS_TOKEN:
+        required: true
+      OPENSHIFT_PULL_SECRET:
+        required: true
+      SSH_PUBLIC_KEY:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      DOCKER_SERVER:
+        required: true
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+      DOCKER_EMAIL:
+        required: true
 
 jobs:
   record-start-time:
     runs-on: ubuntu-latest
     outputs:
       start-time: ${{ steps.get-start-time.outputs.start-time }}
+      run-id: ${{ steps.get-start-time.outputs.run-id }}
+      run-date: ${{ steps.get-start-time.outputs.run-date }}
     steps:
       - name: Get Workflow Start Time
         id: get-start-time
@@ -43,6 +109,10 @@ jobs:
           START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           echo "start-time=$START_TIME" >> $GITHUB_OUTPUT
           echo "Workflow start time: $START_TIME"
+
+          # Capture run ID and date for report URL generation
+          echo "run-id=${{ github.run_id }}" >> $GITHUB_OUTPUT
+          echo "run-date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
   os419:
     name: OpenShift 4.19
