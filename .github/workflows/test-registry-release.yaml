@@ -26,6 +26,10 @@ on:
         description: Skip cluster install
         required: true
         default: false
+      dryRun:
+        description: Dry run mode - skip committing results to apicurio-testing-results
+        required: false
+        default: ''
 
 jobs:
   record-start-time:
@@ -1256,6 +1260,7 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit workflow metadata to repository
+        if: ${{ github.event.inputs.dryRun == 'false' || (github.event.inputs.dryRun == '' && github.event.inputs.skipClusterInstall == 'false') }}
         uses: ./.github/actions/commit-workflow-metadata
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
@@ -1712,6 +1717,7 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit workflow metadata to repository
+        if: ${{ github.event.inputs.dryRun != 'true' && (github.event.inputs.dryRun == 'false' || github.event.inputs.skipClusterInstall != 'true') }}
         uses: ./.github/actions/commit-workflow-metadata
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
@@ -1745,6 +1751,7 @@ jobs:
           echo "Workflow Start Time: ${{ needs.record-start-time.outputs.start-time }}"
 
       - name: Commit workflow metadata to repository
+        if: ${{ github.event.inputs.dryRun == 'false' || (github.event.inputs.dryRun == '' && github.event.inputs.skipClusterInstall == 'false') }}
         uses: ./.github/actions/commit-workflow-metadata
         with:
           workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
