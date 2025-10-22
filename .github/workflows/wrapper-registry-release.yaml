@@ -19,11 +19,11 @@ on:
         description: UI image to test (optional)
         required: false
         type: string
-      issue_number:
+      issueNumber:
         description: Release tracker issue number in apicurio/rhboar-releases
         required: true
         type: string
-      step_id:
+      stepId:
         description: Release step ID
         required: false
         type: string
@@ -34,11 +34,11 @@ jobs:
     name: Run QE Registry Tests
     uses: ./.github/workflows/test-registry-release.yaml
     with:
-      release-version: ${{ inputs.version }}
+      releaseVersion: ${{ inputs.version }}
       operatorImage: ${{ inputs.operatorImage }}
       appImage: ${{ inputs.appImage }}
       uiImage: ${{ inputs.uiImage }}
-      tests-tag: ${{ inputs.version }}
+      testsTag: ${{ inputs.version }}
       isDownstream: 'true'
       skipClusterInstall: 'false'
       dryRun: 'false'
@@ -100,7 +100,7 @@ jobs:
             const version = '${{ inputs.version }}';
             const reportUrl = '${{ steps.workflow-details.outputs.report_url }}';
             const workflowUrl = '${{ steps.workflow-details.outputs.workflow_url }}';
-            const stepId = '${{ inputs.step_id }}';
+            const stepId = '${{ inputs.stepId }}';
             const status = '${{ steps.result.outputs.status }}';
 
             let command;
@@ -127,7 +127,7 @@ jobs:
             await github.rest.issues.createComment({
               owner: 'apicurio',
               repo: 'rhboar-releases',
-              issue_number: ${{ inputs.issue_number }},
+              issue_number: ${{ inputs.issueNumber }},
               body: commentBody
             });
 

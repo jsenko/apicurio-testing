@@ -2,7 +2,7 @@ name: Test Apicurio Registry Release
 on:
   workflow_dispatch:
     inputs:
-      release-version:
+      releaseVersion:
         description: Released version to test
         required: true
       operatorImage:
@@ -14,7 +14,7 @@ on:
       uiImage:
         description: UI image to test (optional)
         required: false
-      tests-tag:
+      testsTag:
         description: git tag to use for running tests
         required: true
         default: main
@@ -32,7 +32,7 @@ on:
         default: ''
   workflow_call:
     inputs:
-      release-version:
+      releaseVersion:
         description: Released version to test
         required: true
         type: string
@@ -48,7 +48,7 @@ on:
         description: UI image to test (optional)
         required: false
         type: string
-      tests-tag:
+      testsTag:
         description: git tag to use for running tests
         required: false
         type: string
@@ -127,12 +127,12 @@ jobs:
       AWS_DEFAULT_REGION: "us-east-1"
       OPENSHIFT_VERSION: "4.19"
       CLUSTER_NAME: ci419
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       CONTROL_PLANE_NODES: 3
       COMPUTE_NODES: 3 # TODO: Increase if needed.
-      OPERATOR_IMAGE: ${{ github.event.inputs.operatorImage }}
-      APP_IMAGE: ${{ github.event.inputs.appImage }}
-      UI_IMAGE: ${{ github.event.inputs.uiImage }}
+      OPERATOR_IMAGE: ${{ inputs.operatorImage }}
+      APP_IMAGE: ${{ inputs.appImage }}
+      UI_IMAGE: ${{ inputs.uiImage }}
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -159,7 +159,7 @@ jobs:
           ./load-cache.sh --token "${{ secrets.ACCESS_TOKEN }}"
 
       - name: Install OpenShift cluster
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        if: ${{ inputs.skipClusterInstall != 'true' }}
         run: |
           ./install-cluster.sh --cluster $CLUSTER_NAME \
               --okdVersion $OPENSHIFT_VERSION \
@@ -168,7 +168,7 @@ jobs:
               --log-level warn
 
       - name: Restore cluster state
-        if: ${{ github.event.inputs.skipClusterInstall == 'true' }}
+        if: ${{ inputs.skipClusterInstall == 'true' }}
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
@@ -186,7 +186,7 @@ jobs:
               --uiImage "$UI_IMAGE"
 
       - name: Save cluster state
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' && always() }}
+        if: ${{ inputs.skipClusterInstall != 'true' && always() }}
         uses: ./.github/actions/save-cluster-state
 
   os419_inmemory:
@@ -511,8 +511,8 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -529,7 +529,7 @@ jobs:
           ./run-ui-tests.sh --cluster $CLUSTER_NAME \
               --namespace $NAMESPACE \
               --isDownstream $IS_DOWNSTREAM_VERSION \
-              --tag ${{ github.event.inputs.tests-tag }}
+              --tag ${{ inputs.testsTag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -559,7 +559,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: inmemory
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
     steps:
       - name: Checkout Code
@@ -579,7 +579,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -676,8 +676,8 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: pg17
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -694,7 +694,7 @@ jobs:
           ./run-ui-tests.sh --cluster $CLUSTER_NAME \
               --namespace $NAMESPACE \
               --isDownstream $IS_DOWNSTREAM_VERSION \
-              --tag ${{ github.event.inputs.tests-tag }}
+              --tag ${{ inputs.testsTag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -724,7 +724,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: pg17
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: all
 
     steps:
@@ -745,7 +745,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
 
       - name: Commit integration test results to repository
         if: always()
@@ -775,7 +775,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: pg12
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: smoke
 
     steps:
@@ -796,7 +796,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
 
       - name: Commit integration test results to repository
         if: always()
@@ -826,8 +826,8 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -844,7 +844,7 @@ jobs:
           ./run-ui-tests.sh --cluster $CLUSTER_NAME \
               --namespace $NAMESPACE \
               --isDownstream $IS_DOWNSTREAM_VERSION \
-              --tag ${{ github.event.inputs.tests-tag }}
+              --tag ${{ inputs.testsTag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -874,7 +874,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: mysql
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
     steps:
       - name: Checkout Code
@@ -894,7 +894,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -924,8 +924,8 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: ksql047
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -942,7 +942,7 @@ jobs:
           ./run-ui-tests.sh --cluster $CLUSTER_NAME \
               --namespace $NAMESPACE \
               --isDownstream $IS_DOWNSTREAM_VERSION \
-              --tag ${{ github.event.inputs.tests-tag }}
+              --tag ${{ inputs.testsTag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -972,7 +972,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: ksql047
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
     steps:
       - name: Checkout Code
@@ -992,7 +992,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -1022,7 +1022,7 @@ jobs:
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: authn
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
     steps:
       - name: Checkout Code
@@ -1042,7 +1042,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }} --testProfile auth --registryProtocol https --registryPort 443
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile auth --registryProtocol https --registryPort 443
 
       - name: Commit integration test results to repository
         if: always()
@@ -1330,26 +1330,26 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit workflow metadata to repository
-        if: ${{ github.event.inputs.dryRun == 'false' || (github.event.inputs.dryRun == '' && github.event.inputs.skipClusterInstall == 'false') }}
+        if: ${{ inputs.dryRun == 'false' || (inputs.dryRun == '' && inputs.skipClusterInstall == 'false') }}
         uses: ./.github/actions/commit-workflow-metadata
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
 
       - name: Destroy OpenShift cluster
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        if: ${{ inputs.skipClusterInstall != 'true' }}
         run: |
           ./destroy-cluster.sh --cluster $CLUSTER_NAME
 
       - name: Cleanup cluster state
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        if: ${{ inputs.skipClusterInstall != 'true' }}
         uses: ./.github/actions/cleanup-cluster-state
 
   os414:
     name: OpenShift 4.14
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+    if: ${{ inputs.skipClusterInstall != 'true' }}
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
@@ -1359,12 +1359,12 @@ jobs:
       AWS_DEFAULT_REGION: "us-east-1"
       OPENSHIFT_VERSION: "4.14"
       CLUSTER_NAME: ci414
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       CONTROL_PLANE_NODES: 3
       COMPUTE_NODES: 3
-      OPERATOR_IMAGE: ${{ github.event.inputs.operatorImage }}
-      APP_IMAGE: ${{ github.event.inputs.appImage }}
-      UI_IMAGE: ${{ github.event.inputs.uiImage }}
+      OPERATOR_IMAGE: ${{ inputs.operatorImage }}
+      APP_IMAGE: ${{ inputs.appImage }}
+      UI_IMAGE: ${{ inputs.uiImage }}
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -1460,8 +1460,8 @@ jobs:
     env:
       CLUSTER_NAME: ci414
       NAMESPACE: inmemory
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -1478,7 +1478,7 @@ jobs:
           ./run-ui-tests.sh --cluster $CLUSTER_NAME \
               --namespace $NAMESPACE \
               --isDownstream $IS_DOWNSTREAM_VERSION \
-              --tag ${{ github.event.inputs.tests-tag }}
+              --tag ${{ inputs.testsTag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -1508,7 +1508,7 @@ jobs:
     env:
       CLUSTER_NAME: ci414
       NAMESPACE: inmemory
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
     steps:
       - name: Checkout Code
@@ -1528,7 +1528,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -1642,8 +1642,8 @@ jobs:
     env:
       CLUSTER_NAME: ci414
       NAMESPACE: ksql043
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
-      IS_DOWNSTREAM_VERSION: ${{ github.event.inputs.isDownstream }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
 
     steps:
       - name: Checkout Code
@@ -1660,7 +1660,7 @@ jobs:
           ./run-ui-tests.sh --cluster $CLUSTER_NAME \
               --namespace $NAMESPACE \
               --isDownstream $IS_DOWNSTREAM_VERSION \
-              --tag ${{ github.event.inputs.tests-tag }}
+              --tag ${{ inputs.testsTag }}
 
       - name: Commit UI test results to repository
         if: always()
@@ -1690,7 +1690,7 @@ jobs:
     env:
       CLUSTER_NAME: ci414
       NAMESPACE: ksql043
-      APICURIO_REGISTRY_VERSION: ${{ github.event.inputs.release-version }}
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
     steps:
       - name: Checkout Code
@@ -1710,7 +1710,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ github.event.inputs.tests-tag }}
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -1787,19 +1787,19 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Commit workflow metadata to repository
-        if: ${{ github.event.inputs.dryRun != 'true' && (github.event.inputs.dryRun == 'false' || github.event.inputs.skipClusterInstall != 'true') }}
+        if: ${{ inputs.dryRun != 'true' && (inputs.dryRun == 'false' || inputs.skipClusterInstall != 'true') }}
         uses: ./.github/actions/commit-workflow-metadata
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
 
       - name: Destroy OpenShift cluster
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        if: ${{ inputs.skipClusterInstall != 'true' }}
         run: |
           ./destroy-cluster.sh --cluster $CLUSTER_NAME
 
       - name: Cleanup cluster state
-        if: ${{ github.event.inputs.skipClusterInstall != 'true' }}
+        if: ${{ inputs.skipClusterInstall != 'true' }}
         uses: ./.github/actions/cleanup-cluster-state
 
   save_workflow_metadata:
@@ -1821,7 +1821,7 @@ jobs:
           echo "Workflow Start Time: ${{ needs.record-start-time.outputs.start-time }}"
 
       - name: Commit workflow metadata to repository
-        if: ${{ github.event.inputs.dryRun == 'false' || (github.event.inputs.dryRun == '' && github.event.inputs.skipClusterInstall == 'false') }}
+        if: ${{ inputs.dryRun == 'false' || (inputs.dryRun == '' && inputs.skipClusterInstall == 'false') }}
         uses: ./.github/actions/commit-workflow-metadata
         with:
           workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
