@@ -71,10 +71,10 @@ on:
     outputs:
       run-id:
         description: The GitHub run ID for this workflow execution
-        value: ${{ jobs.record-start-time.outputs.run-id }}
+        value: ${{ jobs.initialize-globals.outputs.run-id }}
       run-date:
         description: The date of this workflow execution (YYYY-MM-DD)
-        value: ${{ jobs.record-start-time.outputs.run-date }}
+        value: ${{ jobs.initialize-globals.outputs.run-date }}
     secrets:
       ACCESS_TOKEN:
         required: true
@@ -96,13 +96,47 @@ on:
         required: true
 
 jobs:
-  record-start-time:
+  initialize-globals:
     runs-on: ubuntu-latest
     outputs:
       start-time: ${{ steps.get-start-time.outputs.start-time }}
       run-id: ${{ steps.get-start-time.outputs.run-id }}
       run-date: ${{ steps.get-start-time.outputs.run-date }}
+      all-inputs: ${{ steps.collect-inputs.outputs.all-inputs }}
     steps:
+      - name: Collect all inputs
+        id: collect-inputs
+        run: |
+          echo "Workflow Inputs:"
+          echo "  releaseVersion: ${{ inputs.releaseVersion }}"
+          echo "  operatorImage: ${{ inputs.operatorImage }}"
+          echo "  appImage: ${{ inputs.appImage }}"
+          echo "  uiImage: ${{ inputs.uiImage }}"
+          echo "  testsTag: ${{ inputs.testsTag }}"
+          echo "  isDownstream: ${{ inputs.isDownstream }}"
+          echo "  skipClusterInstall: ${{ inputs.skipClusterInstall }}"
+          echo "  dryRun: ${{ inputs.dryRun }}"
+
+          # Create JSON representation of all inputs
+          INPUTS_JSON=$(cat <<'EOF'
+          {
+            "releaseVersion": "${{ inputs.releaseVersion }}",
+            "operatorImage": "${{ inputs.operatorImage }}",
+            "appImage": "${{ inputs.appImage }}",
+            "uiImage": "${{ inputs.uiImage }}",
+            "testsTag": "${{ inputs.testsTag }}",
+            "isDownstream": "${{ inputs.isDownstream }}",
+            "skipClusterInstall": "${{ inputs.skipClusterInstall }}",
+            "dryRun": "${{ inputs.dryRun }}"
+          }
+          EOF
+          )
+          echo "Inputs as JSON:"
+          echo "$INPUTS_JSON" | jq .
+
+          # Set as output (compact JSON for single-line output)
+          echo "all-inputs=$(echo "$INPUTS_JSON" | jq -c .)" >> $GITHUB_OUTPUT
+
       - name: Get Workflow Start Time
         id: get-start-time
         run: |
@@ -1303,6 +1337,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs:
+      - initialize-globals
       - os419_inmemory_teardown
       - os419_pg17_teardown
       - os419_pg12_teardown
@@ -1328,13 +1363,6 @@ jobs:
         uses: ./.github/actions/restore-cluster-state
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Commit workflow metadata to repository
-        if: ${{ inputs.dryRun == 'false' || (inputs.dryRun == '' && inputs.skipClusterInstall == 'false') }}
-        uses: ./.github/actions/commit-workflow-metadata
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
 
       - name: Destroy OpenShift cluster
         if: ${{ inputs.skipClusterInstall != 'true' }}
@@ -1764,6 +1792,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs:
+      - initialize-globals
       - os414_inmemory_teardown
       - os414_strimzi043_teardown
     if: always()
@@ -1786,13 +1815,6 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Commit workflow metadata to repository
-        if: ${{ inputs.dryRun != 'true' && (inputs.dryRun == 'false' || inputs.skipClusterInstall != 'true') }}
-        uses: ./.github/actions/commit-workflow-metadata
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
-
       - name: Destroy OpenShift cluster
         if: ${{ inputs.skipClusterInstall != 'true' }}
         run: |
@@ -1807,7 +1829,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs:
-      - record-start-time
+      - initialize-globals
       - os419_teardown
       - os414_teardown
     if: always()
@@ -1818,11 +1840,12 @@ jobs:
 
       - name: Log Workflow Start Time
         run: |
-          echo "Workflow Start Time: ${{ needs.record-start-time.outputs.start-time }}"
+          echo "Workflow Start Time: ${{ needs.initialize-globals.outputs.start-time }}"
 
       - name: Commit workflow metadata to repository
         if: ${{ inputs.dryRun == 'false' || (inputs.dryRun == '' && inputs.skipClusterInstall == 'false') }}
         uses: ./.github/actions/commit-workflow-metadata
         with:
-          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
+          workflow-start-time: ${{ needs.initialize-globals.outputs.start-time }}
+          workflow-inputs: ${{ needs.initialize-globals.outputs.all-inputs }}
           github-token: ${{ secrets.ACCESS_TOKEN }}

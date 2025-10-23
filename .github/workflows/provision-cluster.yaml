@@ -40,24 +40,10 @@ env:
 
 jobs:
 
-  record-start-time:
-    runs-on: ubuntu-latest
-    outputs:
-      start-time: ${{ steps.get-start-time.outputs.start-time }}
-    steps:
-
-      - name: Get Workflow Start Time
-        id: get-start-time
-        run: |
-          START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          echo "start-time=$START_TIME" >> $GITHUB_OUTPUT
-          echo "Workflow start time: $START_TIME"
-
   provision-cluster:
     name: Provision OpenShift ${{ inputs.cluster-version }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: record-start-time
     steps:
 
       - name: Checkout $({{ github.ref }})
@@ -89,29 +75,3 @@ jobs:
 
       - name: Save test cache
         uses: ./.github/actions/save-cluster-state
-
-  save_workflow_metadata:
-    name: Save Workflow Metadata
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs:
-      - record-start-time
-      - provision-cluster
-    if: |
-      !cancelled() && needs.record-start-time.result == 'success'
-    steps:
-
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Log Workflow Start Time
-        run: |
-          echo "Workflow Start Time: ${{ needs.record-start-time.outputs.start-time }}"
-
-      - name: Commit workflow metadata to repository
-        uses: ./.github/actions/commit-workflow-metadata
-        with:
-          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}
-          github-token: ${{ secrets.ACCESS_TOKEN }}

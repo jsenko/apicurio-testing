@@ -7,6 +7,9 @@ inputs:
   github-token:
     description: 'GitHub access token for API calls and pushing to the results repository'
     required: true
+  workflow-inputs:
+    description: 'JSON string containing all workflow inputs'
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -72,7 +75,7 @@ runs:
             "triggering_actor": "${{ github.triggering_actor }}",
             "event_name": "${{ github.event_name }}"
           },
-          "inputs": ${{ toJson(github.event.inputs) }},
+          "inputs": ${{ inputs.workflow-inputs || toJson(github.event.inputs) }},
           "environment": {
             "openshift_version": "4.19",
             "cluster_name": "ci419",
