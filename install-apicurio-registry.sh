@@ -296,6 +296,13 @@ fi
 
 load_cluster_config "$CLUSTER_NAME"
 
+# Generate random passwords for MySQL database
+# Using openssl to generate 32-character random passwords
+MYSQL_USER="mysqluser"
+MYSQL_DATABASE="apicuriodb"
+MYSQL_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+MYSQL_ROOT_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+
 export APPLICATION_NAME
 export CLUSTER_NAME
 export CERT_DIR="$BASE_DIR/certificates"
@@ -305,6 +312,10 @@ export PROFILE
 
 export POSTGRESQL_VERSION
 export MYSQL_VERSION
+export MYSQL_USER
+export MYSQL_DATABASE
+export MYSQL_PASSWORD
+export MYSQL_ROOT_PASSWORD
 export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
 export APP_DIR="$APPS_DIR/$APPLICATION_NAME"

@@ -4,15 +4,11 @@ metadata:
   name: mysql-secret
   namespace: ${NAMESPACE}
 type: Opaque
-data:
-  # Default credentials (base64 encoded)
-  # Username: mysqluser (bXlzcWx1c2Vy)
-  # Password: mysqlpassword (bXlzcWxwYXNzd29yZA==)
-  # Database: apicuriodb (YXBpY3VyaW9kYg==)
-  MYSQL_USER: bXlzcWx1c2Vy
-  MYSQL_PASSWORD: bXlzcWxwYXNzd29yZA==
-  MYSQL_DATABASE: YXBpY3VyaW9kYg==
-  MYSQL_ROOT_PASSWORD: cm9vdHBhc3N3b3Jk
+stringData:
+  MYSQL_USER: ${MYSQL_USER}
+  MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  MYSQL_DATABASE: ${MYSQL_DATABASE}
+  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 ---
 apiVersion: apps/v1
 kind: Deployment
