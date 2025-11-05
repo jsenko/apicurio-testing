@@ -303,6 +303,12 @@ MYSQL_DATABASE="apicuriodb"
 MYSQL_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
 MYSQL_ROOT_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
 
+# Generate random password for PostgreSQL database
+# Using openssl to generate a 32-character random password
+POSTGRESQL_USER="pguser"
+POSTGRESQL_DATABASE="apicuriodb"
+POSTGRESQL_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+
 export APPLICATION_NAME
 export CLUSTER_NAME
 export CERT_DIR="$BASE_DIR/certificates"
@@ -316,6 +322,9 @@ export MYSQL_USER
 export MYSQL_DATABASE
 export MYSQL_PASSWORD
 export MYSQL_ROOT_PASSWORD
+export POSTGRESQL_USER
+export POSTGRESQL_DATABASE
+export POSTGRESQL_PASSWORD
 export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
 export APP_DIR="$APPS_DIR/$APPLICATION_NAME"

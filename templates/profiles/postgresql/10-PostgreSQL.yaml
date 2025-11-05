@@ -1,3 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql-secret
+  namespace: ${NAMESPACE}
+type: Opaque
+stringData:
+  POSTGRES_USER: ${POSTGRESQL_USER}
+  POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+  POSTGRES_DB: ${POSTGRESQL_DATABASE}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,11 +34,20 @@ spec:
           name: postgresql
         env:
         - name: POSTGRES_USER
-          value: pguser
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: POSTGRES_USER
         - name: POSTGRES_PASSWORD
-          value: pgpassword
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: POSTGRES_PASSWORD
         - name: POSTGRES_DB
-          value: apicuriodb
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: POSTGRES_DB
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
         resources:
@@ -42,7 +62,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - pg_isready -U pguser -d apicuriodb
+            - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -52,7 +72,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - pg_isready -U pguser -d apicuriodb
+            - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3
