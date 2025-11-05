@@ -66,7 +66,18 @@ runs:
         if [ -d "$RAPIDAST_RESULTS_DIR" ]; then
           cp -r $RAPIDAST_RESULTS_DIR/* "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}/" 2>/dev/null || true
           echo "Copied DAST scan results from $RAPIDAST_RESULTS_DIR/ to subdirectory: ${{ inputs.subdirectory-name }}"
-          
+
+          # Redact JWT token from rapidast-config.yaml if it exists
+          RAPIDAST_CONFIG_FILE="$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}/rapidast-config.yaml"
+          if [ -f "$RAPIDAST_CONFIG_FILE" ]; then
+            echo "Redacting JWT token from rapidast-config.yaml for security..."
+            # Replace the JWT token in the Authorization header value with [REDACTED]
+            sed -i 's/\(value: Bearer \)[^ ]*/\1[REDACTED]/' "$RAPIDAST_CONFIG_FILE"
+            echo "Successfully redacted JWT token from rapidast-config.yaml"
+          else
+            echo "No rapidast-config.yaml found in results, skipping JWT redaction"
+          fi
+
           # List what was copied for verification
           echo "Files copied to workflow results:"
           find "$JOB_DIR/dast-results/${{ inputs.subdirectory-name }}" -type f | head -10
