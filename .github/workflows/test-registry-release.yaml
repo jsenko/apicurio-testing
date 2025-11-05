@@ -374,8 +374,8 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql:
-    name: Apicurio Registry (mysql)
+  os419_mysql84:
+    name: Apicurio Registry (mysql 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: os419
@@ -383,8 +383,9 @@ jobs:
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: mysql
+      NAMESPACE: mysql84
       PROFILE: mysql
+      MYSQL_VERSION: 8.4
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -410,7 +411,62 @@ jobs:
 
       - name: Install Apicurio Registry
         run: |
-          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --profile $PROFILE \
+              --mysqlVersion $MYSQL_VERSION
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os419_mysql80:
+    name: Apicurio Registry (mysql 8.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: os419
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: mysql80
+      PROFILE: mysql
+      MYSQL_VERSION: 8.0
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --profile $PROFILE \
+              --mysqlVersion $MYSQL_VERSION
 
       - name: Commit pod logs to repository
         if: failure()
@@ -851,15 +907,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql_uitests:
-    name: UI Tests (mysql)
+  os419_mysql84_uitests:
+    name: UI Tests (mysql 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os419_mysql
+    needs: os419_mysql84
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: mysql
+      NAMESPACE: mysql84
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
 
@@ -899,16 +955,65 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql_integrationtests:
-    name: Integration Tests (mysql)
+  os419_mysql80_uitests:
+    name: UI Tests (mysql 8.0)
     runs-on: ubuntu-latest
-    timeout-minutes: 40
-    needs: os419_mysql_uitests
+    timeout-minutes: 25
+    needs: os419_mysql80
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: mysql
+      NAMESPACE: mysql80
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Run UI Tests
+        run: |
+          ./run-ui-tests.sh --cluster $CLUSTER_NAME \
+              --namespace $NAMESPACE \
+              --isDownstream $IS_DOWNSTREAM_VERSION \
+              --tag ${{ inputs.testsTag }}
+
+      - name: Commit UI test results to repository
+        if: always()
+        uses: ./.github/actions/commit-ui-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os419_mysql84_integrationtests:
+    name: Integration Tests (mysql 8.4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os419_mysql84_uitests
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: mysql84
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      TEST_PROFILE: all
 
     steps:
       - name: Checkout Code
@@ -928,7 +1033,58 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os419_mysql80_integrationtests:
+    name: Integration Tests (mysql 8.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os419_mysql80_uitests
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: mysql80
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      TEST_PROFILE: smoke
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
 
       - name: Commit integration test results to repository
         if: always()
@@ -1248,18 +1404,45 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_mysql_teardown:
-    name: Destroy Registry (mysql)
+  os419_mysql84_teardown:
+    name: Destroy Registry (mysql 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_mysql_uitests
-      - os419_mysql_integrationtests
+      - os419_mysql84_uitests
+      - os419_mysql84_integrationtests
     if: always()
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: mysql
+      NAMESPACE: mysql84
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Destroy Namespace
+        run: |
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  os419_mysql80_teardown:
+    name: Destroy Registry (mysql 8.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - os419_mysql80_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: mysql80
 
     steps:
       - name: Checkout Code
@@ -1341,7 +1524,8 @@ jobs:
       - os419_inmemory_teardown
       - os419_pg17_teardown
       - os419_pg12_teardown
-      - os419_mysql_teardown
+      - os419_mysql84_teardown
+      - os419_mysql80_teardown
       - os419_strimzi047_teardown
       - os419_authn_teardown
     if: always()
