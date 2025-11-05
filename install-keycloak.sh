@@ -9,22 +9,20 @@ source "$BASE_DIR/shared.sh"
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [OPTIONS]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> --keycloakVersion <version> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --namespace <namespace>  Kubernetes namespace to deploy Keycloak into"
+    echo "  --namespace <namespace>        Kubernetes namespace to deploy Keycloak into"
+    echo "  --keycloakVersion <version>    Keycloak version to deploy (e.g., 22.0, 26.3.1)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
-    echo "  --cluster <name>         Name of the OpenShift cluster where Keycloak will be installed (default: \$USER)"
-    echo ""
-    echo ""
-    echo "OPTIONAL PARAMETERS:"
-    echo "  --realmName <realm>      Name of the realm to create (default: 'registry')"
-    echo "  -h, --help               Display this help message and exit"
+    echo "  --cluster <name>               Name of the OpenShift cluster where Keycloak will be installed (default: \$USER)"
+    echo "  --realmName <realm>            Name of the realm to create (default: 'registry')"
+    echo "  -h, --help                     Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
     echo "  # Basic installation:"
-    echo "  $0 --cluster okd419 --namespace keycloak-ns"
+    echo "  $0 --cluster okd419 --namespace keycloak-ns --keycloakVersion 26.3.1"
     echo ""
     echo "NOTES:"
     echo "  - The cluster must already exist and be properly configured"
@@ -292,7 +290,7 @@ wait_for_keycloak_cr_ready() {
 APPLICATION_NAME="keycloak"
 CLUSTER_NAME="$USER"
 NAMESPACE=""
-
+KEYCLOAK_VERSION=""
 REALM_NAME=""
 
 while [[ $# -gt 0 ]]; do
@@ -305,7 +303,10 @@ while [[ $# -gt 0 ]]; do
             NAMESPACE="$2"
             shift 2
             ;;
-
+        --keycloakVersion)
+            KEYCLOAK_VERSION="$2"
+            shift 2
+            ;;
         --realmName)
             REALM_NAME="$2"
             shift 2
@@ -333,6 +334,12 @@ if [ -z "$NAMESPACE" ]; then
     exit 1
 fi
 
+if [ -z "$KEYCLOAK_VERSION" ]; then
+    echo "Error: --keycloakVersion argument is required"
+    show_usage
+    exit 1
+fi
+
 # Validate namespace contains only letters and numbers
 if [[ ! "$NAMESPACE" =~ ^[a-zA-Z0-9]+$ ]]; then
     echo "Error: Namespace '$NAMESPACE' is invalid. It must contain only letters and numbers."
@@ -347,7 +354,7 @@ export APPLICATION_NAME
 export CLUSTER_NAME
 export CERT_DIR="$BASE_DIR/certificates"
 export NAMESPACE
-
+export KEYCLOAK_VERSION
 export REALM_NAME
 export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"

@@ -9,4 +9,3 @@ spec:
   source: ${CATALOG_SOURCE}
   sourceNamespace: ${CATALOG_SOURCE_NAMESPACE}
   installPlanApproval: Automatic
-  startingCSV: keycloak-operator.v${KEYCLOAK_OPERATOR_VERSION}

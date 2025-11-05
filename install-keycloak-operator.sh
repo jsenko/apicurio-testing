@@ -9,15 +9,14 @@ source "$BASE_DIR/shared.sh"
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> --keycloakVersion <version> [OPTIONS]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
     echo "  --namespace <namespace>  Kubernetes namespace to deploy Keycloak into"
     echo ""
     echo "OPTIONAL PARAMETERS:"
     echo "  --cluster <name>         Name of the OpenShift cluster where Keycloak will be installed (default: \$USER)"
-    echo ""
-    echo "OPTIONAL PARAMETERS:"
+    echo "  --keycloakVersion <ver>  (Deprecated) Keycloak version - no longer used"
     echo "  -h, --help               Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
@@ -63,12 +62,6 @@ done
 
 if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
-    show_usage
-    exit 1
-fi
-
-if [ -z "$KEYCLOAK_OPERATOR_VERSION" ]; then
-    echo "Error: --keycloakVersion argument is required"
     show_usage
     exit 1
 fi
