@@ -1694,8 +1694,8 @@ jobs:
         if: ${{ inputs.skipClusterInstall != 'true' }}
         uses: ./.github/actions/cleanup-cluster-state
 
-  os414:
-    name: OpenShift 4.14
+  os416:
+    name: OpenShift 4.16
     runs-on: ubuntu-latest
     timeout-minutes: 90
     if: ${{ inputs.skipClusterInstall != 'true' }}
@@ -1706,8 +1706,8 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "us-east-1"
-      OPENSHIFT_VERSION: "4.14"
-      CLUSTER_NAME: ci414
+      OPENSHIFT_VERSION: "4.16"
+      CLUSTER_NAME: ci416
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       CONTROL_PLANE_NODES: 3
       COMPUTE_NODES: 3
@@ -1753,14 +1753,14 @@ jobs:
         if: always()
         uses: ./.github/actions/save-cluster-state
 
-  os414_inmemory:
-    name: Apicurio Registry (in-memory) [4.14]
+  os416_inmemory:
+    name: Apicurio Registry (in-memory) [4.16]
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os414
+    needs: os416
 
     env:
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
       NAMESPACE: inmemory
       PROFILE: inmemory
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
@@ -1800,14 +1800,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os414_inmemory_uitests:
-    name: UI Tests (in mem) [4.14]
+  os416_inmemory_uitests:
+    name: UI Tests (in mem) [4.16]
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os414_inmemory
+    needs: os416_inmemory
 
     env:
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
       NAMESPACE: inmemory
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
@@ -1848,14 +1848,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os414_inmemory_integrationtests:
-    name: Integration Tests (in mem) [4.14]
+  os416_inmemory_integrationtests:
+    name: Integration Tests (in mem) [4.16]
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os414_inmemory_uitests
+    needs: os416_inmemory_uitests
 
     env:
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
       NAMESPACE: inmemory
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
@@ -1898,16 +1898,16 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os414_inmemory_teardown:
-    name: Destroy Registry (inmemory) [4.14]
+  os416_inmemory_teardown:
+    name: Destroy Registry (inmemory) [4.16]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os414_inmemory_uitests
-      - os414_inmemory_integrationtests
+      - os416_inmemory_uitests
+      - os416_inmemory_integrationtests
 
     env:
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
       NAMESPACE: inmemory
 
     steps:
@@ -1925,15 +1925,15 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os414_strimzi043:
+  os416_strimzi043:
     name: Apicurio Registry (strimzi 0.43)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os414
+    needs: os416
     if: always()
 
     env:
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
       NAMESPACE: ksql043
       PROFILE: kafkasql
       STRIMZI_VERSION: 0.43.0
@@ -1982,14 +1982,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os414_strimzi043_uitests:
+  os416_strimzi043_uitests:
     name: UI Tests (strimzi 0.43)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os414_strimzi043
+    needs: os416_strimzi043
 
     env:
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
       NAMESPACE: ksql043
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
@@ -2030,14 +2030,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os414_strimzi043_integrationtests:
+  os416_strimzi043_integrationtests:
     name: Integration Tests (strimzi 0.43)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os414_strimzi043_uitests
+    needs: os416_strimzi043_uitests
 
     env:
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
       NAMESPACE: ksql043
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
@@ -2080,17 +2080,17 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os414_strimzi043_teardown:
+  os416_strimzi043_teardown:
     name: Destroy Registry (strimzi 0.43)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os414_strimzi043_uitests
-      - os414_strimzi043_integrationtests
+      - os416_strimzi043_uitests
+      - os416_strimzi043_integrationtests
     if: always()
 
     env:
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
       NAMESPACE: ksql043
 
     steps:
@@ -2108,14 +2108,14 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os414_teardown:
-    name: Destroy OpenShift 4.14
+  os416_teardown:
+    name: Destroy OpenShift 4.16
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs:
       - initialize-globals
-      - os414_inmemory_teardown
-      - os414_strimzi043_teardown
+      - os416_inmemory_teardown
+      - os416_strimzi043_teardown
     if: always()
 
     env:
@@ -2124,7 +2124,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "us-east-1"
-      CLUSTER_NAME: ci414
+      CLUSTER_NAME: ci416
 
     steps:
       - name: Checkout Code
@@ -2152,7 +2152,7 @@ jobs:
     needs:
       - initialize-globals
       - os419_teardown
-      - os414_teardown
+      - os416_teardown
     if: always()
 
     steps:
