@@ -416,6 +416,34 @@ fi
 KC_ADMIN_USER=$(kubectl get secret keycloak-instance-initial-admin -n $NAMESPACE -o jsonpath='{.data.username}' | base64 --decode)
 KC_ADMIN_PASS=$(kubectl get secret keycloak-instance-initial-admin -n $NAMESPACE -o jsonpath='{.data.password}' | base64 --decode)
 
+# Gather version information for verification
+echo "=========================================="
+echo "KEYCLOAK VERSION INFORMATION"
+echo "=========================================="
+echo ""
+
+# Get the operator CSV version
+OPERATOR_CSV=$(kubectl get subscription -n $NAMESPACE -o jsonpath='{.items[?(@.spec.name=="keycloak-operator")].status.installedCSV}' 2>/dev/null || echo "Not found")
+echo "Keycloak Operator CSV: $OPERATOR_CSV"
+
+# Get the actual Keycloak image being used
+KEYCLOAK_IMAGE=$(kubectl get pods -n $NAMESPACE -l app=keycloak -o jsonpath='{.items[0].spec.containers[0].image}' 2>/dev/null || echo "Not found")
+echo "Keycloak Container Image: $KEYCLOAK_IMAGE"
+
+# Extract version from image tag if possible
+if [[ "$KEYCLOAK_IMAGE" != "Not found" ]]; then
+    KEYCLOAK_VERSION_TAG=$(echo "$KEYCLOAK_IMAGE" | grep -oP '(?<=:).*' || echo "Unable to parse")
+    echo "Keycloak Version Tag: $KEYCLOAK_VERSION_TAG"
+fi
+
+# Get Keycloak CR observedGeneration (shows CR is reconciled)
+KEYCLOAK_GENERATION=$(kubectl get keycloak keycloak-instance -n $NAMESPACE -o jsonpath='{.status.observedGeneration}' 2>/dev/null || echo "Not found")
+echo "Keycloak CR Observed Generation: $KEYCLOAK_GENERATION"
+
+echo ""
+echo "=========================================="
+echo ""
+
 # Keycloak is up!
 echo "Keycloak is up and running!"
 echo ""

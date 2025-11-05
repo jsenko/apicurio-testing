@@ -33,6 +33,7 @@ show_usage() {
 # Parse command line arguments
 CLUSTER_NAME="$USER"
 NAMESPACE=""
+KEYCLOAK_OPERATOR_VERSION=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -42,6 +43,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --namespace)
             NAMESPACE="$2"
+            shift 2
+            ;;
+        --keycloakVersion)
+            KEYCLOAK_OPERATOR_VERSION="$2"
             shift 2
             ;;
         -h|--help)
@@ -62,6 +67,12 @@ if [ -z "$NAMESPACE" ]; then
     exit 1
 fi
 
+if [ -z "$KEYCLOAK_OPERATOR_VERSION" ]; then
+    echo "Error: --keycloakVersion argument is required"
+    show_usage
+    exit 1
+fi
+
 # Validate namespace contains only letters and numbers
 if [[ ! "$NAMESPACE" =~ ^[a-zA-Z0-9]+$ ]]; then
     echo "Error: Namespace '$NAMESPACE' is invalid. It must contain only letters and numbers."
@@ -75,6 +86,7 @@ load_cluster_config "$CLUSTER_NAME"
 export CLUSTER_NAME
 export CLUSTER_DIR="$BASE_DIR/clusters/$CLUSTER_NAME"
 export NAMESPACE
+export KEYCLOAK_OPERATOR_VERSION
 export BASE_DOMAIN="apicurio-testing.org"
 export APPS_DIR="$CLUSTER_DIR/namespaces/$NAMESPACE/apps"
 export APP_DIR="$APPS_DIR/keycloak-operator"

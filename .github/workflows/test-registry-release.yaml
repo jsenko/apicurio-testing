@@ -535,16 +535,16 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_authn:
-    name: Apicurio Registry (authn)
+  os419_keycloak26:
+    name: Apicurio Registry (keycloak 26)
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os419
     if: always()
-    
+
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: authn
+      NAMESPACE: keycloak26
       PROFILE: authn
       KEYCLOAK_VERSION: 26.3.1
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
@@ -572,7 +572,64 @@ jobs:
 
       - name: Install Keycloak Operator
         run: |
-          ./install-keycloak-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+          ./install-keycloak-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --keycloakVersion $KEYCLOAK_VERSION
+
+      - name: Install Keycloak
+        run: |
+          ./install-keycloak.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os419_keycloak22:
+    name: Apicurio Registry (keycloak 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os419
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: keycloak22
+      PROFILE: authn
+      KEYCLOAK_VERSION: 22.0
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install Keycloak Operator
+        run: |
+          ./install-keycloak-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --keycloakVersion $KEYCLOAK_VERSION
 
       - name: Install Keycloak
         run: |
@@ -1203,16 +1260,17 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_authn_integrationtests:
-    name: Integration Tests (authn)
+  os419_keycloak26_integrationtests:
+    name: Integration Tests (keycloak 26)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_authn
+    needs: os419_keycloak26
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: authn
+      NAMESPACE: keycloak26
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      TEST_PROFILE: auth
 
     steps:
       - name: Checkout Code
@@ -1232,7 +1290,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile auth --registryProtocol https --registryPort 443
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE --registryProtocol https --registryPort 443
 
       - name: Commit integration test results to repository
         if: always()
@@ -1253,15 +1311,66 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_authn_dastscan:
-    name: DAST Scan (authn)
+  os419_keycloak22_integrationtests:
+    name: Integration Tests (keycloak 22)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: os419_authn_integrationtests
+    timeout-minutes: 40
+    needs: os419_keycloak22
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: authn
+      NAMESPACE: keycloak22
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      TEST_PROFILE: auth
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE --registryProtocol https --registryPort 443
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os419_keycloak26_dastscan:
+    name: DAST Scan (keycloak 26)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: os419_keycloak26_integrationtests
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: keycloak26
       RAPIDAST_TAG: development
 
     steps:
@@ -1487,18 +1596,45 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_authn_teardown:
-    name: Destroy Registry (authn)
+  os419_keycloak26_teardown:
+    name: Destroy Registry (keycloak 26)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_authn_integrationtests
-      - os419_authn_dastscan
+      - os419_keycloak26_integrationtests
+      - os419_keycloak26_dastscan
     if: always()
 
     env:
       CLUSTER_NAME: ci419
-      NAMESPACE: authn
+      NAMESPACE: keycloak26
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Destroy Namespace
+        run: |
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  os419_keycloak22_teardown:
+    name: Destroy Registry (keycloak 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - os419_keycloak22_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci419
+      NAMESPACE: keycloak22
 
     steps:
       - name: Checkout Code
@@ -1527,7 +1663,8 @@ jobs:
       - os419_mysql84_teardown
       - os419_mysql80_teardown
       - os419_strimzi047_teardown
-      - os419_authn_teardown
+      - os419_keycloak26_teardown
+      - os419_keycloak22_teardown
     if: always()
 
     env:
