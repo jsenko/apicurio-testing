@@ -349,6 +349,10 @@ fi
 
 load_cluster_config "$CLUSTER_NAME"
 
+# Generate a random password for the Keycloak database
+# Using openssl to generate a 32-character random password
+KEYCLOAK_DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+
 # Export environment variables
 export APPLICATION_NAME
 export CLUSTER_NAME
@@ -362,6 +366,7 @@ export APP_DIR="$APPS_DIR/$APPLICATION_NAME"
 export APPS_URL="apps.$CLUSTER_NAME.$BASE_DOMAIN"
 export KEYCLOAK_INGRESS_URL="keycloak-$NAMESPACE.$APPS_URL"
 export KEYCLOAK_HEALTH_URL="keycloak-health-$NAMESPACE.$APPS_URL"
+export KEYCLOAK_DB_PASSWORD
 
 mkdir -p $APP_DIR
 
