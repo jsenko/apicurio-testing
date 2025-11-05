@@ -247,3 +247,75 @@ extract_console_password
 # Generate a TLS cert for the cluster
 cd $BASE_DIR || exit 1
 ./install-tls-cert.sh --cluster $CLUSTER_NAME
+
+# Verify cluster is reachable and display information
+echo ""
+echo "=========================================="
+echo "CLUSTER VERIFICATION"
+echo "=========================================="
+echo ""
+
+# Load the cluster config to set KUBECONFIG
+load_cluster_config "$CLUSTER_NAME"
+
+# Test basic cluster connectivity
+echo "Testing cluster connectivity..."
+if ! kubectl cluster-info &>/dev/null; then
+    echo "ERROR: Unable to connect to cluster"
+    echo "KUBECONFIG: $KUBECONFIG"
+    exit 1
+fi
+echo "✓ Cluster is reachable"
+echo ""
+
+# Get cluster version
+CLUSTER_VERSION=$(kubectl get clusterversion version -o jsonpath='{.status.desired.version}' 2>/dev/null || echo "Unable to determine")
+echo "Cluster Version: $CLUSTER_VERSION"
+
+# Get API server URL
+API_SERVER=$(kubectl cluster-info | grep -oP 'Kubernetes control plane.*https://\K[^ ]+' || echo "Unable to determine")
+echo "API Server: $API_SERVER"
+
+# Get cluster operator status
+echo ""
+echo "Cluster Operators Status:"
+DEGRADED_OPERATORS=$(kubectl get co --no-headers 2>/dev/null | awk '$3 != "False" || $4 != "False" || $5 != "True" {print $1}')
+if [[ -z "$DEGRADED_OPERATORS" ]]; then
+    echo "✓ All cluster operators are healthy"
+else
+    echo "⚠ The following operators are not healthy:"
+    echo "$DEGRADED_OPERATORS"
+fi
+
+# Get node status
+echo ""
+echo "Node Status:"
+NOT_READY_NODES=$(kubectl get nodes --no-headers 2>/dev/null | grep -v " Ready " || true)
+READY_NODE_COUNT=$(kubectl get nodes --no-headers 2>/dev/null | grep -c " Ready " || echo "0")
+TOTAL_NODE_COUNT=$(kubectl get nodes --no-headers 2>/dev/null | wc -l || echo "0")
+
+if [[ "$READY_NODE_COUNT" -eq "$TOTAL_NODE_COUNT" ]] && [[ "$TOTAL_NODE_COUNT" -gt 0 ]]; then
+    echo "✓ All $TOTAL_NODE_COUNT nodes are ready"
+else
+    echo "⚠ $READY_NODE_COUNT of $TOTAL_NODE_COUNT nodes are ready"
+    if [[ -n "$NOT_READY_NODES" ]]; then
+        echo "Not ready nodes:"
+        echo "$NOT_READY_NODES"
+    fi
+fi
+
+# Display nodes
+echo ""
+echo "Nodes:"
+kubectl get nodes -o wide 2>/dev/null || echo "Unable to retrieve node information"
+
+echo ""
+echo "=========================================="
+echo ""
+
+echo "✓ Cluster installation completed successfully!"
+echo ""
+echo "Cluster: $CLUSTER_NAME"
+echo "Console URL: https://console-openshift-console.apps.$CLUSTER_NAME.$BASE_DOMAIN"
+echo "Kubeconfig: $CLUSTER_DIR/auth/kubeconfig"
+echo ""
