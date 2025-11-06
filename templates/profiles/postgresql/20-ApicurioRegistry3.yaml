@@ -4,23 +4,25 @@ metadata:
   name: $APPLICATION_NAME
 spec:
   app:
-    storage:
-      type: postgresql
-      sql:
-        dataSource:
-          url: jdbc:postgresql://postgresql:5432/${POSTGRESQL_DATABASE}
-          username:
-            secretKeyRef:
-              name: postgresql-secret
-              key: POSTGRES_USER
-          password:
-            secretKeyRef:
-              name: postgresql-secret
-              key: POSTGRES_PASSWORD
     ingress:
       host: $APP_INGRESS_URL
     features:
       resourceDeleteEnabled: true
+    env:
+      - name: APICURIO_STORAGE_SQL_KIND
+        value: "postgresql"
+      - name: APICURIO_DATASOURCE_URL
+        value: jdbc:postgresql://postgresql:5432/${POSTGRESQL_DATABASE}
+      - name: APICURIO_DATASOURCE_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: postgresql-secret
+            key: POSTGRES_USER
+      - name: APICURIO_DATASOURCE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: postgresql-secret
+            key: POSTGRES_PASSWORD
   ui:
     ingress:
       host: $UI_INGRESS_URL
