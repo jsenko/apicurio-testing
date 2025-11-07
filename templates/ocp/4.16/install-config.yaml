@@ -3,6 +3,8 @@ metadata:
   name: $CLUSTER_NAME
 baseDomain: $BASE_DOMAIN
 controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
   name: master
   replicas: $CONTROL_PLANE_NODES
   platform:

@@ -65,7 +65,7 @@ usage() {
     echo "  export DOCKER_PASSWORD=mypassword"
     echo "  export DOCKER_EMAIL=myuser@example.com"
     echo "  $0                        # Uses default cluster (\$USER)"
-    echo "  $0 --cluster okd419       # Uses specific cluster"
+    echo "  $0 --cluster ocp416       # Uses specific cluster"
     echo ""
     echo "Notes:"
     echo "  - The cluster must already exist and be properly configured"
