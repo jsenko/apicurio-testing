@@ -1,4 +1,4 @@
-name: Provision a new OKD cluster
+name: Provision a new OCP cluster
 on:
   workflow_dispatch:
     inputs:
@@ -13,9 +13,9 @@ on:
         required: true
       cluster-version:
         type: string
-        description: OKD version to install
+        description: OCP version to install
         required: true
-        default: "4.19"
+        default: "4.16"
       force:
         type: boolean
         description: |
@@ -63,7 +63,7 @@ jobs:
             INSTALL_ARGS=""
           fi
           ./install-cluster.sh --cluster ${{ inputs.cluster-name }} \
-              --okdVersion ${{ inputs.cluster-version }} \
+              --ocpVersion ${{ inputs.cluster-version }} \
               --controlPlaneNodes $CONTROL_PLANE_NODES \
               --computeNodes $COMPUTE_NODES \
               --log-level warn \

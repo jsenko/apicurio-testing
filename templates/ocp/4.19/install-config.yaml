@@ -1,0 +1,38 @@
+apiVersion: v1
+metadata:
+  name: $CLUSTER_NAME
+baseDomain: $BASE_DOMAIN
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: $CONTROL_PLANE_NODES
+  platform:
+    aws:
+      type: m5.xlarge
+      zones:
+        - us-east-1a
+compute:
+  - name: worker
+    replicas: $COMPUTE_NODES
+    platform:
+      aws:
+        type: m5.xlarge
+        zones:
+          - us-east-1a
+platform:
+  aws:
+    region: $REGION
+    userTags:
+      apicurio/Environment: TEST
+      apicurio/ForCleanup: "true"
+      apicurio/FromOcpInstaller: "true"
+      apicurio/cluster: $CLUSTER_NAME
+      app-code: SRQE-001
+      service-phase: dev
+      cost-center: 704
+fips: false
+pullSecret: |
+  $OPENSHIFT_PULL_SECRET
+sshKey: |
+  $SSH_PUBLIC_KEY

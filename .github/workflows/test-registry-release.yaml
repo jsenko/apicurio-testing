@@ -196,7 +196,7 @@ jobs:
         if: ${{ inputs.skipClusterInstall != 'true' }}
         run: |
           ./install-cluster.sh --cluster $CLUSTER_NAME \
-              --okdVersion $OPENSHIFT_VERSION \
+              --ocpVersion $OPENSHIFT_VERSION \
               --controlPlaneNodes $CONTROL_PLANE_NODES \
               --computeNodes $COMPUTE_NODES \
               --log-level warn
@@ -1735,7 +1735,7 @@ jobs:
 
       - name: Install OpenShift cluster
         run: |
-          ./install-cluster.sh --cluster $CLUSTER_NAME --okdVersion $OPENSHIFT_VERSION --controlPlaneNodes $CONTROL_PLANE_NODES --computeNodes $COMPUTE_NODES --log-level warn
+          ./install-cluster.sh --cluster $CLUSTER_NAME --ocpVersion $OPENSHIFT_VERSION --controlPlaneNodes $CONTROL_PLANE_NODES --computeNodes $COMPUTE_NODES --log-level warn
 
       - name: Install OpenShift Docker Pull Credentials
         run: |
