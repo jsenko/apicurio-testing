@@ -144,10 +144,6 @@ usage() {
     echo ""
     echo "Example:"
     echo "  $0 --version 4.16"
-    echo ""
-    echo "Supported Versions:"
-    echo "  4.16 - Stable release (recommended)"
-    echo "  4.17 - Future stable release"
     exit 1
 }
 

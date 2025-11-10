@@ -15,7 +15,7 @@ on:
         type: string
         description: OCP version to install
         required: true
-        default: "4.16"
+        default: "4.19"
       force:
         type: boolean
         description: |
