@@ -1,4 +1,4 @@
-name: Destroy an existing OKD cluster
+name: Destroy an existing OCP cluster
 on:
   workflow_dispatch:
     inputs:

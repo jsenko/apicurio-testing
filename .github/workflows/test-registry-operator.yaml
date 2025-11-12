@@ -103,7 +103,7 @@ jobs:
       - name: Install OpenShift cluster
         run: |
           ./install-cluster.sh --cluster $CLUSTER_NAME \
-              --okdVersion $OPENSHIFT_VERSION \
+              --ocpVersion $OPENSHIFT_VERSION \
               --controlPlaneNodes $CONTROL_PLANE_NODES \
               --computeNodes $COMPUTE_NODES \
               --log-level warn

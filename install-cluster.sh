@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to install OKD cluster
+# Script to install OCP cluster
 # Usage: ./install-cluster.sh [--cluster <cluster-name>]
 
 # Get the directory where this script is located
@@ -82,14 +82,14 @@ extract_console_password() {
 
 # Function to display usage
 usage() {
-    echo    "Usage: $0 [--cluster <cluster-name>] [--okdVersion <okd-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>] [--log-level <level>] [--force]"
+    echo    "Usage: $0 [--cluster <cluster-name>] [--ocpVersion <ocp-version>] [--region <aws-region>] [--computeNodes <count>] [--controlPlaneNodes <count>] [--baseDomain <domain>] [--log-level <level>] [--force]"
     echo    ""
     echo    "Optional Parameters:"
     echo    "  --cluster <cluster-name>     Name of the cluster to install (default: $USER)"
     echo    "                               Must contain only letters and numbers"
     echo    ""
     echo    "Optional Parameters:"
-    echo    "  --okdVersion <version>       OKD version to install (default: 4.19)"
+    echo    "  --ocpVersion <version>       OCP version to install (default: 4.19)"
     echo    "  --region <aws-region>        AWS region to deploy to (default: us-east-1)"
     echo    "  --computeNodes <count>       Number of compute/worker nodes (default: 3)"
     echo    "  --controlPlaneNodes <count>  Number of control plane/master nodes (default: 3)"
@@ -102,7 +102,7 @@ usage() {
 
 # Initialize variables
 CLUSTER_NAME="$USER"
-OKD_VERSION="4.19"
+OCP_VERSION="4.19"
 REGION="us-east-1"
 COMPUTE_NODES="3"
 CONTROL_PLANE_NODES="3"
@@ -117,8 +117,8 @@ while [[ $# -gt 0 ]]; do
             CLUSTER_NAME="$2"
             shift 2
             ;;
-        --okdVersion)
-            OKD_VERSION="$2"
+        --ocpVersion)
+            OCP_VERSION="$2"
             shift 2
             ;;
         --region)
@@ -193,7 +193,7 @@ echo "Using AWS region: $REGION"
 # Validate required environment variables
 validate_env_vars
 
-echo "Installing OKD cluster with name: $CLUSTER_NAME (OKD version: $OKD_VERSION)"
+echo "Installing OCP cluster with name: $CLUSTER_NAME (OCP version: $OCP_VERSION)"
 echo "Cluster configuration: $CONTROL_PLANE_NODES control plane nodes, $COMPUTE_NODES compute nodes"
 echo "Using base domain: $BASE_DOMAIN"
 CLUSTER_DIR=$CLUSTERS_DIR/$CLUSTER_NAME
@@ -215,16 +215,16 @@ if [[ -d "$CLUSTER_DIR" ]]; then
     fi
 fi
 
-# Create a work directory for installing the OKD cluster
+# Create a work directory for installing the OCP cluster
 mkdir -p $CLUSTER_DIR
 cd $CLUSTER_DIR || exit 1
 
-"$BASE_DIR/download-okd-installer.sh" --version "$OKD_VERSION"
+"$BASE_DIR/download-ocp-installer.sh" --version "$OCP_VERSION"
 if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to download openshift-install for OKD version $OKD_VERSION."
+    echo "Error: Failed to download openshift-install for OCP version $OCP_VERSION."
     exit 1
 fi
-OPENSHIFT_INSTALLER="$BIN_DIR/$OKD_VERSION/openshift-install"
+OPENSHIFT_INSTALLER="$BIN_DIR/$OCP_VERSION/openshift-install"
 
 # Create the install-config.yaml file (from template)
 echo "Creating install-config.yaml from template with environment variable substitution"
@@ -233,9 +233,9 @@ export REGION
 export COMPUTE_NODES
 export CONTROL_PLANE_NODES
 export BASE_DOMAIN
-envsubst < $BASE_DIR/templates/okd/$OKD_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
+envsubst < $BASE_DIR/templates/ocp/$OCP_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
 
-echo -n "$OKD_VERSION" > "$CLUSTER_DIR/version"
+echo -n "$OCP_VERSION" > "$CLUSTER_DIR/version"
 
 unset SSH_AUTH_SOCK
 
