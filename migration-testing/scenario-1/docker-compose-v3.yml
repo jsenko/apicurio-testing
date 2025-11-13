@@ -1,0 +1,61 @@
+services:
+  postgres-v3:
+    image: postgres:14
+    container_name: scenario1-postgres-v3
+    environment:
+      POSTGRES_DB: registry
+      POSTGRES_USER: apicurio
+      POSTGRES_PASSWORD: apicurio123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-v3-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apicurio -d registry"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - scenario1-v3
+
+  apicurio-registry-v3:
+    image: apicurio/apicurio-registry:3.1.2
+    container_name: scenario1-registry-v3
+    ports:
+      - "3333:8080"
+    environment:
+      # Database configuration (v3.x style)
+      APICURIO_DATASOURCE_URL: 'jdbc:postgresql://postgres-v3:5432/registry'
+      APICURIO_DATASOURCE_USERNAME: apicurio
+      APICURIO_DATASOURCE_PASSWORD: apicurio123
+      APICURIO_STORAGE_KIND: "sql"
+      APICURIO_STORAGE_SQL_KIND: "postgresql"
+
+      # API configuration
+      apicurio.rest.deletion.group.enabled: "true"
+      apicurio.rest.deletion.artifact.enabled: "true"
+      apicurio.rest.deletion.artifact-version.enabled: "true"
+
+      # CORS (allow connections from nginx and clients)
+      QUARKUS_HTTP_CORS_ORIGINS: "*"
+    depends_on:
+      postgres-v3:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - scenario1-v3
+
+volumes:
+  postgres-v3-data:
+    name: scenario1-postgres-v3-data
+
+networks:
+  scenario1-v3:
+    name: scenario1-v3-network
+    external: true
