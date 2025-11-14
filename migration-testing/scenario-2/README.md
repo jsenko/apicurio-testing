@@ -6,9 +6,28 @@ This scenario tests the migration path from Apicurio Registry 2.6.x to 3.1.x usi
 with simulated production traffic switching via nginx load balancer.  The production traffic comes 
 from Kafka applications that are producing and consuming messages.
 
-**Status**: TBD
 **Complexity**: Medium
 **Prerequisites**: Docker, Java 11+, Maven 3.8+, jq, curl
+
+## Quick Start
+
+Run the complete automated migration test:
+
+```bash
+# Run all migration steps automatically
+./run-all-steps.sh
+
+# Or run individual steps manually
+./scripts/step-A-deploy-kafka.sh
+./scripts/step-B-deploy-v2-kafka.sh
+# ... etc
+```
+
+Clean up after testing:
+
+```bash
+./cleanup.sh
+```
 
 ## Objectives
 
@@ -42,22 +61,16 @@ from Kafka applications that are producing and consuming messages.
 ## Components
 
 ### Infrastructure
-- **apicurio-registry-v2**: Apicurio Registry 2.6.13.Final
 - **Apache Kafka**: Apache Kafka 3.9.1
+- **apicurio-registry-v2**: Apicurio Registry 2.6.13.Final
 - **apicurio-registry-v3**: Apicurio Registry 3.1.0
 - **nginx**: Nginx reverse proxy (load balancer)
 
-Note: we will use the same Kafka cluster for both the Apicurio Registry storage topic(s) 
+Note: we use the same Kafka cluster for both the Apicurio Registry storage topic(s) 
 and ALSO the topics needed for our producer/consumer applications.
 
 ### Client Applications
-- **producer-v2**: A simple Kafka application that uses the Apicurio Registry v2 Avro serializer when producing messages
-- **consumer-v2**: A simple Kafka application that uses the Apicurio Registry v2 Avro deserializer to consume messages produced by "producer-v2"
-- **producer-v3**: A simple Kafka application that uses the Apicurio Registry v3 Avro serializer when producing messages
-- **consumer-v3**: A simple Kafka application that uses the Apicurio Registry v3 Avro deserializer to consume messages produced by "producer-v2" and "producer-v3"
-
-## References
-- Example of an Apicurio Registry v2 Kafka application (implements both a producer and consumer): /home/ewittman/git/apicurio/apicurio-testing/.work/apicurio-registry-2.6/examples/avro-bean
-- Example of an Apicurio Registry v3 Kafka application (implements both a producer and consumer): /home/ewittman/git/apicurio/apicurio-testing/.work/apicurio-registry-3.1/examples/avro-bean
-- Documentation on configuring Kafka Applications when using Apicurio Registry v2 SerDe: /home/ewittman/git/apicurio/apicurio-testing/.work/apicurio-registry-2.6/docs/modules/ROOT/partials/getting-started (search for files with "-serdes-" in the file name)
-- Documentation on configuring Kafka Applications when using Apicurio Registry v3 SerDe: /home/ewittman/git/apicurio/apicurio-testing/.work/apicurio-registry-3.1/docs/modules/ROOT/pages/getting-started/assembly-configuring-kafka-client-serdes.adoc
+- **[kafka-producer-v2](clients/kafka-producer-v2)**: A simple Kafka application that uses the Apicurio Registry v2 Avro serializer when producing messages
+- **[kafka-consumer-v2](clients/kafka-consumer-v2)**: A simple Kafka application that uses the Apicurio Registry v2 Avro deserializer to consume messages produced by "producer-v2"
+- **[kafka-producer-v3](clients/kafka-producer-v3)**: A simple Kafka application that uses the Apicurio Registry v3 Avro serializer when producing messages
+- **[kafka-consumer-v3](clients/kafka-consumer-v3)**: A simple Kafka application that uses the Apicurio Registry v3 Avro deserializer to consume messages produced by "producer-v2" and "producer-v3"
