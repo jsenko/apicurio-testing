@@ -1,0 +1,43 @@
+services:
+  registry-v2:
+    image: apicurio/apicurio-registry-kafkasql:2.6.13.Final
+    container_name: scenario2-registry-v2
+    hostname: registry-v2
+    ports:
+      - "2222:8080"
+    environment:
+      # Kafka connection (KafkaSQL storage)
+      # Use port 29092 (PLAINTEXT listener) for container-to-container communication
+      KAFKA_BOOTSTRAP_SERVERS: scenario2-kafka:29092
+
+      # Kafka topic for registry storage
+      # CRITICAL: Use v2-specific topic to avoid conflicts with v3
+      REGISTRY_KAFKASQL_TOPIC: kafkasql-journal-v2
+
+      # Consumer group for v2
+      REGISTRY_KAFKASQL_CONSUMER_GROUP_ID: registry-v2-consumer
+
+      # HTTP configuration
+      QUARKUS_HTTP_PORT: 8080
+
+      # Logging
+      LOG_LEVEL: INFO
+      QUARKUS_LOG_LEVEL: INFO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - scenario2-kafka
+      - scenario2-v2
+    restart: unless-stopped
+
+networks:
+  scenario2-kafka:
+    name: scenario2-kafka-network
+    external: true
+  scenario2-v2:
+    name: scenario2-v2-network
+    driver: bridge
