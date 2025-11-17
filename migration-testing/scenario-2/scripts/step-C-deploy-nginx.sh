@@ -50,7 +50,7 @@ fi
 log ""
 
 log "[2/5] Starting nginx container..."
-docker compose -f docker-compose-nginx.yml up -d 2>&1 | tee -a "$LOG_FILE"
+docker compose -f docker-compose-nginx-v2.yml up -d 2>&1 | tee -a "$LOG_FILE"
 log ""
 
 log "[3/5] Waiting for nginx to be healthy..."

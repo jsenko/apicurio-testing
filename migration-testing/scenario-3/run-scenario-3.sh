@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Automated Migration Testing - Scenario 1
+# Automated Migration Testing - Scenario 3
 #
 # This script runs all migration steps in sequence:
 # A. Deploy Apicurio Registry v2 with PostgreSQL
@@ -23,7 +23,7 @@ cd "$SCRIPT_DIR"
 # Create logs directory
 mkdir -p logs
 
-MASTER_LOG="logs/run-all-steps.log"
+MASTER_LOG="logs/run-scenario-3.log"
 START_TIME=$(date +%s)
 
 # Colors for output (if terminal supports it)
@@ -60,7 +60,7 @@ declare -a STEP_RESULTS=()
 declare -a STEP_TIMES=()
 
 echo "================================================================" | tee "$MASTER_LOG"
-echo "  Apicurio Registry Migration Testing - Scenario 1" | tee -a "$MASTER_LOG"
+echo "  Apicurio Registry Migration Testing - Scenario 3" | tee -a "$MASTER_LOG"
 echo "================================================================" | tee -a "$MASTER_LOG"
 echo "" | tee -a "$MASTER_LOG"
 echo "This script will run all migration steps automatically." | tee -a "$MASTER_LOG"

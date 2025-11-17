@@ -17,6 +17,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 mkdir -p "$PROJECT_DIR/logs"
 
 LOG_FILE="$PROJECT_DIR/logs/step-I-switch-nginx-to-v3.log"
+NGINX_COMPOSE="$PROJECT_DIR/docker-compose-nginx.yml"
 
 echo "================================================================" | tee "$LOG_FILE"
 echo "  Step I: Switch Nginx to Route to Registry v3" | tee -a "$LOG_FILE"
@@ -52,7 +53,7 @@ cd "$PROJECT_DIR"
 docker compose -f docker-compose-nginx-v2.yml down 2>&1 | tee -a "$LOG_FILE"
 
 # Start with new configuration
-docker compose -f docker-compose-nginx-v2.yml up -d 2>&1 | tee -a "$LOG_FILE"
+docker compose -f docker-compose-nginx-v3.yml up -d 2>&1 | tee -a "$LOG_FILE"
 
 echo "" | tee -a "$LOG_FILE"
 echo "  Waiting for nginx to be healthy..." | tee -a "$LOG_FILE"

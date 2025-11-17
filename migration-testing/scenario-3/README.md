@@ -1,4 +1,4 @@
-# Migration Testing Scenario 1: Basic PostgreSQL Migration
+# Migration Testing Scenario 3: Basic PostgreSQL Migration
 
 ## Overview
 

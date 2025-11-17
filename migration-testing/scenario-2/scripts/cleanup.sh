@@ -62,11 +62,13 @@ log ""
 # Stop nginx
 log "[1/7] Stopping nginx..."
 cd "$PROJECT_DIR"
-if docker compose -f docker-compose-nginx.yml ps -q nginx > /dev/null 2>&1; then
-    docker compose -f docker-compose-nginx.yml down
+if docker compose -f docker-compose-nginx-v2.yml ps -q nginx > /dev/null 2>&1; then
+    docker compose -f docker-compose-nginx-v2.yml down
     log "  ✓ Nginx stopped"
-else
-    log "  ℹ️  Nginx not running"
+fi
+if docker compose -f docker-compose-nginx-v3.yml ps -q nginx > /dev/null 2>&1; then
+    docker compose -f docker-compose-nginx-v3.yml down
+    log "  ✓ Nginx stopped"
 fi
 log ""
 

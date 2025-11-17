@@ -6,8 +6,8 @@
 # It demonstrates the complete migration process from v2 to v3.
 #
 # Usage:
-#   ./run-all-steps.sh                 # Run all steps without pauses
-#   ./run-all-steps.sh --interactive   # Run all steps with pauses
+#   ./run-scenario-2.sh                 # Run all steps without pauses
+#   ./run-scenario-2.sh --interactive   # Run all steps with pauses
 
 set -e
 
@@ -19,7 +19,7 @@ LOG_DIR="$PROJECT_DIR/logs"
 # Create log directory
 mkdir -p "$LOG_DIR"
 
-MASTER_LOG="$LOG_DIR/run-all-steps.log"
+MASTER_LOG="$LOG_DIR/run-scenario-2.log"
 
 # Function to log messages
 log() {

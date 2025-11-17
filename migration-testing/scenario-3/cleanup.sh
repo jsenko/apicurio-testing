@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Cleanup Script for Migration Testing Scenario 1
+# Cleanup Script for Migration Testing Scenario 3
 #
 # This script stops all containers and optionally removes volumes
 # to prepare for a fresh test run.
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "================================================================"
-echo "  Cleanup - Migration Testing Scenario 1"
+echo "  Cleanup - Migration Testing Scenario 3"
 echo "================================================================"
 echo ""
 
@@ -37,7 +37,7 @@ echo ""
 # Ask about volumes
 echo "[2/3] Docker volumes:"
 echo ""
-docker volume ls | grep -E "scenario-1|postgres-v2|postgres-v3" || echo "  No scenario-1 volumes found"
+docker volume ls | grep -E "scenario-3|postgres-v2|postgres-v3" || echo "  No scenario-3 volumes found"
 echo ""
 
 read -p "Remove all volumes? This will delete all data (y/N): " -n 1 -r
@@ -45,7 +45,7 @@ echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "  Removing volumes..."
-    docker volume ls -q | grep -E "scenario-1|postgres-v2|postgres-v3" | xargs -r docker volume rm 2>/dev/null || true
+    docker volume ls -q | grep -E "scenario-3|postgres-v2|postgres-v3" | xargs -r docker volume rm 2>/dev/null || true
     echo "  ✓ Volumes removed"
 else
     echo "  Volumes preserved"
@@ -74,5 +74,5 @@ echo "================================================================"
 echo "  ✓ Cleanup completed"
 echo "================================================================"
 echo ""
-echo "You can now run: ./run-scenario-1.sh"
+echo "You can now run: ./run-scenario-3.sh"
 echo ""

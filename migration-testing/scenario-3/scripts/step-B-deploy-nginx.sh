@@ -29,7 +29,7 @@ cd "$PROJECT_DIR"
 
 # Verify v2 is running
 echo "[0/4] Verifying Registry v2 is running..." | tee -a "$LOG_FILE"
-if ! docker ps | grep -q scenario1-registry-v2; then
+if ! docker ps | grep -q scenario3-registry-v2; then
     echo "❌ Registry v2 container is not running" | tee -a "$LOG_FILE"
     echo "Please run step-A-deploy-v2.sh first" | tee -a "$LOG_FILE"
     exit 1
@@ -81,12 +81,12 @@ echo "  curl http://localhost:8080/nginx-health" | tee -a "$LOG_FILE"
 echo "  curl http://localhost:8080/apis/registry/v2/system/info" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 echo "Container logs:" | tee -a "$LOG_FILE"
-echo "  docker logs scenario1-nginx" | tee -a "$LOG_FILE"
+echo "  docker logs scenario3-nginx" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Collect nginx logs
 echo "Collecting nginx logs..." | tee -a "$LOG_FILE"
-docker logs scenario1-nginx > "$PROJECT_DIR/logs/containers/nginx-initial.log" 2>&1
+docker logs scenario3-nginx > "$PROJECT_DIR/logs/containers/nginx-initial.log" 2>&1
 
 echo "Logs saved to:" | tee -a "$LOG_FILE"
 echo "  - $LOG_FILE" | tee -a "$LOG_FILE"

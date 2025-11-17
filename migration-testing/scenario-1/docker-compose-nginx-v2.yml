@@ -1,0 +1,29 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: scenario1-nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      # Main nginx config
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Registry-specific config (initially v2)
+      - ./nginx/conf.d/registry-v2.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/nginx-health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - scenario1-v2
+      - scenario1-v3
+    restart: unless-stopped
+
+networks:
+  scenario1-v2:
+    name: scenario1-v2-network
+    external: true
+  scenario1-v3:
+    name: scenario1-v3-network
+    external: false

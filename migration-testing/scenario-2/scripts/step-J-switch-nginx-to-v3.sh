@@ -18,7 +18,6 @@ mkdir -p "$PROJECT_DIR/logs"
 mkdir -p "$PROJECT_DIR/logs/containers"
 
 LOG_FILE="$PROJECT_DIR/logs/step-J-switch-nginx-to-v3.log"
-NGINX_COMPOSE="$PROJECT_DIR/docker-compose-nginx.yml"
 
 # Function to log messages
 log() {
@@ -31,7 +30,7 @@ log "================================================================"
 log ""
 
 # Verify v3 registry is running and has data
-log "[1/5] Verifying v3 registry is ready..."
+log "[1/4] Verifying v3 registry is ready..."
 
 V3_URL="http://localhost:3333"
 if ! curl -f -s "$V3_URL/apis/registry/v3/system/info" > /dev/null 2>&1; then
@@ -51,35 +50,15 @@ fi
 log "✅ Registry v3 is running with $ARTIFACT_COUNT artifacts"
 log ""
 
-# Update nginx docker-compose to use v3 config
-log "[2/5] Updating nginx configuration..."
-
-# Check current configuration
-CURRENT_MOUNT=$(grep "registry-v.*\.conf:/etc/nginx/conf.d/default.conf" "$NGINX_COMPOSE" || true)
-log "  Current: $CURRENT_MOUNT"
-
-# Update the configuration file
-if grep -q "registry-v2.conf:/etc/nginx/conf.d/default.conf" "$NGINX_COMPOSE"; then
-    sed -i 's|./nginx/conf.d/registry-v2.conf:/etc/nginx/conf.d/default.conf:ro|./nginx/conf.d/registry-v3.conf:/etc/nginx/conf.d/default.conf:ro|' "$NGINX_COMPOSE"
-    log "✅ Updated configuration to use registry-v3.conf"
-elif grep -q "registry-v3.conf:/etc/nginx/conf.d/default.conf" "$NGINX_COMPOSE"; then
-    log "✅ Configuration already set to registry-v3.conf"
-else
-    log "❌ Could not find nginx config mount in $NGINX_COMPOSE"
-    exit 1
-fi
-
-log ""
-
 # Recreate nginx container with new configuration
-log "[3/5] Recreating nginx with new configuration..."
+log "[2/4] Recreating nginx with new configuration..."
 cd "$PROJECT_DIR"
 
 # Stop and remove the container to pick up new volume mounts
-docker compose -f docker-compose-nginx.yml down 2>&1 | tee -a "$LOG_FILE"
+docker compose -f docker-compose-nginx-v2.yml down 2>&1 | tee -a "$LOG_FILE"
 
 # Start with new configuration
-docker compose -f docker-compose-nginx.yml up -d 2>&1 | tee -a "$LOG_FILE"
+docker compose -f docker-compose-nginx-v3.yml up -d 2>&1 | tee -a "$LOG_FILE"
 
 log ""
 log "Waiting for nginx to be healthy..."
@@ -90,7 +69,7 @@ sleep 3
 log ""
 
 # Verify nginx is now routing to v3
-log "[4/5] Verifying nginx is routing to v3..."
+log "[3/4] Verifying nginx is routing to v3..."
 
 # Check nginx health endpoint
 NGINX_HEALTH=$(curl -s http://localhost:8080/nginx-health)
@@ -116,7 +95,7 @@ fi
 log ""
 
 # Verify artifacts are accessible through nginx
-log "[5/5] Verifying artifacts accessible through nginx..."
+log "[4/4] Verifying artifacts accessible through nginx..."
 NGINX_ARTIFACT_COUNT=$(curl -s "http://localhost:8080/apis/registry/v3/search/artifacts?limit=1" | jq -r '.count' 2>/dev/null || echo "0")
 log "  Artifacts via nginx: $NGINX_ARTIFACT_COUNT"
 

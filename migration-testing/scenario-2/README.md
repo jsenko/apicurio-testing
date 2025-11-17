@@ -15,7 +15,7 @@ Run the complete automated migration test:
 
 ```bash
 # Run all migration steps automatically
-./run-all-steps.sh
+./run-scenario-2.sh
 
 # Or run individual steps manually
 ./scripts/step-A-deploy-kafka.sh
