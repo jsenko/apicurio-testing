@@ -31,23 +31,32 @@ log "================================================================"
 log ""
 
 # Parse arguments
-REMOVE_VOLUMES=false
+REMOVE_VOLUMES=true
 REMOVE_DATA=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --remove-volumes)
-            REMOVE_VOLUMES=true
+        --keep-volumes)
+            REMOVE_VOLUMES=false
             shift
             ;;
         --remove-data)
             REMOVE_DATA=true
             shift
             ;;
+        -h|--help)
+            log "Usage: $0 [OPTIONS]"
+            log ""
+            log "Options:"
+            log "  --keep-volumes   Preserve Docker volumes (by default, volumes are removed)"
+            log "  --remove-data    Remove logs and data directories"
+            log "  -h, --help       Show this help message"
+            exit 0
+            ;;
         *)
             log "Unknown option: $1"
-            log "Usage: $0 [--remove-volumes] [--remove-data]"
-            log "  --remove-volumes: Remove Docker volumes (Kafka data, Registry data)"
+            log "Usage: $0 [--keep-volumes] [--remove-data]"
+            log "  --keep-volumes: Preserve Docker volumes (Kafka data, Registry data)"
             log "  --remove-data: Remove logs and data directories"
             exit 1
             ;;

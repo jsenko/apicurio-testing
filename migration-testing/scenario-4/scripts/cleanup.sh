@@ -46,20 +46,20 @@ cd "$PROJECT_DIR"
 
 echo "[1/4] Collecting final container logs..."
 mkdir -p logs/containers
-if docker ps -a | grep -q scenario1-postgres-v2; then
-    docker logs scenario1-postgres-v2 > logs/containers/postgres-v2-final.log 2>&1 || true
+if docker ps -a | grep -q scenario4-postgres-v2; then
+    docker logs scenario4-postgres-v2 > logs/containers/postgres-v2-final.log 2>&1 || true
 fi
-if docker ps -a | grep -q scenario1-registry-v2; then
-    docker logs scenario1-registry-v2 > logs/containers/registry-v2-final.log 2>&1 || true
+if docker ps -a | grep -q scenario4-registry-v2; then
+    docker logs scenario4-registry-v2 > logs/containers/registry-v2-final.log 2>&1 || true
 fi
-if docker ps -a | grep -q scenario1-postgres-v3; then
-    docker logs scenario1-postgres-v3 > logs/containers/postgres-v3-final.log 2>&1 || true
+if docker ps -a | grep -q scenario4-postgres-v3; then
+    docker logs scenario4-postgres-v3 > logs/containers/postgres-v3-final.log 2>&1 || true
 fi
-if docker ps -a | grep -q scenario1-registry-v3; then
-    docker logs scenario1-registry-v3 > logs/containers/registry-v3-final.log 2>&1 || true
+if docker ps -a | grep -q scenario4-registry-v3; then
+    docker logs scenario4-registry-v3 > logs/containers/registry-v3-final.log 2>&1 || true
 fi
-if docker ps -a | grep -q scenario1-nginx; then
-    docker logs scenario1-nginx > logs/containers/nginx-final.log 2>&1 || true
+if docker ps -a | grep -q scenario4-nginx; then
+    docker logs scenario4-nginx > logs/containers/nginx-final.log 2>&1 || true
 fi
 
 echo "[2/4] Stopping containers..."
@@ -91,24 +91,25 @@ if [ -f docker-compose-v2.yml ]; then
 fi
 
 echo "[3/4] Removing any orphaned containers..."
-docker ps -a | grep scenario1- | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null || true
+docker ps -a | grep scenario4- | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null || true
 
 echo "[4/4] Cleaning up networks..."
-docker network rm scenario1-v2-network 2>/dev/null || true
-docker network rm scenario1-v3-network 2>/dev/null || true
+docker network rm scenario4-v2-network 2>/dev/null || true
+docker network rm scenario4-v3-network 2>/dev/null || true
 
 echo ""
 if [ "$REMOVE_VOLUMES" = true ]; then
     echo "✅ Cleanup complete (volumes removed - data lost)"
     echo ""
     echo "Volumes removed:"
-    echo "  - scenario1-postgres-v2-data"
-    echo "  - scenario1-postgres-v3-data"
+    echo "  - scenario4-postgres-v2-data"
+    echo "  - scenario4-postgres-v3-data"
+    echo "  - scenario4-keycloak-network"
 else
     echo "✅ Cleanup complete (volumes preserved)"
     echo ""
     echo "Volumes preserved:"
-    docker volume ls | grep scenario1 || echo "  (no volumes found)"
+    docker volume ls | grep scenario4 || echo "  (no volumes found)"
 fi
 
 echo ""

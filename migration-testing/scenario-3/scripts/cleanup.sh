@@ -12,20 +12,20 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-REMOVE_VOLUMES=false
+REMOVE_VOLUMES=true
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -v|--volumes)
-            REMOVE_VOLUMES=true
+        --keep-volumes)
+            REMOVE_VOLUMES=false
             shift
             ;;
         -h|--help)
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  -v, --volumes    Remove volumes (data will be lost)"
+            echo "  --keep-volumes   Preserve volumes (by default, volumes are removed)"
             echo "  -h, --help       Show this help message"
             exit 0
             ;;
@@ -107,7 +107,7 @@ if [ "$REMOVE_VOLUMES" = true ]; then
 else
     echo "✅ Cleanup complete (volumes preserved)"
     echo ""
-    echo "Volumes preserved (to remove, run: $0 --volumes):"
+    echo "Volumes preserved:"
     docker volume ls | grep scenario3 || echo "  (no volumes found)"
 fi
 
@@ -116,6 +116,10 @@ echo "Logs preserved in:"
 echo "  - logs/"
 echo "  - logs/containers/"
 echo ""
-echo "To completely reset, run:"
-echo "  $0 --volumes"
+if [ "$REMOVE_VOLUMES" = false ]; then
+    echo "To remove volumes as well, run:"
+    echo "  $0"
+fi
+echo "To completely reset including logs/data, run:"
+echo "  $0"
 echo "  rm -rf logs/ data/"

@@ -1,0 +1,30 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.7
+    container_name: scenario4-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: "localhost"
+      KC_HOSTNAME_PORT: "9443"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+      KC_HTTPS_CERTIFICATE_FILE: /certs/keycloak-cert.pem
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /certs/keycloak-key.pem
+      KC_HTTPS_PORT: 8443
+      KC_HTTP_ENABLED: "false"
+      KC_HEALTH_ENABLED: true
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - "9443:8443"
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
+      - ./certs:/certs:ro
+    networks:
+      - scenario4-keycloak
+
+networks:
+  scenario4-keycloak:
+    name: scenario4-keycloak-network
+    driver: bridge

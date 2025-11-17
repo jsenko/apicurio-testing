@@ -1,0 +1,30 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: scenario4-nginx
+    ports:
+      - "8443:8443"   # HTTPS passthrough to registry
+      - "8081:8081"   # HTTP health check endpoint
+    volumes:
+      # Main nginx config
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Stream config for TLS passthrough (v3)
+      - ./nginx/stream.d/registry-v3.conf:/etc/nginx/stream.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8081/nginx-health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - scenario4-v2
+      - scenario4-v3
+    restart: unless-stopped
+
+networks:
+  scenario4-v2:
+    name: scenario4-v2-network
+    external: true
+  scenario4-v3:
+    name: scenario4-v3-network
+    external: false
