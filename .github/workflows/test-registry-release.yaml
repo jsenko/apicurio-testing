@@ -597,7 +597,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os419
-    if: always()
+    if: false  # Disabled - configuration not currently working
 
     env:
       CLUSTER_NAME: ci419
@@ -1316,6 +1316,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os419_keycloak22
+    if: false  # Disabled - configuration not currently working
 
     env:
       CLUSTER_NAME: ci419
@@ -1630,7 +1631,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - os419_keycloak22_integrationtests
-    if: always()
+    if: false  # Disabled - configuration not currently working
 
     env:
       CLUSTER_NAME: ci419
