@@ -48,10 +48,9 @@ public class ArtifactValidatorApp {
         log.info("");
 
         try {
-            // Create registry client
-            RegistryClient client = RegistryClientFactory.create(
-                RegistryClientOptions.create(registryUrl)
-            );
+            // Create registry client with SSL/TLS configuration
+            RegistryClientOptions options = configureSsl(registryUrl);
+            RegistryClient client = RegistryClientFactory.create(options);
             log.info("Connected to registry");
             log.info("");
 
@@ -98,6 +97,31 @@ public class ArtifactValidatorApp {
             log.error("Error: {}", e.getMessage(), e);
             System.exit(2);
         }
+    }
+
+    /**
+     * Configures SSL/TLS to trust the self-signed certificates used by the registry.
+     * Creates RegistryClientOptions with SSL trust configuration for v3 API.
+     *
+     * The truststore path can be overridden via the javax.net.ssl.trustStore system property.
+     * The truststore password can be overridden via the javax.net.ssl.trustStorePassword system property.
+     *
+     * @param registryUrl the URL of the registry
+     * @return RegistryClientOptions configured with SSL trust
+     */
+    private static RegistryClientOptions configureSsl(String registryUrl) {
+        // Path to the truststore file (relative to working directory)
+        String truststorePath = System.getProperty("javax.net.ssl.trustStore",
+                                                    "certs/registry-truststore.jks");
+        String truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword",
+                                                         "registry123");
+
+        log.info("SSL/TLS configured:");
+        log.info("  Truststore: {}", truststorePath);
+
+        // Create options with JKS trust store configuration
+        return RegistryClientOptions.create(registryUrl)
+            .trustStoreJks(truststorePath, truststorePassword);
     }
 
     /**

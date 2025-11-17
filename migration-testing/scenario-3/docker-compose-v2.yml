@@ -23,13 +23,21 @@ services:
     image: apicurio/apicurio-registry-sql:2.6.13.Final
     container_name: scenario3-registry-v2
     ports:
-      - "2222:8080"
+      - "2222:8443"
+    volumes:
+      - ./certs:/certs:ro
     environment:
       # Database configuration (v2.6.x style)
       REGISTRY_DATASOURCE_URL: jdbc:postgresql://postgres-v2:5432/registry
       REGISTRY_DATASOURCE_USERNAME: apicurio
       REGISTRY_DATASOURCE_PASSWORD: apicurio123
       QUARKUS_DATASOURCE_DB_KIND: postgresql
+
+      # TLS/HTTPS configuration
+      QUARKUS_HTTP_SSL_PORT: 8443
+      QUARKUS_HTTP_SSL_CERTIFICATE_KEY_STORE_FILE: /certs/registry-keystore.p12
+      QUARKUS_HTTP_SSL_CERTIFICATE_KEY_STORE_PASSWORD: registry123
+      QUARKUS_HTTP_INSECURE_REQUESTS: disabled
 
       # Logging
       LOG_LEVEL: INFO
@@ -48,7 +56,7 @@ services:
       postgres-v2:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      test: ["CMD", "curl", "-f", "-k", "https://localhost:8443/health/live"]
       interval: 10s
       timeout: 5s
       retries: 10

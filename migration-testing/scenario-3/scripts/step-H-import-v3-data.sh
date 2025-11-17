@@ -25,7 +25,7 @@ echo "================================================================" | tee -a
 echo "" | tee -a "$LOG_FILE"
 
 # Registry URL (direct to v3, not through nginx)
-REGISTRY_URL="${REGISTRY_V3_URL:-http://localhost:3333}"
+REGISTRY_URL="${REGISTRY_V3_URL:-https://localhost:3333}"
 IMPORT_ENDPOINT="$REGISTRY_URL/apis/registry/v3/admin/import"
 
 echo "Registry URL: $REGISTRY_URL" | tee -a "$LOG_FILE"
@@ -46,7 +46,7 @@ echo "" | tee -a "$LOG_FILE"
 
 # Check if Registry v3 is accessible
 echo "[2/4] Checking registry v3 accessibility..." | tee -a "$LOG_FILE"
-if ! curl -f -s "$REGISTRY_URL/apis/registry/v3/system/info" > /dev/null 2>&1; then
+if ! curl -f -s -k "$REGISTRY_URL/apis/registry/v3/system/info" > /dev/null 2>&1; then
     echo "❌ Registry v3 is not accessible at $REGISTRY_URL" | tee -a "$LOG_FILE"
     echo "   Make sure registry v3 is running (step-G-deploy-v3.sh)" | tee -a "$LOG_FILE"
     exit 1
@@ -60,7 +60,7 @@ echo "  Calling: $IMPORT_ENDPOINT" | tee -a "$LOG_FILE"
 
 # Use curl to upload the export zip file
 # The import endpoint expects a multipart/form-data POST with the file
-HTTP_CODE=$(curl -w "%{http_code}" -o /tmp/import-response.txt -s \
+HTTP_CODE=$(curl -w "%{http_code}" -o /tmp/import-response.txt -s -k \
     -X POST \
     -H "Content-Type: application/zip" \
     --data-binary "@$EXPORT_FILE" \
@@ -85,13 +85,13 @@ echo "[4/4] Verifying imported data..." | tee -a "$LOG_FILE"
 sleep 2
 
 # Check system info
-SYSTEM_INFO=$(curl -s "$REGISTRY_URL/apis/registry/v3/system/info")
+SYSTEM_INFO=$(curl -s -k "$REGISTRY_URL/apis/registry/v3/system/info")
 echo "  Registry info:" | tee -a "$LOG_FILE"
 echo "$SYSTEM_INFO" | jq '.' 2>&1 | tee -a "$LOG_FILE"
 
 # Search for artifacts to verify import
 SEARCH_URL="$REGISTRY_URL/apis/registry/v3/search/artifacts?limit=1000"
-SEARCH_RESULT=$(curl -s "$SEARCH_URL")
+SEARCH_RESULT=$(curl -s -k "$SEARCH_URL")
 
 ARTIFACT_COUNT=$(echo "$SEARCH_RESULT" | jq -r '.count' 2>/dev/null || echo "0")
 

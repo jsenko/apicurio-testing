@@ -23,8 +23,14 @@ INTERVAL=2
 
 echo "Waiting for $URL to be healthy (timeout: ${TIMEOUT}s)..."
 
+# Add -k flag for HTTPS URLs to accept self-signed certificates
+CURL_FLAGS="-f -s"
+if [[ "$URL" == https://* ]]; then
+    CURL_FLAGS="$CURL_FLAGS -k"
+fi
+
 while [ $ELAPSED -lt $TIMEOUT ]; do
-    if curl -f -s "$URL" > /dev/null 2>&1; then
+    if curl $CURL_FLAGS "$URL" > /dev/null 2>&1; then
         echo ""
         echo "✅ Health check passed after ${ELAPSED}s"
         exit 0

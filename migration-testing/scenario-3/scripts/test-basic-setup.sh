@@ -17,13 +17,13 @@ echo ""
 
 # Test direct access to v2
 echo "[1/6] Testing direct access to Registry v2..."
-V2_DIRECT=$(curl -s http://localhost:2222/apis/registry/v2/system/info | jq -r '.version')
+V2_DIRECT=$(curl -s -k https://localhost:2222/apis/registry/v2/system/info | jq -r '.version')
 echo "✅ Registry v2 direct access: $V2_DIRECT"
 
 # Test access through nginx
 echo ""
 echo "[2/6] Testing access through nginx..."
-V2_NGINX=$(curl -s http://localhost:8080/apis/registry/v2/system/info | jq -r '.version')
+V2_NGINX=$(curl -s -k https://localhost:8443/apis/registry/v2/system/info | jq -r '.version')
 echo "✅ Registry v2 via nginx: $V2_NGINX"
 
 # Verify versions match
@@ -55,13 +55,13 @@ echo "$CREATE_RESPONSE" | jq '.'
 # Test retrieving the artifact
 echo ""
 echo "[5/6] Testing artifact retrieval..."
-RETRIEVED=$(curl -s http://localhost:8080/apis/registry/v2/groups/default/artifacts/$ARTIFACT_ID)
+RETRIEVED=$(curl -s -k https://localhost:8443/apis/registry/v2/groups/default/artifacts/$ARTIFACT_ID)
 echo "✅ Retrieved artifact successfully"
 
 # Test listing artifacts
 echo ""
 echo "[6/6] Testing artifact listing..."
-ARTIFACT_LIST=$(curl -s http://localhost:8080/apis/registry/v2/search/artifacts?limit=10)
+ARTIFACT_LIST=$(curl -s -k https://localhost:8443/apis/registry/v2/search/artifacts?limit=10)
 COUNT=$(echo "$ARTIFACT_LIST" | jq '.count')
 echo "✅ Found $COUNT artifacts in registry"
 

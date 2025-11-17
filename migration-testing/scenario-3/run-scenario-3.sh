@@ -67,6 +67,30 @@ echo "This script will run all migration steps automatically." | tee -a "$MASTER
 echo "Started at: $(date)" | tee -a "$MASTER_LOG"
 echo "" | tee -a "$MASTER_LOG"
 
+# Generate SSL certificates
+echo "================================================================" | tee -a "$MASTER_LOG"
+echo -e "${BLUE}Generating SSL Certificates${NC}" | tee -a "$MASTER_LOG"
+echo "================================================================" | tee -a "$MASTER_LOG"
+if bash scripts/generate-certs.sh 2>&1 | tee -a "$MASTER_LOG"; then
+    echo -e "${GREEN}✓ SSL certificates generated successfully${NC}" | tee -a "$MASTER_LOG"
+else
+    echo -e "${RED}✗ SSL certificate generation failed${NC}" | tee -a "$MASTER_LOG"
+    exit 1
+fi
+echo "" | tee -a "$MASTER_LOG"
+
+# Build client applications
+echo "================================================================" | tee -a "$MASTER_LOG"
+echo -e "${BLUE}Building Client Applications${NC}" | tee -a "$MASTER_LOG"
+echo "================================================================" | tee -a "$MASTER_LOG"
+if bash scripts/build-clients.sh 2>&1 | tee -a "$MASTER_LOG"; then
+    echo -e "${GREEN}✓ Client applications built successfully${NC}" | tee -a "$MASTER_LOG"
+else
+    echo -e "${RED}✗ Client build failed${NC}" | tee -a "$MASTER_LOG"
+    exit 1
+fi
+echo "" | tee -a "$MASTER_LOG"
+
 # Function to run a step
 run_step() {
     local step_letter="$1"

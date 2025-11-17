@@ -56,13 +56,13 @@ fi
 echo "" | tee -a "$LOG_FILE"
 echo "[3/4] Waiting for Registry to be healthy..." | tee -a "$LOG_FILE"
 
-HEALTH_URL="http://localhost:3333/health/live"
+HEALTH_URL="https://localhost:3333/health/live"
 "$SCRIPT_DIR/wait-for-health.sh" "$HEALTH_URL" 120 2>&1 | tee -a "$LOG_FILE"
 
 # Verify system info
 echo "" | tee -a "$LOG_FILE"
 echo "[4/4] Verifying system info..." | tee -a "$LOG_FILE"
-SYSTEM_INFO=$(curl -s http://localhost:3333/apis/registry/v3/system/info)
+SYSTEM_INFO=$(curl -s -k https://localhost:3333/apis/registry/v3/system/info)
 echo "$SYSTEM_INFO" | jq . 2>&1 | tee -a "$LOG_FILE"
 
 # Extract version

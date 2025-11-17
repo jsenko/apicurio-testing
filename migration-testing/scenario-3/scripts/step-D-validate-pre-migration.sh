@@ -26,13 +26,13 @@ echo "================================================================" | tee -a
 echo "" | tee -a "$LOG_FILE"
 
 # Registry URL (via nginx)
-REGISTRY_URL="${REGISTRY_URL:-http://localhost:8080/apis/registry/v2}"
+REGISTRY_URL="${REGISTRY_URL:-https://localhost:8443/apis/registry/v2}"
 echo "Registry URL: $REGISTRY_URL" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Check if Registry is accessible
 echo "[1/4] Checking registry accessibility..." | tee -a "$LOG_FILE"
-if ! curl -f -s "$REGISTRY_URL/system/info" > /dev/null 2>&1; then
+if ! curl -f -s -k "$REGISTRY_URL/system/info" > /dev/null 2>&1; then
     echo "❌ Registry is not accessible at $REGISTRY_URL" | tee -a "$LOG_FILE"
     echo "   Make sure registry is running (steps A-C completed)" | tee -a "$LOG_FILE"
     exit 1
@@ -40,24 +40,14 @@ fi
 echo "  ✓ Registry is accessible" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
-# Check if JAR exists, build if needed
-echo "[2/4] Checking artifact-validator-v2 build..." | tee -a "$LOG_FILE"
+# Check if JAR exists
+echo "[2/4] Checking artifact-validator-v2 JAR..." | tee -a "$LOG_FILE"
 JAR_PATH="$PROJECT_DIR/clients/artifact-validator-v2/target/artifact-validator-v2-1.0.0-SNAPSHOT.jar"
 
 if [ ! -f "$JAR_PATH" ]; then
-    echo "  JAR not found, building artifact-validator-v2..." | tee -a "$LOG_FILE"
-    "$SCRIPT_DIR/build-clients.sh" 2>&1 | tee -a "$LOG_FILE"
-    BUILD_EXIT_CODE=$?
-
-    if [ $BUILD_EXIT_CODE -ne 0 ]; then
-        echo "❌ Build failed with exit code $BUILD_EXIT_CODE" | tee -a "$LOG_FILE"
-        exit 1
-    fi
-
-    if [ ! -f "$JAR_PATH" ]; then
-        echo "❌ Build succeeded but JAR file not found" | tee -a "$LOG_FILE"
-        exit 1
-    fi
+    echo "❌ artifact-validator-v2 JAR not found at $JAR_PATH" | tee -a "$LOG_FILE"
+    echo "   Please run build-clients.sh first or use run-scenario-3.sh" | tee -a "$LOG_FILE"
+    exit 1
 fi
 echo "  ✓ artifact-validator-v2 JAR found" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
@@ -66,10 +56,16 @@ echo "" | tee -a "$LOG_FILE"
 echo "[3/4] Running artifact-validator-v2..." | tee -a "$LOG_FILE"
 cd "$PROJECT_DIR/clients/artifact-validator-v2"
 
-java -jar target/artifact-validator-v2-1.0.0-SNAPSHOT.jar \
-    "$REGISTRY_URL" \
-    "$REPORT_FILE" \
-    2>&1 | tee -a "$LOG_FILE"
+# SSL/TLS truststore configuration
+TRUSTSTORE_PATH="$PROJECT_DIR/certs/registry-truststore.jks"
+TRUSTSTORE_PASSWORD="registry123"
+
+java -Djavax.net.ssl.trustStore="$TRUSTSTORE_PATH" \
+     -Djavax.net.ssl.trustStorePassword="$TRUSTSTORE_PASSWORD" \
+     -jar target/artifact-validator-v2-1.0.0-SNAPSHOT.jar \
+     "$REGISTRY_URL" \
+     "$REPORT_FILE" \
+     2>&1 | tee -a "$LOG_FILE"
 
 EXIT_CODE=${PIPESTATUS[0]}
 

@@ -28,42 +28,32 @@ echo "================================================================" | tee -a
 echo "" | tee -a "$LOG_FILE"
 
 # Registry URL (via nginx, using v3 API)
-REGISTRY_URL="${REGISTRY_URL:-http://localhost:8080/apis/registry/v3}"
+REGISTRY_URL="${REGISTRY_URL:-https://localhost:8443/apis/registry/v3}"
 echo "Registry URL: $REGISTRY_URL" | tee -a "$LOG_FILE"
 echo "Note: Using v3 native client to validate v3 registry" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Check if Registry is accessible
 echo "[1/4] Checking registry accessibility..." | tee -a "$LOG_FILE"
-if ! curl -f -s "http://localhost:8080/apis/registry/v3/system/info" > /dev/null 2>&1; then
-    echo "❌ Registry v3 API is not accessible at http://localhost:8080" | tee -a "$LOG_FILE"
+if ! curl -f -s -k "https://localhost:8443/apis/registry/v3/system/info" > /dev/null 2>&1; then
+    echo "❌ Registry v3 API is not accessible at https://localhost:8443" | tee -a "$LOG_FILE"
     echo "   Make sure nginx is routing to v3 (step-I-switch-nginx-to-v3.sh)" | tee -a "$LOG_FILE"
     exit 1
 fi
 
 # Get v3 version
-V3_VERSION=$(curl -s "http://localhost:8080/apis/registry/v3/system/info" | jq -r '.version' 2>/dev/null || echo "unknown")
+V3_VERSION=$(curl -s -k "https://localhost:8443/apis/registry/v3/system/info" | jq -r '.version' 2>/dev/null || echo "unknown")
 echo "  ✓ Registry is accessible (v3 version: $V3_VERSION)" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
-# Check if JAR exists, build if needed
-echo "[2/4] Checking artifact-validator-v3 build..." | tee -a "$LOG_FILE"
+# Check if JAR exists
+echo "[2/4] Checking artifact-validator-v3 JAR..." | tee -a "$LOG_FILE"
 JAR_PATH="$PROJECT_DIR/clients/artifact-validator-v3/target/artifact-validator-v3-1.0.0-SNAPSHOT.jar"
 
 if [ ! -f "$JAR_PATH" ]; then
-    echo "  JAR not found, building artifact-validator-v3..." | tee -a "$LOG_FILE"
-    "$SCRIPT_DIR/build-clients.sh" 2>&1 | tee -a "$LOG_FILE"
-    BUILD_EXIT_CODE=$?
-
-    if [ $BUILD_EXIT_CODE -ne 0 ]; then
-        echo "❌ Build failed with exit code $BUILD_EXIT_CODE" | tee -a "$LOG_FILE"
-        exit 1
-    fi
-
-    if [ ! -f "$JAR_PATH" ]; then
-        echo "❌ Build succeeded but JAR file not found" | tee -a "$LOG_FILE"
-        exit 1
-    fi
+    echo "❌ artifact-validator-v3 JAR not found at $JAR_PATH" | tee -a "$LOG_FILE"
+    echo "   Please run build-clients.sh first or use run-scenario-3.sh" | tee -a "$LOG_FILE"
+    exit 1
 fi
 echo "  ✓ artifact-validator-v3 JAR found" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
@@ -72,10 +62,16 @@ echo "" | tee -a "$LOG_FILE"
 echo "[3/4] Running artifact-validator-v3 against v3 registry..." | tee -a "$LOG_FILE"
 cd "$PROJECT_DIR/clients/artifact-validator-v3"
 
-java -jar target/artifact-validator-v3-1.0.0-SNAPSHOT.jar \
-    "$REGISTRY_URL" \
-    "$REPORT_FILE" \
-    2>&1 | tee -a "$LOG_FILE"
+# SSL/TLS truststore configuration
+TRUSTSTORE_PATH="$PROJECT_DIR/certs/registry-truststore.jks"
+TRUSTSTORE_PASSWORD="registry123"
+
+java -Djavax.net.ssl.trustStore="$TRUSTSTORE_PATH" \
+     -Djavax.net.ssl.trustStorePassword="$TRUSTSTORE_PASSWORD" \
+     -jar target/artifact-validator-v3-1.0.0-SNAPSHOT.jar \
+     "$REGISTRY_URL" \
+     "$REPORT_FILE" \
+     2>&1 | tee -a "$LOG_FILE"
 
 EXIT_CODE=${PIPESTATUS[0]}
 

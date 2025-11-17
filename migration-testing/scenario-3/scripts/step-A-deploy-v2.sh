@@ -48,11 +48,11 @@ echo "✅ PostgreSQL is healthy" | tee -a "$LOG_FILE"
 
 echo "" | tee -a "$LOG_FILE"
 echo "[3/4] Waiting for Registry to be healthy..." | tee -a "$LOG_FILE"
-"$SCRIPT_DIR/wait-for-health.sh" http://localhost:2222/health/live 120 | tee -a "$LOG_FILE"
+"$SCRIPT_DIR/wait-for-health.sh" https://localhost:2222/health/live 120 | tee -a "$LOG_FILE"
 
 echo "" | tee -a "$LOG_FILE"
 echo "[4/4] Verifying system info..." | tee -a "$LOG_FILE"
-SYSTEM_INFO=$(curl -s http://localhost:2222/apis/registry/v2/system/info)
+SYSTEM_INFO=$(curl -s -k https://localhost:2222/apis/registry/v2/system/info)
 echo "$SYSTEM_INFO" | jq '.' | tee -a "$LOG_FILE"
 
 VERSION=$(echo "$SYSTEM_INFO" | jq -r '.version')

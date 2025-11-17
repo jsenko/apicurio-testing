@@ -27,15 +27,15 @@ echo "" | tee -a "$LOG_FILE"
 # Verify v3 registry is running and has data
 echo "[1/4] Verifying v3 registry is ready..." | tee -a "$LOG_FILE"
 
-V3_URL="http://localhost:3333"
-if ! curl -f -s "$V3_URL/apis/registry/v3/system/info" > /dev/null 2>&1; then
+V3_URL="https://localhost:3333"
+if ! curl -f -s -k "$V3_URL/apis/registry/v3/system/info" > /dev/null 2>&1; then
     echo "  ✗ Registry v3 is not accessible at $V3_URL" | tee -a "$LOG_FILE"
     echo "    Make sure step-G-deploy-v3.sh and step-H-import-v3-data.sh completed" | tee -a "$LOG_FILE"
     exit 1
 fi
 
 # Check artifact count
-ARTIFACT_COUNT=$(curl -s "$V3_URL/apis/registry/v3/search/artifacts?limit=1" | jq -r '.count' 2>/dev/null || echo "0")
+ARTIFACT_COUNT=$(curl -s -k "$V3_URL/apis/registry/v3/search/artifacts?limit=1" | jq -r '.count' 2>/dev/null || echo "0")
 if [ "$ARTIFACT_COUNT" -lt 1 ]; then
     echo "  ✗ Registry v3 has no artifacts ($ARTIFACT_COUNT found)" | tee -a "$LOG_FILE"
     echo "    Make sure step-H-import-v3-data.sh completed" | tee -a "$LOG_FILE"
@@ -63,7 +63,7 @@ sleep 3
 MAX_WAIT=30
 ELAPSED=0
 while [ $ELAPSED -lt $MAX_WAIT ]; do
-    if curl -f -s "http://localhost:8080/nginx-health" > /dev/null 2>&1; then
+    if curl -f -s "http://localhost:8081/nginx-health" > /dev/null 2>&1; then
         echo "  ✓ Nginx is healthy" | tee -a "$LOG_FILE"
         break
     fi
@@ -81,20 +81,9 @@ echo "" | tee -a "$LOG_FILE"
 # Verify nginx is routing to v3
 echo "[3/4] Verifying nginx is routing to v3..." | tee -a "$LOG_FILE"
 
-# Check nginx health endpoint
-HEALTH_RESPONSE=$(curl -s "http://localhost:8080/nginx-health")
-echo "  Nginx health: $HEALTH_RESPONSE" | tee -a "$LOG_FILE"
-
-if echo "$HEALTH_RESPONSE" | grep -q "routing to v3"; then
-    echo "  ✓ Nginx health endpoint reports routing to v3" | tee -a "$LOG_FILE"
-else
-    echo "  ✗ Nginx health endpoint does not report v3 routing" | tee -a "$LOG_FILE"
-    exit 1
-fi
-
 # Check registry version through nginx
-NGINX_REGISTRY_URL="http://localhost:8080/apis/registry/v3/system/info"
-SYSTEM_INFO=$(curl -s "$NGINX_REGISTRY_URL")
+NGINX_REGISTRY_URL="https://localhost:8443/apis/registry/v3/system/info"
+SYSTEM_INFO=$(curl -s -k "$NGINX_REGISTRY_URL")
 VERSION=$(echo "$SYSTEM_INFO" | jq -r '.version' 2>/dev/null || echo "unknown")
 
 echo "  Registry version via nginx: $VERSION" | tee -a "$LOG_FILE"
@@ -111,8 +100,8 @@ echo "" | tee -a "$LOG_FILE"
 # Verify artifact count through nginx
 echo "[4/4] Verifying data accessibility through nginx..." | tee -a "$LOG_FILE"
 
-NGINX_SEARCH_URL="http://localhost:8080/apis/registry/v3/search/artifacts?limit=1"
-NGINX_COUNT=$(curl -s "$NGINX_SEARCH_URL" | jq -r '.count' 2>/dev/null || echo "0")
+NGINX_SEARCH_URL="https://localhost:8443/apis/registry/v3/search/artifacts?limit=1"
+NGINX_COUNT=$(curl -s -k "$NGINX_SEARCH_URL" | jq -r '.count' 2>/dev/null || echo "0")
 
 echo "  Artifacts accessible via nginx: $NGINX_COUNT" | tee -a "$LOG_FILE"
 
@@ -130,9 +119,10 @@ echo "================================================================" | tee -a
 echo "" | tee -a "$LOG_FILE"
 echo "Nginx successfully switched to route to Registry v3" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
-echo "Registry v3 (via nginx): http://localhost:8080" | tee -a "$LOG_FILE"
-echo "Registry v3 (direct):    http://localhost:3333" | tee -a "$LOG_FILE"
-echo "Registry v2 (direct):    http://localhost:2222" | tee -a "$LOG_FILE"
+echo "Registry v3 (via nginx): https://localhost:8443" | tee -a "$LOG_FILE"
+echo "Registry v3 (direct):    https://localhost:3333" | tee -a "$LOG_FILE"
+echo "Registry v2 (direct):    https://localhost:2222" | tee -a "$LOG_FILE"
+echo "Nginx health check:      http://localhost:8081/nginx-health" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 echo "Artifacts: $ARTIFACT_COUNT" | tee -a "$LOG_FILE"
 echo "Version:   $VERSION" | tee -a "$LOG_FILE"

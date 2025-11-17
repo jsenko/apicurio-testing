@@ -14,7 +14,7 @@ Run the complete automated migration test:
 
 ```bash
 # Run all migration steps automatically
-./run-scenario-2.sh
+./run-scenario-3.sh
 
 # Or run individual steps manually
 ./scripts/step-A-deploy-v2.sh

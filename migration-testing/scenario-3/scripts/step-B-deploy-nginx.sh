@@ -42,20 +42,16 @@ docker compose -f docker-compose-nginx-v2.yml up -d 2>&1 | tee -a "$LOG_FILE"
 
 echo "" | tee -a "$LOG_FILE"
 echo "[2/4] Waiting for nginx to be healthy..." | tee -a "$LOG_FILE"
-"$SCRIPT_DIR/wait-for-health.sh" http://localhost:8080/nginx-health 30 | tee -a "$LOG_FILE"
+"$SCRIPT_DIR/wait-for-health.sh" http://localhost:8081/nginx-health 30 | tee -a "$LOG_FILE"
 
 echo "" | tee -a "$LOG_FILE"
 echo "[3/4] Verifying nginx health endpoint..." | tee -a "$LOG_FILE"
-NGINX_HEALTH=$(curl -s http://localhost:8080/nginx-health)
+NGINX_HEALTH=$(curl -s http://localhost:8081/nginx-health)
 echo "Nginx health response: $NGINX_HEALTH" | tee -a "$LOG_FILE"
-
-if [[ "$NGINX_HEALTH" != *"v2"* ]]; then
-    echo "⚠️  Warning: nginx health doesn't indicate v2 routing" | tee -a "$LOG_FILE"
-fi
 
 echo "" | tee -a "$LOG_FILE"
 echo "[4/4] Verifying registry is accessible through nginx..." | tee -a "$LOG_FILE"
-SYSTEM_INFO=$(curl -s http://localhost:8080/apis/registry/v2/system/info)
+SYSTEM_INFO=$(curl -s -k https://localhost:8443/apis/registry/v2/system/info)
 echo "$SYSTEM_INFO" | jq '.' | tee -a "$LOG_FILE"
 
 VERSION=$(echo "$SYSTEM_INFO" | jq -r '.version')
@@ -73,12 +69,12 @@ echo "================================================================" | tee -a
 echo "  ✅ Step B completed successfully" | tee -a "$LOG_FILE"
 echo "================================================================" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
-echo "Nginx is running at: http://localhost:8080" | tee -a "$LOG_FILE"
+echo "Nginx is running with TLS passthrough at: https://localhost:8443" | tee -a "$LOG_FILE"
 echo "Currently routing to: Registry v2 (2.6.x)" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
-echo "Test endpoints through nginx:" | tee -a "$LOG_FILE"
-echo "  curl http://localhost:8080/nginx-health" | tee -a "$LOG_FILE"
-echo "  curl http://localhost:8080/apis/registry/v2/system/info" | tee -a "$LOG_FILE"
+echo "Test endpoints:" | tee -a "$LOG_FILE"
+echo "  Health: curl http://localhost:8081/nginx-health" | tee -a "$LOG_FILE"
+echo "  Registry: curl -k https://localhost:8443/apis/registry/v2/system/info" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 echo "Container logs:" | tee -a "$LOG_FILE"
 echo "  docker logs scenario3-nginx" | tee -a "$LOG_FILE"

@@ -26,7 +26,7 @@ echo "================================================================" | tee -a
 echo "" | tee -a "$LOG_FILE"
 
 # Registry URL (direct to v2, not through nginx)
-REGISTRY_URL="${REGISTRY_URL:-http://localhost:2222}"
+REGISTRY_URL="${REGISTRY_URL:-https://localhost:2222}"
 EXPORT_ENDPOINT="$REGISTRY_URL/apis/registry/v2/admin/export"
 
 echo "Registry URL: $REGISTRY_URL" | tee -a "$LOG_FILE"
@@ -35,7 +35,7 @@ echo "" | tee -a "$LOG_FILE"
 
 # Check if Registry is accessible
 echo "[1/4] Checking registry accessibility..." | tee -a "$LOG_FILE"
-if ! curl -f -s "$REGISTRY_URL/apis/registry/v2/system/info" > /dev/null 2>&1; then
+if ! curl -f -s -k "$REGISTRY_URL/apis/registry/v2/system/info" > /dev/null 2>&1; then
     echo "❌ Registry is not accessible at $REGISTRY_URL" | tee -a "$LOG_FILE"
     echo "   Make sure registry v2 is running" | tee -a "$LOG_FILE"
     exit 1
@@ -58,7 +58,7 @@ echo "[3/4] Exporting data from registry v2..." | tee -a "$LOG_FILE"
 echo "  Calling: $EXPORT_ENDPOINT" | tee -a "$LOG_FILE"
 
 # Use curl to download the export zip file
-HTTP_CODE=$(curl -w "%{http_code}" -o "$EXPORT_FILE" -s "$EXPORT_ENDPOINT")
+HTTP_CODE=$(curl -w "%{http_code}" -o "$EXPORT_FILE" -s -k "$EXPORT_ENDPOINT")
 
 if [ "$HTTP_CODE" -eq 200 ]; then
     echo "  ✓ Export completed successfully (HTTP $HTTP_CODE)" | tee -a "$LOG_FILE"
