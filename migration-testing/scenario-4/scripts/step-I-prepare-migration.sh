@@ -17,11 +17,6 @@ mkdir -p "$PROJECT_DIR/logs"
 
 LOG_FILE="$PROJECT_DIR/logs/step-E-prepare-migration.log"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step E: Prepare for Migration" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
 echo "Current Status:" | tee -a "$LOG_FILE"
 echo "  ✓ Registry v2 deployed and running" | tee -a "$LOG_FILE"
 echo "  ✓ Test data created (25 artifacts, 76 versions)" | tee -a "$LOG_FILE"
@@ -48,8 +43,6 @@ printf "\r  Starting migration now!                \n" | tee -a "$LOG_FILE"
 
 echo "" | tee -a "$LOG_FILE"
 echo "================================================================" | tee -a "$LOG_FILE"
-echo "  ✓ Step E completed successfully" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 echo "Ready to begin migration process" | tee -a "$LOG_FILE"
 echo "Log: $LOG_FILE" | tee -a "$LOG_FILE"
+echo "================================================================" | tee -a "$LOG_FILE"

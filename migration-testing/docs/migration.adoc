@@ -1,0 +1,287 @@
+
+[id="registry-migration_{context}"]
+= Migration from {registry} {registry-v2} to 3.x
+
+[role="_abstract"]
+{registry} 3.x includes a redesigned data model, a reworked REST API, and a refreshed SDK ecosystem compared to the previous {registry} {registry-v2} release.
+This section outlines the major changes between {registry} {registry-v2} and version 3.x so that you can plan your upgrade activities.
+
+Because of the breaking changes in 3.x, there is no in-place upgrade. You must stand up a new 3.x deployment, migrate the persisted content, and update your client applications and automation.
+
+When migrating to version 3.x, take the following areas into account:
+
+== Updated data model and governance
+{registry} 3.x separates artifact metadata from version metadata and introduces first-class support for empty artifacts. These capabilities let you prepare governance metadata, rules, and branch structures before the first version exists. Additional highlights include:
+
+* Artifact metadata is now managed independently from version metadata.
+* Groups and artifacts can define custom labels to improve categorization.
+* Users can create and manage custom branches, and the `latest` branch is implemented as a system managed branch.
+
+== Core v3 REST API
+The v3 REST API focuses on consistency and discoverability:
+
+* Group management now covers descriptions, owners, labels, and hierarchical rules.
+* New search endpoints at `/search/groups` and `/search/versions` expand discovery.
+* Version-focused endpoints streamline content management and require explicit `Content-Type` headers.
+* A `dryRun` query parameter replaces the former `/test` endpoints.
+* A dedicated Branch API enables multitrack artifact development.
+
+== Re-engineered Kafka storage variant
+The KafkaSQL storage implementation is now optimized for stability and maintainability.
+The new design reduces startup times for large installations.
+
+== Generated SDKs powered by Kiota
+{registry} 3.x ships Kiota-generated SDKs that mirror the REST API structure across languages.
+Updated libraries are available for Java, TypeScript, Python, and Go, providing lightweight, type-safe clients with minimal dependencies and consistent naming.
+
+
+[id="migrating-registry-data_{context}"]
+== Migrating {registry} data
+
+[role="_abstract"]
+Use the export and import APIs to migrate persisted content from {registry} {registry-v2} into a new {registry} 3.x deployment. The APIs preserve artifact identifiers, metadata, and references so that downstream Kafka payloads remain compatible.
+
+{registry} 3.x accepts the export archive generated from a {registry-v2} instance. Capture the archive from your existing deployment, provision the 3.x environment, and import the archive into the new cluster.
+
+.Prerequisites
+* Running {registry} instances of the {registry-v2} server you are exporting from and the 3.x server you are importing into.
+* Administrative credentials that allow access to the `/apis/registry/v2/admin/export` and `/apis/registry/v3/admin/import` endpoints.
+
+.Procedure
+
+. Export all data from {registry} {registry-v2}. The following command downloads `registry-export.zip` to your working directory:
++
+[source,bash,subs="attributes+"]
+----
+curl -X GET "http://old-registry.my-company.com/apis/registry/v2/admin/export" \
+  -o registry-export.zip
+----
+
+. Import the archive into {registry} 3.x by posting it to the admin import endpoint:
++
+[source,bash,subs="attributes+"]
+----
+curl -X POST "http://new-registry.my-company.com/apis/registry/v3/admin/import" \
+  -H "Content-Type: application/zip" \
+  --data-binary @registry-export.zip
+----
+
+. Validate the migrated content. Compare artifact counts between the legacy and new deployments:
++
+[source,bash,subs="attributes+"]
+----
+curl "http://old-registry.my-company.com/apis/registry/v2/search/artifacts"
+----
++
+[source,bash,subs="attributes+"]
+----
+curl "http://new-registry.my-company.com/apis/registry/v3/search/artifacts"
+----
++
+Check that global rules were imported successfully:
++
+[source,bash,subs="attributes+"]
+----
+curl "http://new-registry.my-company.com/apis/registry/v3/admin/rules"
+----
+
+[role="_additional-resources"]
+.Additional resources
+* {LinkServiceRegistryUser}[{NameServiceRegistryUser}]
+
+
+[id="migrating-registry-applications_{context}"]
+== Migrating {registry} client applications
+
+[role="_abstract"]
+Review every application that integrates with {registry} {registry-v2} to ensure compatibility with the v3 REST API, SDKs, and client libraries. Update dependency coordinates, reconfigure endpoints, and adjust automation to account for the new data model.
+
+.Prerequisites
+* Existing {registry} {registry-v2} applications that rely on the v2 REST API or legacy client libraries.
+* Access to the source code or deployment configuration for each application you must update.
+
+.Procedure
+. Update your client configuration to target the v3 REST API base path:
++
+[source,java]
+----
+String registryUrl = "https://new-registry.my-company.com/apis/registry/v3";
+RegistryClient client = RegistryClientFactory.create(registryUrl);
+----
++
+Automation that previously targeted `/apis/registry/v2` continues to function, but new functionality is only exposed through the v3 API.
+
+. Refresh your client dependencies to the latest 3.x SDKs generated with Kiota. For Maven-based Java applications, use the new artifact identifier:
++
+[source,xml,subs="attributes+"]
+----
+<dependency>
+    <groupId>io.apicurio</groupId>
+    <artifactId>apicurio-registry-java-sdk</artifactId>
+    <version>{registry-release}</version>
+</dependency>
+----
++
+Install the TypeScript, Python, or Go SDKs through the respective package managers (`npm install @apicurio/apicurio-registry-sdk`, `pip install apicurioregistrysdk`, or `go get github.com/apicurio/apicurio-registry/go-sdk`).
+
+. Align your integration code with the reorganized endpoints:
+* Manage artifact metadata at `/groups/{groupId}/artifacts/{artifactId}`.
+* Retrieve or create content exclusively through `/versions` endpoints.
+* Replace calls to `/test` endpoints with the `dryRun` query parameter.
+* Use `/search/groups` and `/search/versions` where you previously enumerated artifacts indirectly.
+
+. Adopt the branch API if you need parallel development streams. Branches allow you to promote or merge versions without duplicating artifacts.
+
+. If you build Kafka SerDes integrations, verify that serializers and deserializers still reference the correct registry URL and consider enabling group- or artifact-level rules introduced in 3.x to enforce compatibility upstream.
+
+[role="_additional-resources"]
+.Additional resources
+* {LinkServiceRegistryUser}[{NameServiceRegistryUser}]
+
+
+[id="migrating-registry-configuration_{context}"]
+== Updating {registry} configuration
+
+[role="_abstract"]
+Configuration keys in {registry} 3.x adopt a unified `apicurio.` namespace and reorganize authentication, eventing, UI, and storage settings. Review and update your deployment descriptors so that server-side properties match the new naming scheme.
+
+=== Naming convention changes
+Most configuration properties now start with the `apicurio.` prefix. The following examples illustrate common mappings:
+
+[cols="1,1",options="header"]
+|===
+| Registry 2.x property
+| Registry 3.x property
+
+| `registry.auth.roles.admin`
+| `apicurio.auth.roles.admin`
+
+| `registry.events.kafka.topic`
+| `apicurio.events.kafka.topic`
+
+| `registry.rest.artifact.deletion.enabled`
+| `apicurio.rest.deletion.artifact.enabled`
+|===
+
+=== Authentication and authorization
+Authentication settings continue to rely on Quarkus OIDC support, but role-based properties moved to the new namespace. Update the property names and review any removed options:
+
+[cols="1,1",options="header"]
+|===
+| Registry 2.x property
+| Registry 3.x property
+
+| `registry.auth.enabled`
+| `quarkus.oidc.enabled`
+
+| `registry.auth.role-source`
+| `apicurio.auth.role-source`
+
+| `registry.auth.anonymous-read-access.enabled`
+| `apicurio.auth.anonymous-read-access.enabled`
+
+| `registry.auth.oidc.client-id`
+| `quarkus.oidc.client-id`
+
+| `registry.auth.oidc.token-endpoint`
+| `quarkus.oidc.token-path`
+|===
+
+[source,properties]
+----
+# Registry 2.x
+registry.auth.enabled=true
+registry.auth.roles.admin=admin
+registry.auth.oidc.client-id=my-client
+
+# Registry 3.x
+quarkus.oidc.enabled=true
+apicurio.auth.roles.admin=admin
+quarkus.oidc.client-id=my-client
+----
+
+=== Eventing and Kafka storage
+Kafka-related settings now share the `apicurio.kafkasql` prefix. Update both event notifications and Kafka storage properties:
+
+[cols="1,1",options="header"]
+|===
+| Registry 2.x property
+| Registry 3.x property
+
+| `registry.events.kafka.topic`
+| `apicurio.events.kafka.topic`
+
+| `registry.kafkasql.bootstrap.servers`
+| `apicurio.kafkasql.bootstrap.servers`
+
+| `registry.kafkasql.topic.auto-create`
+| `apicurio.kafkasql.topic.auto-create`
+|===
+
+[source,properties]
+----
+# Registry 3.x example
+apicurio.events.kafka.topic=my-registry-events
+apicurio.kafkasql.bootstrap.servers=kafka:9092
+apicurio.kafkasql.topic=my-registry-storage
+apicurio.kafkasql.topic.auto-create=true
+----
+
+== UI and API configuration
+The UI configuration is now grouped under `apicurio.ui.*`, and API diagnostics align with the new hierarchy:
+
+[cols="1,1",options="header"]
+|===
+| Registry 2.x property
+| Registry 3.x property
+
+| `registry.ui.contextPath`
+| `apicurio.ui.contextPath`
+
+| `registry.ui.features.readOnly`
+| `apicurio.ui.features.read-only.enabled`
+
+| `registry.ui.auth.oidc.redirect-url`
+| `apicurio.ui.auth.oidc.redirect-uri`
+
+| `registry.api.errors.include-stack-in-response`
+| `apicurio.api.errors.include-stack-in-response`
+|===
+
+=== Storage and database configuration
+Database settings moved out of the Quarkus datasource namespace. Update JDBC configuration and storage selection properties:
+
+[cols="1,1",options="header"]
+|===
+| Registry 2.x property
+| Registry 3.x property
+
+| `quarkus.datasource.jdbc.url`
+| `apicurio.datasource.url`
+
+| `quarkus.datasource.username`
+| `apicurio.datasource.username`
+
+| `registry.sql.init`
+| `apicurio.sql.init`
+
+| `registry.storage.kind`
+| `apicurio.storage.kind`
+|===
+
+=== Migration checklist
+
+. Inventory all configuration files, including deployment manifests and `application.properties`.
+. Translate properties to their 3.x equivalents using the mappings in this section.
+. Start a staging deployment of {registry} 3.x with the updated configuration and monitor logs for deprecated or unknown keys.
+. Validate UI login flows, rule enforcement, and storage connectivity before promoting to production.
+
+=== Common issues and resolutions
+* *Authentication failures*: confirm that `apicurio.auth.roles.*` properties mirror the expected role names and that OIDC redirect URIs use the new property names.
+* *Missing Kafka settings*: verify that all Kafka-related properties use the `apicurio.kafkasql` prefix and that optional settings removed in 3.x are not still present.
+* *Database connection errors*: ensure you migrated JDBC settings out of the `quarkus.datasource.*` namespace and updated secrets or ConfigMaps accordingly.
+
+[role="_additional-resources"]
+.Additional resources
+* {LinkServiceRegistryUser}[{NameServiceRegistryUser}]
+

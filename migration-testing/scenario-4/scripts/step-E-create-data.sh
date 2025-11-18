@@ -19,11 +19,6 @@ mkdir -p "$PROJECT_DIR/data"
 LOG_FILE="$PROJECT_DIR/logs/step-C-create-data.log"
 SUMMARY_FILE="$PROJECT_DIR/data/creation-summary.txt"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step C: Create Test Data" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
 # Registry URL (via nginx)
 REGISTRY_URL="${REGISTRY_URL:-https://localhost:8443/apis/registry/v2}"
 echo "Registry URL: $REGISTRY_URL" | tee -a "$LOG_FILE"
@@ -92,17 +87,14 @@ if [ $EXIT_CODE -eq 0 ]; then
 
     echo "" | tee -a "$LOG_FILE"
     echo "================================================================" | tee -a "$LOG_FILE"
-    echo "  ✓ Step C completed successfully" | tee -a "$LOG_FILE"
-    echo "================================================================" | tee -a "$LOG_FILE"
-    echo "" | tee -a "$LOG_FILE"
     echo "Test data has been created in the registry" | tee -a "$LOG_FILE"
     echo "Summary: $SUMMARY_FILE" | tee -a "$LOG_FILE"
     echo "Log: $LOG_FILE" | tee -a "$LOG_FILE"
-else
     echo "================================================================" | tee -a "$LOG_FILE"
-    echo "  ✗ Step C failed" | tee -a "$LOG_FILE"
+else
     echo "================================================================" | tee -a "$LOG_FILE"
     echo "" | tee -a "$LOG_FILE"
     echo "Check the log for details: $LOG_FILE" | tee -a "$LOG_FILE"
+    echo "================================================================" | tee -a "$LOG_FILE"
     exit 1
 fi

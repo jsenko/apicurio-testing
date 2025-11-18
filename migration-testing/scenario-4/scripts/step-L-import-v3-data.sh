@@ -19,11 +19,6 @@ mkdir -p "$PROJECT_DIR/logs"
 LOG_FILE="$PROJECT_DIR/logs/step-H-import-v3-data.log"
 EXPORT_FILE="$PROJECT_DIR/data/registry-v2-export.zip"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step H: Import Data into Registry v3" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
 # Registry URL (direct to v3, not through nginx)
 REGISTRY_URL="${REGISTRY_V3_URL:-https://localhost:3333}"
 IMPORT_ENDPOINT="$REGISTRY_URL/apis/registry/v3/admin/import"
@@ -138,13 +133,11 @@ fi
 
 echo "" | tee -a "$LOG_FILE"
 echo "================================================================" | tee -a "$LOG_FILE"
-echo "  ✓ Step H completed successfully" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 echo "Registry v3 data imported successfully" | tee -a "$LOG_FILE"
 echo "Artifacts imported: $ARTIFACT_COUNT" | tee -a "$LOG_FILE"
 echo "Registry URL:       $REGISTRY_URL" | tee -a "$LOG_FILE"
 echo "Log:                $LOG_FILE" | tee -a "$LOG_FILE"
+echo "================================================================" | tee -a "$LOG_FILE"
 
 # Cleanup temp file
 rm -f /tmp/import-response.txt

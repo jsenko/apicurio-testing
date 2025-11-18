@@ -19,11 +19,6 @@ mkdir -p "$PROJECT_DIR/logs/containers"
 
 LOG_FILE="$PROJECT_DIR/logs/step-G-deploy-v3.log"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step G: Deploy Apicurio Registry 3.1.2" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
 # Start containers
 echo "[1/5] Starting containers..." | tee -a "$LOG_FILE"
 cd "$PROJECT_DIR"
@@ -99,9 +94,6 @@ fi
 
 echo "" | tee -a "$LOG_FILE"
 echo "================================================================" | tee -a "$LOG_FILE"
-echo "  ✅ Step G completed successfully" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 echo "Registry v3 is running at: http://localhost:3333" | tee -a "$LOG_FILE"
 echo "PostgreSQL is running at: localhost:5433" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
@@ -119,3 +111,4 @@ echo "Logs saved to:" | tee -a "$LOG_FILE"
 echo "  - $LOG_FILE" | tee -a "$LOG_FILE"
 echo "  - $PROJECT_DIR/logs/containers/postgres-v3-initial.log" | tee -a "$LOG_FILE"
 echo "  - $PROJECT_DIR/logs/containers/registry-v3-initial.log" | tee -a "$LOG_FILE"
+echo "================================================================" | tee -a "$LOG_FILE"

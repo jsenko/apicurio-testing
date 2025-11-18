@@ -3,18 +3,25 @@
 # Automated Migration Testing - Scenario 4
 #
 # This script runs all migration steps in sequence:
-# A. Deploy Keycloak for authentication
-# B. Deploy Apicurio Registry v2 with PostgreSQL
-# C. Deploy nginx reverse proxy
-# D. Create test data (25 artifacts, 76 versions)
-# E. Validate pre-migration state
-# F. Prepare for migration (pause)
-# G. Export data from v2 registry
-# H. Deploy Apicurio Registry v3 with PostgreSQL
-# I. Import data into v3 registry
-# J. Switch nginx routing from v2 to v3
-# K. Validate post-migration state (v2 client - backward compatibility test)
-# L. Validate v3 registry (v3 native client)
+# A. Deploy Kafka
+# B. Deploy Keycloak for authentication
+# C. Deploy Apicurio Registry v2 with PostgreSQL
+# D. Deploy nginx reverse proxy
+# E. Create test data (artifacts and versions)
+# F. Run Kafka producer v2 (creates messages + auto-registers schema)
+# G. Run Kafka consumer v2 (validates v2 SerDes)
+# H. Validate pre-migration state (v2 validator)
+# I. Prepare for migration (pause)
+# J. Export data from v2 registry
+# K. Deploy Apicurio Registry v3 with PostgreSQL
+# L. Import data into v3 registry
+# M. Switch nginx routing from v2 to v3
+# N. Run Kafka producer v2 on v3 (backward compatibility test)
+# O. Run Kafka consumer v2 on v3 (backward compatibility test)
+# P. Validate post-migration state (v2 validator on v3)
+# Q. Validate v3 registry (v3 native validator)
+# R. Run Kafka producer v3 (v3 SerDes with 8-byte ID handler)
+# S. Run Kafka consumer v3 (v3 SerDes with 8-byte ID handler)
 
 set -e
 
@@ -44,18 +51,25 @@ fi
 
 # Step tracking
 declare -a STEPS=(
-    "A:Deploy Keycloak"
-    "B:Deploy Apicurio Registry v2"
-    "C:Deploy nginx reverse proxy"
-    "D:Create test data"
-    "E:Validate pre-migration state"
-    "F:Prepare for migration"
-    "G:Export v2 data"
-    "H:Deploy Apicurio Registry v3"
-    "I:Import v3 data"
-    "J:Switch nginx to v3"
-    "K:Validate post-migration (v2 client)"
-    "L:Validate v3 native (v3 client)"
+    "A:Deploy Kafka"
+    "B:Deploy Keycloak"
+    "C:Deploy Apicurio Registry v2"
+    "D:Deploy nginx reverse proxy"
+    "E:Create test data"
+    "F:Run Kafka producer v2"
+    "G:Run Kafka consumer v2"
+    "H:Validate pre-migration state"
+    "I:Prepare for migration"
+    "J:Export v2 data"
+    "K:Deploy Apicurio Registry v3"
+    "L:Import v3 data"
+    "M:Switch nginx to v3"
+    "N:Run Kafka producer v2 on v3"
+    "O:Run Kafka consumer v2 on v3"
+    "P:Validate post-migration (v2 validator)"
+    "Q:Validate v3 native (v3 validator)"
+    "R:Run Kafka producer v3"
+    "S:Run Kafka consumer v3"
 )
 
 declare -a STEP_RESULTS=()
@@ -116,16 +130,19 @@ run_step() {
 
     local step_start=$(date +%s)
 
-    if bash "$script_file" 2>&1 | tee -a "$MASTER_LOG"; then
-        local step_end=$(date +%s)
-        local duration=$((step_end - step_start))
+    # Run the step script and capture its exit code
+    bash "$script_file" 2>&1 | tee -a "$MASTER_LOG"
+    local exit_code=${PIPESTATUS[0]}
+
+    local step_end=$(date +%s)
+    local duration=$((step_end - step_start))
+
+    if [ $exit_code -eq 0 ]; then
         echo -e "${GREEN}✓ Step $step_letter completed successfully (${duration}s)${NC}" | tee -a "$MASTER_LOG"
         STEP_RESULTS+=("PASSED")
         STEP_TIMES+=("$duration")
         return 0
     else
-        local step_end=$(date +%s)
-        local duration=$((step_end - step_start))
         echo -e "${RED}✗ Step $step_letter failed (${duration}s)${NC}" | tee -a "$MASTER_LOG"
         STEP_RESULTS+=("FAILED")
         STEP_TIMES+=("$duration")
@@ -190,9 +207,14 @@ if [ -z "$FAILED_STEP" ]; then
     echo "All data has been migrated from v2 to v3 and validated." | tee -a "$MASTER_LOG"
     echo "" | tee -a "$MASTER_LOG"
     echo "Key validation results:" | tee -a "$MASTER_LOG"
-    echo "  - Pre-migration:  data/validation-report-pre-migration.txt" | tee -a "$MASTER_LOG"
-    echo "  - Post-migration: data/validation-report-post-migration.txt" | tee -a "$MASTER_LOG"
-    echo "  - V3 native:      data/validation-report-v3-native.txt" | tee -a "$MASTER_LOG"
+    echo "  - Pre-migration:       data/validation-report-pre-migration.txt" | tee -a "$MASTER_LOG"
+    echo "  - Post-migration:      data/validation-report-post-migration.txt" | tee -a "$MASTER_LOG"
+    echo "  - V3 native:           data/validation-report-v3-native.txt" | tee -a "$MASTER_LOG"
+    echo "" | tee -a "$MASTER_LOG"
+    echo "Kafka consumer reports:" | tee -a "$MASTER_LOG"
+    echo "  - Consumer v2 (v2):    data/consumer-v2-report.txt" | tee -a "$MASTER_LOG"
+    echo "  - Consumer v2 (v3):    data/consumer-v2-on-v3-report.txt" | tee -a "$MASTER_LOG"
+    echo "  - Consumer v3:         data/consumer-v3-report.txt" | tee -a "$MASTER_LOG"
     echo "" | tee -a "$MASTER_LOG"
     echo "Master log: $MASTER_LOG" | tee -a "$MASTER_LOG"
     exit 0

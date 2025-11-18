@@ -1,14 +1,12 @@
 #!/bin/bash
 
-# Step K: Validate V3 Registry Using Native V3 Client
+# Step D: Validate Pre-Migration State
 #
 # This script:
-# 1. Uses artifact-validator-v3 to validate the v3 registry (using native v3 API)
-# 2. Runs the validator against nginx (which routes to v3)
+# 1. Builds the artifact-validator-v2 application (if needed)
+# 2. Runs the validator against the registry (using v2 API)
 # 3. Saves the validation report
 # 4. Exits with error if validation fails
-#
-# Note: This validates the v3 registry using the native v3 SDK
 
 set -e
 
@@ -19,64 +17,55 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 mkdir -p "$PROJECT_DIR/logs"
 mkdir -p "$PROJECT_DIR/data"
 
-LOG_FILE="$PROJECT_DIR/logs/step-K-validate-v3-native.log"
-REPORT_FILE="$PROJECT_DIR/data/validation-report-v3-native.txt"
+LOG_FILE="$PROJECT_DIR/logs/step-D-validate-pre-migration.log"
+REPORT_FILE="$PROJECT_DIR/data/validation-report-pre-migration.txt"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step K: Validate V3 Registry Using Native V3 Client" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
-# Registry URL (via nginx, using v3 API)
-REGISTRY_URL="${REGISTRY_URL:-https://localhost:8443/apis/registry/v3}"
+# Registry URL (via nginx)
+REGISTRY_URL="${REGISTRY_URL:-https://localhost:8443/apis/registry/v2}"
 echo "Registry URL: $REGISTRY_URL" | tee -a "$LOG_FILE"
-echo "Note: Using v3 native client to validate v3 registry" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Check if Registry is accessible
 echo "[1/4] Checking registry accessibility..." | tee -a "$LOG_FILE"
-if ! curl -f -s -k "https://localhost:8443/apis/registry/v3/system/info" > /dev/null 2>&1; then
-    echo "❌ Registry v3 API is not accessible at https://localhost:8443" | tee -a "$LOG_FILE"
-    echo "   Make sure nginx is routing to v3 (step-I-switch-nginx-to-v3.sh)" | tee -a "$LOG_FILE"
+if ! curl -f -s -k "$REGISTRY_URL/system/info" > /dev/null 2>&1; then
+    echo "❌ Registry is not accessible at $REGISTRY_URL" | tee -a "$LOG_FILE"
+    echo "   Make sure registry is running (steps A-C completed)" | tee -a "$LOG_FILE"
     exit 1
 fi
-
-# Get v3 version
-V3_VERSION=$(curl -s -k "https://localhost:8443/apis/registry/v3/system/info" | jq -r '.version' 2>/dev/null || echo "unknown")
-echo "  ✓ Registry is accessible (v3 version: $V3_VERSION)" | tee -a "$LOG_FILE"
+echo "  ✓ Registry is accessible" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Check if JAR exists
-echo "[2/4] Checking artifact-validator-v3 JAR..." | tee -a "$LOG_FILE"
-JAR_PATH="$PROJECT_DIR/clients/artifact-validator-v3/target/artifact-validator-v3-1.0.0-SNAPSHOT.jar"
+echo "[2/4] Checking artifact-validator-v2 JAR..." | tee -a "$LOG_FILE"
+JAR_PATH="$PROJECT_DIR/clients/artifact-validator-v2/target/artifact-validator-v2-1.0.0-SNAPSHOT.jar"
 
 if [ ! -f "$JAR_PATH" ]; then
-    echo "❌ artifact-validator-v3 JAR not found at $JAR_PATH" | tee -a "$LOG_FILE"
+    echo "❌ artifact-validator-v2 JAR not found at $JAR_PATH" | tee -a "$LOG_FILE"
     echo "   Please run build-clients.sh first or use run-scenario-4.sh" | tee -a "$LOG_FILE"
     exit 1
 fi
-echo "  ✓ artifact-validator-v3 JAR found" | tee -a "$LOG_FILE"
+echo "  ✓ artifact-validator-v2 JAR found" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Run artifact validator
-echo "[3/4] Running artifact-validator-v3 against v3 registry..." | tee -a "$LOG_FILE"
-cd "$PROJECT_DIR/clients/artifact-validator-v3"
+echo "[3/4] Running artifact-validator-v2..." | tee -a "$LOG_FILE"
+cd "$PROJECT_DIR/clients/artifact-validator-v2"
 
 # SSL/TLS truststore configuration (combined truststore with both Registry and Keycloak certs)
 TRUSTSTORE_PATH="$PROJECT_DIR/certs/client-truststore.jks"
 TRUSTSTORE_PASSWORD="registry123"
 
 # OIDC authentication configuration
-TOKEN_ENDPOINT="https://localhost:9443/realms/registry/protocol/openid-connect/token"
+AUTH_SERVER_URL="https://localhost:9443/realms/registry/protocol/openid-connect/token"
 CLIENT_ID="developer-client"
 CLIENT_SECRET="test1"
 
 java -Djavax.net.ssl.trustStore="$TRUSTSTORE_PATH" \
      -Djavax.net.ssl.trustStorePassword="$TRUSTSTORE_PASSWORD" \
-     -Dapicurio.auth.token.endpoint="$TOKEN_ENDPOINT" \
+     -Dapicurio.auth.server.url="$AUTH_SERVER_URL" \
      -Dapicurio.auth.client.id="$CLIENT_ID" \
      -Dapicurio.auth.client.secret="$CLIENT_SECRET" \
-     -jar target/artifact-validator-v3-1.0.0-SNAPSHOT.jar \
+     -jar target/artifact-validator-v2-1.0.0-SNAPSHOT.jar \
      "$REGISTRY_URL" \
      "$REPORT_FILE" \
      2>&1 | tee -a "$LOG_FILE"
@@ -98,12 +87,10 @@ if [ $EXIT_CODE -eq 0 ]; then
 
     echo "" | tee -a "$LOG_FILE"
     echo "================================================================" | tee -a "$LOG_FILE"
-    echo "  ✓ Step K completed successfully - ALL VALIDATIONS PASSED" | tee -a "$LOG_FILE"
-    echo "================================================================" | tee -a "$LOG_FILE"
-    echo "" | tee -a "$LOG_FILE"
-    echo "V3 registry validated successfully using native v3 client" | tee -a "$LOG_FILE"
+    echo "Pre-migration state validated successfully" | tee -a "$LOG_FILE"
     echo "Report: $REPORT_FILE" | tee -a "$LOG_FILE"
     echo "Log: $LOG_FILE" | tee -a "$LOG_FILE"
+    echo "================================================================" | tee -a "$LOG_FILE"
     exit 0
 elif [ $EXIT_CODE -eq 1 ]; then
     echo "[4/4] Validation completed with failures..." | tee -a "$LOG_FILE"
@@ -115,18 +102,15 @@ elif [ $EXIT_CODE -eq 1 ]; then
 
     echo "" | tee -a "$LOG_FILE"
     echo "================================================================" | tee -a "$LOG_FILE"
-    echo "  ✗ Step K completed with VALIDATION FAILURES" | tee -a "$LOG_FILE"
-    echo "================================================================" | tee -a "$LOG_FILE"
-    echo "" | tee -a "$LOG_FILE"
     echo "Some validations failed - check the report for details" | tee -a "$LOG_FILE"
     echo "Report: $REPORT_FILE" | tee -a "$LOG_FILE"
     echo "Log: $LOG_FILE" | tee -a "$LOG_FILE"
+    echo "================================================================" | tee -a "$LOG_FILE"
     exit 1
 else
     echo "================================================================" | tee -a "$LOG_FILE"
-    echo "  ✗ Step K failed with error" | tee -a "$LOG_FILE"
-    echo "================================================================" | tee -a "$LOG_FILE"
-    echo "" | tee -a "$LOG_FILE"
+    echo "Error detected!" | tee -a "$LOG_FILE"
     echo "Check the log for details: $LOG_FILE" | tee -a "$LOG_FILE"
+    echo "================================================================" | tee -a "$LOG_FILE"
     exit 2
 fi

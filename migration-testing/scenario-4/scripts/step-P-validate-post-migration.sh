@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# Step D: Validate Pre-Migration State
+# Step J: Validate Post-Migration State
 #
 # This script:
-# 1. Builds the artifact-validator-v2 application (if needed)
-# 2. Runs the validator against the registry (using v2 API)
+# 1. Uses artifact-validator-v2 to validate the v3 registry (testing backward compatibility)
+# 2. Runs the validator against nginx (which routes to v3)
 # 3. Saves the validation report
 # 4. Exits with error if validation fails
+#
+# Note: This validates that v3 registry maintains backward compatibility with v2 clients
 
 set -e
 
@@ -17,27 +19,27 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 mkdir -p "$PROJECT_DIR/logs"
 mkdir -p "$PROJECT_DIR/data"
 
-LOG_FILE="$PROJECT_DIR/logs/step-D-validate-pre-migration.log"
-REPORT_FILE="$PROJECT_DIR/data/validation-report-pre-migration.txt"
+LOG_FILE="$PROJECT_DIR/logs/step-J-validate-post-migration.log"
+REPORT_FILE="$PROJECT_DIR/data/validation-report-post-migration.txt"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step D: Validate Pre-Migration State" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
-# Registry URL (via nginx)
+# Registry URL (via nginx, using v2 API against v3 registry)
 REGISTRY_URL="${REGISTRY_URL:-https://localhost:8443/apis/registry/v2}"
 echo "Registry URL: $REGISTRY_URL" | tee -a "$LOG_FILE"
+echo "Note: Using v2 client to test backward compatibility" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Check if Registry is accessible
 echo "[1/4] Checking registry accessibility..." | tee -a "$LOG_FILE"
-if ! curl -f -s -k "$REGISTRY_URL/system/info" > /dev/null 2>&1; then
-    echo "❌ Registry is not accessible at $REGISTRY_URL" | tee -a "$LOG_FILE"
-    echo "   Make sure registry is running (steps A-C completed)" | tee -a "$LOG_FILE"
+if ! curl -f -s -k "https://localhost:8443/apis/registry/v2/system/info" > /dev/null 2>&1; then
+    echo "❌ Registry v2 API is not accessible at https://localhost:8443" | tee -a "$LOG_FILE"
+    echo "   Make sure nginx is routing to v3 (step-I-switch-nginx-to-v3.sh)" | tee -a "$LOG_FILE"
+    echo "   and that v3 supports v2 API backward compatibility" | tee -a "$LOG_FILE"
     exit 1
 fi
-echo "  ✓ Registry is accessible" | tee -a "$LOG_FILE"
+
+# Verify we're actually talking to v3
+V3_VERSION=$(curl -s -k "https://localhost:8443/apis/registry/v3/system/info" | jq -r '.version' 2>/dev/null || echo "unknown")
+echo "  ✓ Registry is accessible (v3 version: $V3_VERSION)" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Check if JAR exists
@@ -53,7 +55,7 @@ echo "  ✓ artifact-validator-v2 JAR found" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 # Run artifact validator
-echo "[3/4] Running artifact-validator-v2..." | tee -a "$LOG_FILE"
+echo "[3/4] Running artifact-validator-v2 against v3 registry..." | tee -a "$LOG_FILE"
 cd "$PROJECT_DIR/clients/artifact-validator-v2"
 
 # SSL/TLS truststore configuration (combined truststore with both Registry and Keycloak certs)
@@ -92,12 +94,11 @@ if [ $EXIT_CODE -eq 0 ]; then
 
     echo "" | tee -a "$LOG_FILE"
     echo "================================================================" | tee -a "$LOG_FILE"
-    echo "  ✓ Step D completed successfully - ALL VALIDATIONS PASSED" | tee -a "$LOG_FILE"
-    echo "================================================================" | tee -a "$LOG_FILE"
-    echo "" | tee -a "$LOG_FILE"
-    echo "Pre-migration state validated successfully" | tee -a "$LOG_FILE"
+    echo "Post-migration state validated successfully" | tee -a "$LOG_FILE"
+    echo "Backward compatibility confirmed: v2 client works with v3 registry" | tee -a "$LOG_FILE"
     echo "Report: $REPORT_FILE" | tee -a "$LOG_FILE"
     echo "Log: $LOG_FILE" | tee -a "$LOG_FILE"
+    echo "================================================================" | tee -a "$LOG_FILE"
     exit 0
 elif [ $EXIT_CODE -eq 1 ]; then
     echo "[4/4] Validation completed with failures..." | tee -a "$LOG_FILE"
@@ -109,18 +110,16 @@ elif [ $EXIT_CODE -eq 1 ]; then
 
     echo "" | tee -a "$LOG_FILE"
     echo "================================================================" | tee -a "$LOG_FILE"
-    echo "  ✗ Step D completed with VALIDATION FAILURES" | tee -a "$LOG_FILE"
-    echo "================================================================" | tee -a "$LOG_FILE"
     echo "" | tee -a "$LOG_FILE"
     echo "Some validations failed - check the report for details" | tee -a "$LOG_FILE"
     echo "Report: $REPORT_FILE" | tee -a "$LOG_FILE"
     echo "Log: $LOG_FILE" | tee -a "$LOG_FILE"
+    echo "================================================================" | tee -a "$LOG_FILE"
     exit 1
 else
     echo "================================================================" | tee -a "$LOG_FILE"
-    echo "  ✗ Step D failed with error" | tee -a "$LOG_FILE"
-    echo "================================================================" | tee -a "$LOG_FILE"
-    echo "" | tee -a "$LOG_FILE"
+    echo "Error detected!" | tee -a "$LOG_FILE"
     echo "Check the log for details: $LOG_FILE" | tee -a "$LOG_FILE"
+    echo "================================================================" | tee -a "$LOG_FILE"
     exit 2
 fi

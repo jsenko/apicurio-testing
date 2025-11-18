@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Step I: Switch Nginx to Route to Registry v3
+# Step M: Switch Nginx to Route to Registry v3
 #
 # This script:
 # 1. Verifies v3 registry is running and has data
@@ -16,13 +16,8 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 # Create log directory
 mkdir -p "$PROJECT_DIR/logs"
 
-LOG_FILE="$PROJECT_DIR/logs/step-I-switch-nginx-to-v3.log"
+LOG_FILE="$PROJECT_DIR/logs/step-M-switch-nginx-to-v3.log"
 NGINX_COMPOSE="$PROJECT_DIR/docker-compose-nginx.yml"
-
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step I: Switch Nginx to Route to Registry v3" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 
 # Verify v3 registry is running and has data
 echo "[1/3] Verifying v3 registry is ready..." | tee -a "$LOG_FILE"
@@ -98,9 +93,6 @@ fi
 echo "" | tee -a "$LOG_FILE"
 
 echo "================================================================" | tee -a "$LOG_FILE"
-echo "  ✓ Step I completed successfully" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 echo "Nginx successfully switched to route to Registry v3" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 echo "Registry v3 (via nginx): https://localhost:8443" | tee -a "$LOG_FILE"
@@ -111,3 +103,4 @@ echo "" | tee -a "$LOG_FILE"
 echo "Artifacts: $ARTIFACT_COUNT" | tee -a "$LOG_FILE"
 echo "Version:   $VERSION" | tee -a "$LOG_FILE"
 echo "Log:       $LOG_FILE" | tee -a "$LOG_FILE"
+echo "================================================================" | tee -a "$LOG_FILE"

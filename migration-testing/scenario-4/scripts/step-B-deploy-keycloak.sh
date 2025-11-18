@@ -17,11 +17,6 @@ mkdir -p "$PROJECT_DIR/logs"
 
 LOG_FILE="$PROJECT_DIR/logs/step-A-deploy-keycloak.log"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step A: Deploy Keycloak" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
 # Change to project directory
 cd "$PROJECT_DIR"
 
@@ -88,9 +83,7 @@ echo "    user/user         (sr-readonly role)" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
 
 echo "================================================================" | tee -a "$LOG_FILE"
-echo "  ✓ Step A completed successfully" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 echo "Keycloak is running and ready for authentication" | tee -a "$LOG_FILE"
 echo "Container: scenario4-keycloak" | tee -a "$LOG_FILE"
 echo "Log:       $LOG_FILE" | tee -a "$LOG_FILE"
+echo "================================================================" | tee -a "$LOG_FILE"

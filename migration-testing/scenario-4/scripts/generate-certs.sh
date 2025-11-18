@@ -132,14 +132,78 @@ openssl x509 -in "$CERTS_DIR/keycloak-cert.pem" -noout -text | grep -A1 "Subject
 echo ""
 
 # ============================================================
-# Create Combined Truststore for Clients
+# Generate Kafka Certificates
 # ============================================================
 echo "================================================================"
-echo "  Creating Combined Truststore (Registry + Keycloak)"
+echo "  Generating Kafka Certificates"
 echo "================================================================"
 echo ""
 
-echo "[1/2] Creating combined truststore with registry certificate..."
+KAFKA_KEY_ALIAS="kafka"
+KAFKA_CERT_CN="scenario4-kafka"
+KAFKA_CERT_SAN="DNS:localhost,DNS:scenario4-kafka,DNS:kafka,IP:127.0.0.1"
+
+echo "[1/5] Generating kafka private key..."
+openssl genrsa -out "$CERTS_DIR/kafka-key.pem" 2048
+echo "  ✓ Private key generated: kafka-key.pem"
+echo ""
+
+echo "[2/5] Generating kafka self-signed certificate..."
+openssl req -new -x509 -key "$CERTS_DIR/kafka-key.pem" \
+    -out "$CERTS_DIR/kafka-cert.pem" \
+    -days $CERT_VALIDITY_DAYS \
+    -subj "/CN=$KAFKA_CERT_CN/O=Apicurio Testing/OU=Migration Testing/C=US" \
+    -addext "subjectAltName=$KAFKA_CERT_SAN"
+echo "  ✓ Certificate generated: kafka-cert.pem"
+echo ""
+
+echo "[3/5] Creating Kafka JKS keystore..."
+# First create a PKCS12 keystore
+openssl pkcs12 -export \
+    -in "$CERTS_DIR/kafka-cert.pem" \
+    -inkey "$CERTS_DIR/kafka-key.pem" \
+    -out "$CERTS_DIR/kafka-temp.p12" \
+    -name "$KAFKA_KEY_ALIAS" \
+    -passout pass:$KEYSTORE_PASSWORD
+
+# Convert PKCS12 to JKS for Kafka
+keytool -importkeystore \
+    -srckeystore "$CERTS_DIR/kafka-temp.p12" \
+    -srcstoretype PKCS12 \
+    -srcstorepass "$KEYSTORE_PASSWORD" \
+    -destkeystore "$CERTS_DIR/kafka.keystore.jks" \
+    -deststoretype JKS \
+    -deststorepass "$KEYSTORE_PASSWORD" \
+    -noprompt
+
+# Clean up temporary file
+rm -f "$CERTS_DIR/kafka-temp.p12"
+echo "  ✓ JKS keystore created: kafka.keystore.jks"
+echo ""
+
+echo "[4/5] Creating Kafka JKS truststore..."
+keytool -import -trustcacerts -noprompt \
+    -alias "$KAFKA_KEY_ALIAS" \
+    -file "$CERTS_DIR/kafka-cert.pem" \
+    -keystore "$CERTS_DIR/kafka.truststore.jks" \
+    -storepass "$KEYSTORE_PASSWORD"
+echo "  ✓ JKS truststore created: kafka.truststore.jks"
+echo ""
+
+echo "[5/5] Verifying kafka certificate..."
+openssl x509 -in "$CERTS_DIR/kafka-cert.pem" -noout -text | grep -A1 "Subject:"
+openssl x509 -in "$CERTS_DIR/kafka-cert.pem" -noout -text | grep -A1 "Subject Alternative Name"
+echo ""
+
+# ============================================================
+# Create Combined Truststore for Clients
+# ============================================================
+echo "================================================================"
+echo "  Creating Combined Truststore (Registry + Keycloak + Kafka)"
+echo "================================================================"
+echo ""
+
+echo "[1/3] Creating combined truststore with registry certificate..."
 keytool -import -trustcacerts -noprompt \
     -alias "$REGISTRY_KEY_ALIAS" \
     -file "$CERTS_DIR/registry-cert.pem" \
@@ -148,13 +212,22 @@ keytool -import -trustcacerts -noprompt \
 echo "  ✓ Registry certificate imported"
 echo ""
 
-echo "[2/2] Adding keycloak certificate to combined truststore..."
+echo "[2/3] Adding keycloak certificate to combined truststore..."
 keytool -import -trustcacerts -noprompt \
     -alias "$KEYCLOAK_KEY_ALIAS" \
     -file "$CERTS_DIR/keycloak-cert.pem" \
     -keystore "$CERTS_DIR/client-truststore.jks" \
     -storepass "$KEYSTORE_PASSWORD"
 echo "  ✓ Keycloak certificate imported"
+echo ""
+
+echo "[3/3] Adding kafka certificate to combined truststore..."
+keytool -import -trustcacerts -noprompt \
+    -alias "$KAFKA_KEY_ALIAS" \
+    -file "$CERTS_DIR/kafka-cert.pem" \
+    -keystore "$CERTS_DIR/client-truststore.jks" \
+    -storepass "$KEYSTORE_PASSWORD"
+echo "  ✓ Kafka certificate imported"
 echo ""
 
 # Set appropriate permissions
@@ -166,7 +239,7 @@ chmod 644 "$CERTS_DIR"/*.jks
 cat > "$CERTS_DIR/README.md" << 'EOF'
 # SSL Certificates for Scenario 4
 
-This directory contains self-signed SSL certificates for testing TLS/HTTPS with Apicurio Registry and Keycloak.
+This directory contains self-signed SSL certificates for testing TLS/HTTPS with Apicurio Registry, Keycloak, and Kafka.
 
 ## Registry Certificate Files
 
@@ -181,12 +254,19 @@ This directory contains self-signed SSL certificates for testing TLS/HTTPS with 
 - `keycloak-cert.pem` - Self-signed certificate (PEM format)
 - `keycloak-keystore.p12` - PKCS12 keystore for Keycloak (contains private key + certificate)
 
+## Kafka Certificate Files
+
+- `kafka-key.pem` - Private key (PEM format)
+- `kafka-cert.pem` - Self-signed certificate (PEM format)
+- `kafka.keystore.jks` - JKS keystore for Kafka broker (contains private key + certificate)
+- `kafka.truststore.jks` - JKS truststore for Kafka (contains kafka certificate only)
+
 ## Combined Truststore for Client Applications
 
-- `client-truststore.jks` - JKS truststore containing **both** registry and keycloak certificates
+- `client-truststore.jks` - JKS truststore containing **all** certificates (registry, keycloak, and kafka)
 
-**Important**: Client applications need to trust both Keycloak (for OAuth token endpoint) and
-Registry (for API calls), so they should use `client-truststore.jks` instead of `registry-truststore.jks`.
+**Important**: Client applications need to trust Keycloak (for OAuth token endpoint), Registry (for API calls), and
+Kafka (for message broker connections), so they should use `client-truststore.jks`.
 
 ## Passwords
 
@@ -210,16 +290,26 @@ environment:
   KC_HTTPS_CERTIFICATE_KEY_FILE: /certs/keycloak-key.pem
 ```
 
+### Kafka Configuration
+```yaml
+environment:
+  KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.keystore.jks
+  KAFKA_SSL_KEYSTORE_PASSWORD: registry123
+  KAFKA_SSL_KEY_PASSWORD: registry123
+  KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.truststore.jks
+  KAFKA_SSL_TRUSTSTORE_PASSWORD: registry123
+```
+
 ### Java Client Configuration (v2 API)
 ```java
-// Use combined truststore for both Keycloak and Registry access
+// Use combined truststore for Keycloak, Registry, and Kafka access
 System.setProperty("javax.net.ssl.trustStore", "/path/to/client-truststore.jks");
 System.setProperty("javax.net.ssl.trustStorePassword", "registry123");
 ```
 
 ### Java Client Configuration (v3 API)
 ```java
-// Use combined truststore for both Keycloak and Registry access
+// Use combined truststore for Keycloak, Registry, and Kafka access
 RegistryClientOptions.create(registryUrl)
     .trustStoreJks("certs/client-truststore.jks", "registry123")
     .oauth2(tokenEndpoint, clientId, clientSecret);
@@ -247,8 +337,14 @@ echo "  - keycloak-key.pem (private key)"
 echo "  - keycloak-cert.pem (certificate)"
 echo "  - keycloak-keystore.p12 (for Keycloak)"
 echo ""
+echo "Kafka certificate files:"
+echo "  - kafka-key.pem (private key)"
+echo "  - kafka-cert.pem (certificate)"
+echo "  - kafka.keystore.jks (for Kafka broker)"
+echo "  - kafka.truststore.jks (for Kafka clients)"
+echo ""
 echo "Combined truststore for client applications:"
-echo "  - client-truststore.jks (contains both registry and keycloak certificates)"
+echo "  - client-truststore.jks (contains registry, keycloak, and kafka certificates)"
 echo ""
 echo "Additional files:"
 echo "  - README.md (documentation)"

@@ -61,6 +61,12 @@ fi
 if docker ps -a | grep -q scenario4-nginx; then
     docker logs scenario4-nginx > logs/containers/nginx-final.log 2>&1 || true
 fi
+if docker ps -a | grep -q scenario4-keycloak; then
+    docker logs scenario4-keycloak > logs/containers/keycloak-final.log 2>&1 || true
+fi
+if docker ps -a | grep -q scenario4-kafka; then
+    docker logs scenario4-kafka > logs/containers/kafka-final.log 2>&1 || true
+fi
 
 echo "[2/4] Stopping containers..."
 
@@ -70,6 +76,11 @@ if [ -f docker-compose-nginx-v2.yml ]; then
 fi
 if [ -f docker-compose-nginx-v3.yml ]; then
     docker compose -f docker-compose-nginx-v3.yml down 2>/dev/null || true
+fi
+
+# Stop Kafka
+if [ -f docker-compose-kafka.yml ]; then
+    docker compose -f docker-compose-kafka.yml down 2>/dev/null || true
 fi
 
 # Stop v3 (if exists)
@@ -90,12 +101,19 @@ if [ -f docker-compose-v2.yml ]; then
     fi
 fi
 
+# Stop Keycloak
+if [ -f docker-compose-keycloak.yml ]; then
+    docker compose -f docker-compose-keycloak.yml down 2>/dev/null || true
+fi
+
 echo "[3/4] Removing any orphaned containers..."
 docker ps -a | grep scenario4- | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null || true
 
 echo "[4/4] Cleaning up networks..."
 docker network rm scenario4-v2-network 2>/dev/null || true
 docker network rm scenario4-v3-network 2>/dev/null || true
+docker network rm scenario4-keycloak-network 2>/dev/null || true
+docker network rm scenario4-kafka-network 2>/dev/null || true
 
 echo ""
 if [ "$REMOVE_VOLUMES" = true ]; then

@@ -20,11 +20,6 @@ mkdir -p "$PROJECT_DIR/data"
 LOG_FILE="$PROJECT_DIR/logs/step-F-export-v2-data.log"
 EXPORT_FILE="$PROJECT_DIR/data/registry-v2-export.zip"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step F: Export Data from Registry v2" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
 # Registry URL (direct to v2, not through nginx)
 REGISTRY_URL="${REGISTRY_URL:-https://localhost:2222}"
 EXPORT_ENDPOINT="$REGISTRY_URL/apis/registry/v2/admin/export"
@@ -138,10 +133,8 @@ fi
 
 echo "" | tee -a "$LOG_FILE"
 echo "================================================================" | tee -a "$LOG_FILE"
-echo "  ✓ Step F completed successfully" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 echo "Registry v2 data exported successfully" | tee -a "$LOG_FILE"
 echo "Export file: $EXPORT_FILE" | tee -a "$LOG_FILE"
 echo "File size:   $FILE_SIZE" | tee -a "$LOG_FILE"
 echo "Log:         $LOG_FILE" | tee -a "$LOG_FILE"
+echo "================================================================" | tee -a "$LOG_FILE"

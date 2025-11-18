@@ -19,11 +19,6 @@ mkdir -p "$PROJECT_DIR/logs/containers"
 
 LOG_FILE="$PROJECT_DIR/logs/step-B-deploy-nginx.log"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step B: Deploy Nginx Load Balancer" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
 # Navigate to project directory
 cd "$PROJECT_DIR"
 
@@ -66,9 +61,6 @@ fi
 
 echo "" | tee -a "$LOG_FILE"
 echo "================================================================" | tee -a "$LOG_FILE"
-echo "  ✅ Step B completed successfully" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 echo "Nginx is running with TLS passthrough at: https://localhost:8443" | tee -a "$LOG_FILE"
 echo "Currently routing to: Registry v2 (2.6.x)" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
@@ -87,3 +79,4 @@ docker logs scenario4-nginx > "$PROJECT_DIR/logs/containers/nginx-initial.log" 2
 echo "Logs saved to:" | tee -a "$LOG_FILE"
 echo "  - $LOG_FILE" | tee -a "$LOG_FILE"
 echo "  - $PROJECT_DIR/logs/containers/nginx-initial.log" | tee -a "$LOG_FILE"
+echo "================================================================" | tee -a "$LOG_FILE"

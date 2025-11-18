@@ -22,11 +22,12 @@ public class ArtifactCountValidator {
     private final ValidationReport report;
 
     // Expected counts from test data creation
-    private static final int EXPECTED_TOTAL_ARTIFACTS = 25;
+    // Note: Includes 1 additional AVRO artifact (GreetingMessage) from Kafka producer (step-F)
+    private static final int EXPECTED_TOTAL_ARTIFACTS = 26;
     private static final Map<String, Integer> EXPECTED_BY_TYPE = new HashMap<>();
 
     static {
-        EXPECTED_BY_TYPE.put("AVRO", 10);
+        EXPECTED_BY_TYPE.put("AVRO", 11);  // 10 from step-E + 1 from step-F (Kafka producer)
         EXPECTED_BY_TYPE.put("PROTOBUF", 5);
         EXPECTED_BY_TYPE.put("JSON", 5);
         EXPECTED_BY_TYPE.put("OPENAPI", 3);

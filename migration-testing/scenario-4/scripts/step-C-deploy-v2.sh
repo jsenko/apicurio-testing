@@ -19,11 +19,6 @@ mkdir -p "$PROJECT_DIR/logs/containers"
 
 LOG_FILE="$PROJECT_DIR/logs/step-A-deploy-v2.log"
 
-echo "================================================================" | tee "$LOG_FILE"
-echo "  Step A: Deploy Apicurio Registry 2.6.13" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
-
 # Navigate to project directory
 cd "$PROJECT_DIR"
 
@@ -89,9 +84,6 @@ fi
 
 echo "" | tee -a "$LOG_FILE"
 echo "================================================================" | tee -a "$LOG_FILE"
-echo "  ✅ Step A completed successfully" | tee -a "$LOG_FILE"
-echo "================================================================" | tee -a "$LOG_FILE"
-echo "" | tee -a "$LOG_FILE"
 echo "Registry v2 is running at: http://localhost:2222" | tee -a "$LOG_FILE"
 echo "PostgreSQL is running at: localhost:5432" | tee -a "$LOG_FILE"
 echo "" | tee -a "$LOG_FILE"
@@ -109,3 +101,4 @@ echo "Logs saved to:" | tee -a "$LOG_FILE"
 echo "  - $LOG_FILE" | tee -a "$LOG_FILE"
 echo "  - $PROJECT_DIR/logs/containers/postgres-v2-initial.log" | tee -a "$LOG_FILE"
 echo "  - $PROJECT_DIR/logs/containers/registry-v2-initial.log" | tee -a "$LOG_FILE"
+echo "================================================================" | tee -a "$LOG_FILE"
