@@ -757,6 +757,85 @@ APICURIO_KAFKASQL_TOPIC=kafkasql-journal-v3
 
 IMPORTANT: Use a different topic name for v3 (`kafkasql-journal-v3`) than v2 (`kafkasql-journal-v2`). The v3 journal format is incompatible with v2.
 
+=== KafkaSQL storage deep dive
+
+The KafkaSQL storage implementation has been completely re-engineered in {registry} 3.x with significant architectural improvements.
+
+==== Architectural changes in v3
+
+{registry} 3.x introduces a fundamentally different KafkaSQL implementation:
+
+* **True journaling approach**: The new implementation uses a true event journaling pattern
+* **No log compaction**: Unlike v2, the v3 implementation does not rely on Kafka log compaction
+* **Immutable event log**: All registry operations are stored as immutable events in the journal topic
+* **Improved consistency**: Better handling of concurrent operations and edge cases
+
+==== Kafka topic configuration
+
+The v3 KafkaSQL journal topic requires specific Kafka topic settings:
+
+*Cleanup policy:*
+
+[source,properties]
+----
+# v3 KafkaSQL topic must use "delete" cleanup policy (NOT "compact")
+cleanup.policy=delete
+
+# Set infinite retention to preserve all journal events
+retention.ms=-1
+retention.bytes=-1
+----
+
+IMPORTANT: The journal topic must have `cleanup.policy=delete` with infinite retention (`retention.ms=-1`). Do not use log compaction. All journal events must be preserved for proper registry operation.
+
+*Creating the topic:*
+
+[source,bash]
+----
+# Create v3 KafkaSQL topic with correct settings
+kafka-topics.sh --bootstrap-server kafka:9092 --create \
+  --topic kafkasql-journal-v3 \
+  --partitions 1 \
+  --replication-factor 3 \
+  --config cleanup.policy=delete \
+  --config retention.ms=-1 \
+  --config retention.bytes=-1
+----
+
+*Verifying topic configuration:*
+
+[source,bash]
+----
+# Check topic configuration
+kafka-topics.sh --bootstrap-server kafka:9092 --describe \
+  --topic kafkasql-journal-v3
+
+# Should show:
+#   cleanup.policy=delete
+#   retention.ms=-1
+#   retention.bytes=-1
+----
+
+==== Snapshotting feature (advanced)
+
+{registry} 3.x KafkaSQL includes an optional snapshotting feature for advanced use cases.
+
+*What is snapshotting?*
+
+Snapshotting creates periodic database snapshots of the registry state, which provides:
+
+* **Faster startup times**: Registry can load from snapshot instead of replaying entire journal
+* **Backup capability**: Snapshots can be used for disaster recovery
+* **Journal compaction**: Older journal events can be safely removed after snapshot
+
+*When to use snapshotting:*
+
+* Large registries with many artifacts (thousands+)
+* Long-running deployments with growing journal topics
+* Need for faster registry startup/recovery times
+
+NOTE: Snapshotting is an advanced feature. Most deployments do not need snapshotting enabled. Consult the official {registry} documentation for more information on how to configure and use the snapshotting feature.
+
 === Authentication and authorization
 
 Authentication configuration changes significantly in 3.x, particularly for OAuth2/OIDC integration.
