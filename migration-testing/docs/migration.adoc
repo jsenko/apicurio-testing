@@ -653,141 +653,386 @@ Install the TypeScript, Python, or Go SDKs through the respective package manage
 [role="_abstract"]
 Configuration keys in {registry} 3.x adopt a unified `apicurio.` namespace and reorganize authentication, eventing, UI, and storage settings. Review and update your deployment descriptors so that server-side properties match the new naming scheme.
 
-=== Naming convention changes
-Most configuration properties now start with the `apicurio.` prefix. The following examples illustrate common mappings:
+IMPORTANT: Configuration property changes are extensive in 3.x. Review all sections carefully and test in a staging environment before migrating production deployments.
+
+=== Overview of configuration changes
+
+{registry} 3.x introduces major configuration changes:
+
+* **Namespace consolidation**: Most properties now use `apicurio.` prefix
+* **Storage configuration**: Database settings moved out of `quarkus.datasource.*` namespace
+* **Authentication**: OAuth2/OIDC configuration uses full realm URLs
+* **KafkaSQL**: New `apicurio.kafkasql.*` namespace with different topic requirements
+* **API features**: New granular deletion control properties
+
+=== Storage configuration
+
+==== SQL storage (PostgreSQL, MySQL, H2)
+
+{registry} 3.x requires separate database instances or schemas for v2 and v3 due to schema incompatibility.
 
 [cols="1,1",options="header"]
 |===
 | Registry 2.x property
 | Registry 3.x property
 
-| `registry.auth.roles.admin`
-| `apicurio.auth.roles.admin`
+| `REGISTRY_DATASOURCE_URL`
+| `APICURIO_DATASOURCE_URL`
 
-| `registry.events.kafka.topic`
-| `apicurio.events.kafka.topic`
+| `REGISTRY_DATASOURCE_USERNAME`
+| `APICURIO_DATASOURCE_USERNAME`
 
-| `registry.rest.artifact.deletion.enabled`
-| `apicurio.rest.deletion.artifact.enabled`
+| `REGISTRY_DATASOURCE_PASSWORD`
+| `APICURIO_DATASOURCE_PASSWORD`
+
+| `QUARKUS_DATASOURCE_DB_KIND`
+| Not required (auto-detected from URL)
+
+| `REGISTRY_SQL_INIT`
+| `APICURIO_SQL_INIT`
+
+| Not applicable
+| `APICURIO_STORAGE_KIND=sql` (required)
+
+| Not applicable
+| `APICURIO_STORAGE_SQL_KIND` (postgresql, mysql, h2)
 |===
+
+*Example migration:*
+
+[source,properties]
+----
+# Registry 2.x SQL configuration
+REGISTRY_DATASOURCE_URL=jdbc:postgresql://postgres:5432/registry
+REGISTRY_DATASOURCE_USERNAME=apicurio
+REGISTRY_DATASOURCE_PASSWORD=password123
+QUARKUS_DATASOURCE_DB_KIND=postgresql
+
+# Registry 3.x SQL configuration
+APICURIO_STORAGE_KIND=sql
+APICURIO_STORAGE_SQL_KIND=postgresql
+APICURIO_DATASOURCE_URL=jdbc:postgresql://postgres:5432/registry_v3
+APICURIO_DATASOURCE_USERNAME=apicurio
+APICURIO_DATASOURCE_PASSWORD=password123
+----
+
+IMPORTANT: Use separate database instances or different database names for v2 and v3. The v3 database schema is incompatible with v2.
+
+==== KafkaSQL storage
+
+{registry} 3.x requires a different Kafka topic than v2 because the journal format is incompatible.
+
+[cols="1,1",options="header"]
+|===
+| Registry 2.x property
+| Registry 3.x property
+
+| `KAFKA_BOOTSTRAP_SERVERS`
+| `APICURIO_KAFKASQL_BOOTSTRAP_SERVERS`
+
+| `REGISTRY_KAFKASQL_TOPIC`
+| `APICURIO_KAFKASQL_TOPIC`
+
+| `REGISTRY_KAFKASQL_CONSUMER_GROUP_ID`
+| `APICURIO_KAFKASQL_CONSUMER_GROUP_ID` (optional)
+
+| Not applicable
+| `APICURIO_STORAGE_KIND=kafkasql` (required)
+|===
+
+*Example migration:*
+
+[source,properties]
+----
+# Registry 2.x KafkaSQL configuration
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+REGISTRY_KAFKASQL_TOPIC=kafkasql-journal-v2
+REGISTRY_KAFKASQL_CONSUMER_GROUP_ID=registry-v2-consumer
+
+# Registry 3.x KafkaSQL configuration
+APICURIO_STORAGE_KIND=kafkasql
+APICURIO_KAFKASQL_BOOTSTRAP_SERVERS=kafka:9092
+APICURIO_KAFKASQL_TOPIC=kafkasql-journal-v3
+----
+
+IMPORTANT: Use a different topic name for v3 (`kafkasql-journal-v3`) than v2 (`kafkasql-journal-v2`). The v3 journal format is incompatible with v2.
 
 === Authentication and authorization
-Authentication settings continue to rely on Quarkus OIDC support, but role-based properties moved to the new namespace. Update the property names and review any removed options:
+
+Authentication configuration changes significantly in 3.x, particularly for OAuth2/OIDC integration.
 
 [cols="1,1",options="header"]
 |===
 | Registry 2.x property
 | Registry 3.x property
 
-| `registry.auth.enabled`
-| `quarkus.oidc.enabled`
+| `AUTH_ENABLED`
+| `QUARKUS_OIDC_TENANT_ENABLED`
 
-| `registry.auth.role-source`
-| `apicurio.auth.role-source`
+| `KEYCLOAK_URL`
+| Use `QUARKUS_OIDC_AUTH_SERVER_URL` with full realm path
 
-| `registry.auth.anonymous-read-access.enabled`
-| `apicurio.auth.anonymous-read-access.enabled`
+| `KEYCLOAK_REALM`
+| Included in `QUARKUS_OIDC_AUTH_SERVER_URL`
 
-| `registry.auth.oidc.client-id`
-| `quarkus.oidc.client-id`
+| `KEYCLOAK_API_CLIENT_ID`
+| `QUARKUS_OIDC_CLIENT_ID`
 
-| `registry.auth.oidc.token-endpoint`
-| `quarkus.oidc.token-path`
+| `ROLE_BASED_AUTHZ_ENABLED`
+| `APICURIO_AUTH_ROLE-BASED-AUTHORIZATION`
+
+| `REGISTRY_AUTH_ROLES_ADMIN`
+| `APICURIO_AUTH_ROLES.ADMIN`
+
+| `REGISTRY_AUTH_ROLES_DEVELOPER`
+| `APICURIO_AUTH_ROLES.DEVELOPER`
+
+| `REGISTRY_AUTH_ROLES_READONLY`
+| `APICURIO_AUTH_ROLES.READONLY`
+
+| `QUARKUS_OIDC_TLS_VERIFICATION`
+| `QUARKUS_OIDC_TLS_VERIFICATION` (same)
 |===
+
+*Example migration with Keycloak:*
 
 [source,properties]
 ----
-# Registry 2.x
-registry.auth.enabled=true
-registry.auth.roles.admin=admin
-registry.auth.oidc.client-id=my-client
+# Registry 2.x authentication
+AUTH_ENABLED=true
+KEYCLOAK_URL=https://keycloak:8443
+KEYCLOAK_REALM=registry
+KEYCLOAK_API_CLIENT_ID=registry-api
+ROLE_BASED_AUTHZ_ENABLED=true
+REGISTRY_AUTH_ROLES_ADMIN=sr-admin
+REGISTRY_AUTH_ROLES_DEVELOPER=sr-developer
+REGISTRY_AUTH_ROLES_READONLY=sr-readonly
 
-# Registry 3.x
-quarkus.oidc.enabled=true
-apicurio.auth.roles.admin=admin
-quarkus.oidc.client-id=my-client
+# Registry 3.x authentication
+QUARKUS_OIDC_TENANT_ENABLED=true
+QUARKUS_OIDC_AUTH_SERVER_URL=https://keycloak:8443/realms/registry
+QUARKUS_OIDC_CLIENT_ID=registry-api
+APICURIO_AUTH_ROLE-BASED-AUTHORIZATION=true
+APICURIO_AUTH_ROLES_ADMIN=sr-admin
+APICURIO_AUTH_ROLES_DEVELOPER=sr-developer
+APICURIO_AUTH_ROLES_READONLY=sr-readonly
 ----
 
-=== Eventing and Kafka storage
-Kafka-related settings now share the `apicurio.kafkasql` prefix. Update both event notifications and Kafka storage properties:
+IMPORTANT: In v3, `QUARKUS_OIDC_AUTH_SERVER_URL` must include the full realm path (`/realms/registry`). In v2, the realm was specified separately.
+
+=== API and deletion configuration
+
+{registry} 3.x introduces granular control over deletion operations.
 
 [cols="1,1",options="header"]
 |===
 | Registry 2.x property
 | Registry 3.x property
 
-| `registry.events.kafka.topic`
-| `apicurio.events.kafka.topic`
+| `REGISTRY_REST_ARTIFACT_DELETION_ENABLED`
+| `APICURIO_REST_DELETION_ARTIFACT_ENABLED`
 
-| `registry.kafkasql.bootstrap.servers`
-| `apicurio.kafkasql.bootstrap.servers`
+| Not available
+| `APICURIO_REST_DELETION_ARTIFACT-VERSION_ENABLED`
 
-| `registry.kafkasql.topic.auto-create`
-| `apicurio.kafkasql.topic.auto-create`
+| Not available
+| `APICURIO_REST_DELETION_GROUP_ENABLED`
+
+| `REGISTRY_UI_FEATURES_READONLY`
+| `APICURIO_UI_FEATURES_READ-ONLY_ENABLED`
+
+| `CORS_ALLOWED_ORIGINS`
+| `QUARKUS_HTTP_CORS_ORIGINS`
 |===
+
+*Example migration:*
 
 [source,properties]
 ----
-# Registry 3.x example
-apicurio.events.kafka.topic=my-registry-events
-apicurio.kafkasql.bootstrap.servers=kafka:9092
-apicurio.kafkasql.topic=my-registry-storage
-apicurio.kafkasql.topic.auto-create=true
+# Registry 2.x API configuration
+REGISTRY_REST_ARTIFACT_DELETION_ENABLED=true
+REGISTRY_UI_FEATURES_READONLY=false
+CORS_ALLOWED_ORIGINS=*
+
+# Registry 3.x API configuration
+APICURIO_REST_DELETION_ARTIFACT_ENABLED=true
+APICURIO_REST_DELETION_ARTIFACT-VERSION_ENABLED=true
+APICURIO_REST_DELETION_GROUP_ENABLED=true
+APICURIO_UI_FEATURES_READ-ONLY_ENABLED=false
+QUARKUS_HTTP_CORS_ORIGINS=*
 ----
 
-=== UI and API configuration
-The UI configuration is now grouped under `apicurio.ui.*`, and API diagnostics align with the new hierarchy:
+=== TLS/HTTPS configuration
+
+TLS configuration remains unchanged between v2 and v3 for server-side settings:
 
 [cols="1,1",options="header"]
 |===
 | Registry 2.x property
 | Registry 3.x property
 
-| `registry.ui.contextPath`
-| `apicurio.ui.contextPath`
+| `QUARKUS_HTTP_SSL_PORT`
+| `QUARKUS_HTTP_SSL_PORT` (same)
 
-| `registry.ui.features.readOnly`
-| `apicurio.ui.features.read-only.enabled`
+| `QUARKUS_HTTP_SSL_CERTIFICATE_KEY_STORE_FILE`
+| `QUARKUS_HTTP_SSL_CERTIFICATE_KEY_STORE_FILE` (same)
 
-| `registry.ui.auth.oidc.redirect-url`
-| `apicurio.ui.auth.oidc.redirect-uri`
+| `QUARKUS_HTTP_SSL_CERTIFICATE_KEY_STORE_PASSWORD`
+| `QUARKUS_HTTP_SSL_CERTIFICATE_KEY_STORE_PASSWORD` (same)
 
-| `registry.api.errors.include-stack-in-response`
-| `apicurio.api.errors.include-stack-in-response`
+| `QUARKUS_HTTP_INSECURE_REQUESTS`
+| `QUARKUS_HTTP_INSECURE_REQUESTS` (same)
 |===
 
-=== Storage and database configuration
-Database settings moved out of the Quarkus datasource namespace. Update JDBC configuration and storage selection properties:
+*Example (same for v2 and v3):*
 
-[cols="1,1",options="header"]
-|===
-| Registry 2.x property
-| Registry 3.x property
+[source,properties]
+----
+# TLS configuration (unchanged)
+QUARKUS_HTTP_SSL_PORT=8443
+QUARKUS_HTTP_SSL_CERTIFICATE_KEY_STORE_FILE=/certs/registry-keystore.p12
+QUARKUS_HTTP_SSL_CERTIFICATE_KEY_STORE_PASSWORD=password123
+QUARKUS_HTTP_INSECURE_REQUESTS=disabled
+----
 
-| `quarkus.datasource.jdbc.url`
-| `apicurio.datasource.url`
-
-| `quarkus.datasource.username`
-| `apicurio.datasource.username`
-
-| `registry.sql.init`
-| `apicurio.sql.init`
-
-| `registry.storage.kind`
-| `apicurio.storage.kind`
-|===
+NOTE: TLS configuration is identical for v2 and v3. You can reuse the same certificates.
 
 === Migration checklist
 
-. Inventory all configuration files, including deployment manifests and `application.properties`.
-. Translate properties to their 3.x equivalents using the mappings in this section.
-. Start a staging deployment of {registry} 3.x with the updated configuration and monitor logs for deprecated or unknown keys.
-. Validate UI login flows, rule enforcement, and storage connectivity before promoting to production.
+. Inventory all configuration files, including deployment manifests, `application.properties`, and environment variables.
+. Create a mapping spreadsheet documenting v2 properties and their v3 equivalents.
+. Update configuration for v3 deployment:
+  * Storage: Change database name or topic name
+  * Authentication: Update to full realm URL format
+  * Properties: Apply `apicurio.*` namespace
+. Deploy v3 to staging environment with updated configuration.
+. Monitor startup logs for configuration errors or warnings.
+. Test all functionality:
+  * Storage connectivity
+  * Authentication and authorization
+  * API operations (create, read, update, delete)
+  * UI access
+. Document any custom or undocumented properties for future reference.
 
-=== Common issues and resolutions
-* *Authentication failures*: confirm that `apicurio.auth.roles.*` properties mirror the expected role names and that OIDC redirect URIs use the new property names.
-* *Missing Kafka settings*: verify that all Kafka-related properties use the `apicurio.kafkasql` prefix and that optional settings removed in 3.x are not still present.
-* *Database connection errors*: ensure you migrated JDBC settings out of the `quarkus.datasource.*` namespace and updated secrets or ConfigMaps accordingly.
+=== Common configuration issues and solutions
+
+==== Issue: v3 fails to start with "Storage not configured"
+
+*Symptoms:*
+* Registry pod/container fails to start
+* Logs show: `Storage kind not configured`
+
+*Cause:* Missing `APICURIO_STORAGE_KIND` property.
+
+*Solution:*
+
+[source,properties]
+----
+# For SQL storage
+APICURIO_STORAGE_KIND=sql
+APICURIO_STORAGE_SQL_KIND=postgresql
+
+# For KafkaSQL storage
+APICURIO_STORAGE_KIND=kafkasql
+----
+
+==== Issue: v3 authentication fails with "User is not authenticated"
+
+*Symptoms:*
+* All API requests return 401 Unauthorized
+* Even with valid access token
+
+*Cause:* Incorrect OAuth2/OIDC configuration, typically missing realm path.
+
+*Solution:*
+
+Check that `QUARKUS_OIDC_AUTH_SERVER_URL` includes the full realm path:
+
+[source,properties]
+----
+# Wrong (v2 style)
+QUARKUS_OIDC_AUTH_SERVER_URL=https://keycloak:8443
+
+# Correct (v3 requires realm path)
+QUARKUS_OIDC_AUTH_SERVER_URL=https://keycloak:8443/realms/registry
+----
+
+Verify Keycloak is accessible from the registry container:
+
+[source,bash]
+----
+curl -k https://keycloak:8443/realms/registry/.well-known/openid-configuration
+----
+
+==== Issue: Database connection fails
+
+*Symptoms:*
+* Registry fails to start
+* Logs show JDBC connection errors
+
+*Cause:* Using old `REGISTRY_DATASOURCE_*` or `QUARKUS_DATASOURCE_*` properties.
+
+*Solution:*
+
+Update to v3 datasource properties:
+
+[source,properties]
+----
+# Remove these v2 properties
+# REGISTRY_DATASOURCE_URL=...
+# REGISTRY_DATASOURCE_USERNAME=...
+
+# Use v3 properties
+APICURIO_DATASOURCE_URL=jdbc:postgresql://postgres:5432/registry_v3
+APICURIO_DATASOURCE_USERNAME=apicurio
+APICURIO_DATASOURCE_PASSWORD=password123
+----
+
+==== Issue: CORS errors in browser when accessing UI
+
+*Symptoms:*
+* UI loads but API calls fail
+* Browser console shows CORS errors
+
+*Cause:* CORS property name changed in v3.
+
+*Solution:*
+
+[source,properties]
+----
+# Wrong (v2 property name)
+CORS_ALLOWED_ORIGINS=*
+
+# Correct (v3 property name)
+QUARKUS_HTTP_CORS_ORIGINS=*
+----
+
+==== Issue: Role-based authorization not working
+
+*Symptoms:*
+* Users can access registry but cannot perform admin operations
+* No 403 Forbidden errors, but operations fail silently
+
+*Cause:* Role configuration properties not updated to v3 namespace.
+
+*Solution:*
+
+[source,properties]
+----
+# Update all role properties
+APICURIO_AUTH_ROLE-BASED-AUTHORIZATION=true
+APICURIO_AUTH_ROLES.ADMIN=sr-admin
+APICURIO_AUTH_ROLES.DEVELOPER=sr-developer
+APICURIO_AUTH_ROLES.READONLY=sr-readonly
+----
+
+Verify user has correct roles in Keycloak and token includes expected roles:
+
+[source,bash]
+----
+# Decode JWT token to check roles
+echo $ACCESS_TOKEN | cut -d. -f2 | base64 -d | jq .realm_access.roles
+----
 
 [role="_additional-resources"]
 .Additional resources
