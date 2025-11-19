@@ -1118,6 +1118,264 @@ echo $ACCESS_TOKEN | cut -d. -f2 | base64 -d | jq .realm_access.roles
 * {LinkServiceRegistryUser}[{NameServiceRegistryUser}]
 
 
+[id="user-interface_{context}"]
+== User interface
+
+[role="_abstract"]
+{registry} 3.x introduces a significant architectural change to the user interface. The UI is now deployed as a separate container, providing more deployment flexibility but requiring additional configuration considerations during migration.
+
+=== Architectural changes
+
+==== Separate UI container
+
+In {registry} {registry-v2}, the UI was built into the main `apicurio-registry` container as a single monolithic application. {registry} 3.x separates the UI into its own container:
+
+*Registry 2.x architecture:*
+
+----
+┌─────────────────────────────┐
+│  apicurio-registry-sql:2.x  │
+│  ┌───────────┬────────────┐ │
+│  │    UI     │    API     │ │
+│  └───────────┴────────────┘ │
+└─────────────────────────────┘
+----
+
+*Registry 3.x architecture:*
+
+----
+┌────────────────────┐    ┌────────────────────┐
+│ apicurio-registry  │    │ apicurio-registry  │
+│       -ui:3.x      │    │       :3.x         │
+│                    │    │                    │
+│   UI (Frontend)    │───▶│   API (Backend)    │
+└────────────────────┘    └────────────────────┘
+----
+
+*Implications for migration:*
+
+* Two containers to deploy and manage instead of one
+* Additional networking configuration required
+* More flexible deployment options
+* Independent scaling of UI and API components
+
+=== Deployment options
+
+You have flexibility in how you deploy the UI container in relation to the API container.
+
+==== Option 1: Separate subdomains (recommended)
+
+Deploy UI and API to separate subdomains:
+
+[source,yaml]
+----
+# UI accessible at: https://registry-ui.example.com
+apicurio-registry-ui:
+  image: apicurio/apicurio-registry-ui:3.1.2
+  ports:
+    - "443:8443"
+  environment:
+    - REGISTRY_API_URL=https://registry-api.example.com/apis/registry/v3
+
+# API accessible at: https://registry-api.example.com
+apicurio-registry:
+  image: apicurio/apicurio-registry:3.1.2
+  ports:
+    - "443:8443"
+----
+
+*Benefits:*
+* Clean separation of concerns
+* Independent DNS configuration
+* Easier to scale components independently
+
+==== Option 2: Co-located with reverse proxy
+
+Use a reverse proxy (nginx, HAProxy) to serve both UI and API from the same domain:
+
+[source,yaml]
+----
+# Example: nginx routing configuration
+# UI at: https://registry.example.com/ui/
+# API at: https://registry.example.com/app/
+
+services:
+  apicurio-registry:
+    image: apicurio/apicurio-registry:3.1.2
+    environment:
+      - apicurio.app.context-path=/app/
+      - QUARKUS_HTTP_CORS_ORIGINS=*
+
+  apicurio-registry-ui:
+    image: apicurio/apicurio-registry-ui:3.1.2
+    environment:
+      - REGISTRY_CONTEXT_PATH=/ui/
+      - REGISTRY_API_URL=/app/apis/registry/v3
+      - REGISTRY_DOCS_URL=/ui/docs/
+      - REGISTRY_EDITORS_URL=/ui/editors/
+
+  nginx:
+    image: nginx
+    ports:
+      - "443:8443"
+    # nginx.conf routes:
+    #   /ui/* → apicurio-registry-ui
+    #   /app/* → apicurio-registry
+----
+
+*Benefits:*
+* Single domain for users
+* Simpler certificate management
+* Avoids CORS complexity
+
+=== Configuration
+
+==== Application container configuration (primary)
+
+Most UI configuration is done through the *application (API) container*, not the UI container. The application serves UI configuration to the frontend.
+
+*Available UI properties (configured on application container):*
+
+[cols="1,2,1",options="header"]
+|===
+| Property
+| Description
+| Default
+
+| `apicurio.ui.contextPath`
+| Context path of the UI
+| `/`
+
+| `apicurio.ui.navPrefixPath`
+| Navigation prefix for all UI paths
+| `/`
+
+| `apicurio.ui.docsUrl`
+| URL of the documentation component
+| `/docs/`
+
+| `apicurio.ui.editorsUrl`
+| URL of the editors component (Designer)
+| `/editors/`
+
+| `apicurio.ui.auth.oidc.redirect-uri`
+| OAuth2/OIDC redirect URI
+| `/`
+
+| `apicurio.ui.auth.oidc.client-id`
+| OAuth2/OIDC client ID for UI
+| `apicurio-registry-ui`
+
+| `apicurio.ui.auth.oidc.logout-url`
+| OAuth2/OIDC logout URL
+| `f5`
+
+| `apicurio.ui.auth.oidc.scope`
+| OAuth2/OIDC scope
+| `openid profile email`
+
+| `apicurio.ui.features.read-only.enabled`
+| Enable read-only mode for UI
+| `false`
+
+| `apicurio.ui.features.breadcrumbs`
+| Show breadcrumbs in UI
+| `true`
+
+| `apicurio.ui.features.settings`
+| Show Settings tab in UI
+| `true`
+|===
+
+*Example application container configuration:*
+
+[source,properties]
+----
+# UI configuration (on apicurio-registry container)
+apicurio.ui.contextPath=/
+apicurio.ui.editorsUrl=/editors/
+apicurio.ui.auth.oidc.client-id=registry-ui-client
+apicurio.ui.auth.oidc.scope=openid profile email
+apicurio.ui.features.read-only.enabled=false
+----
+
+==== UI container configuration (overrides)
+
+The UI container has its own environment variables that can *override* the application configuration, but these are typically not needed.
+
+*Common UI container environment variables:*
+
+[cols="1,2",options="header"]
+|===
+| Environment Variable
+| Description
+
+| `REGISTRY_API_URL`
+| *Required*: URL to the backend API (e.g., `http://registry-api:8080/apis/registry/v3`)
+
+| `REGISTRY_CONTEXT_PATH`
+| Override for UI context path
+
+| `REGISTRY_NAV_PREFIX_PATH`
+| Override for navigation prefix path
+
+| `REGISTRY_DOCS_URL`
+| Override for documentation URL
+
+| `REGISTRY_EDITORS_URL`
+| Override for editors (Designer) URL
+
+| `REGISTRY_AUTH_URL`
+| Override for OAuth2/OIDC auth server URL
+
+| `REGISTRY_AUTH_CLIENT_ID`
+| Override for OAuth2/OIDC client ID
+
+| `REGISTRY_FEATURE_READ_ONLY`
+| Override for read-only mode (`true` or `false`)
+|===
+
+IMPORTANT: The only *required* UI container property is `REGISTRY_API_URL`. All other UI configuration should be done on the application container using `apicurio.ui.*` properties.
+
+=== Designer functionality (formerly Apicurio Studio)
+
+{registry} 3.1.0 introduces integrated Designer functionality, which replaces the standalone Apicurio Studio project.
+
+==== What is Designer?
+
+Designer provides visual editing capabilities for OpenAPI and AsyncAPI specifications directly within the {registry} UI. This functionality was previously available as a separate project (Apicurio Studio) but is now fully integrated into {registry}.
+
+*Key features:*
+
+* Visual editor for OpenAPI 3.x specifications
+* Visual editor for AsyncAPI specifications
+* Draft artifact version state for work-in-progress designs
+* Direct integration with {registry} storage
+* No separate deployment required
+
+==== Enabling Designer
+
+Designer functionality requires enabling content mutability for artifact versions:
+
+[source,properties]
+----
+# Enable Designer functionality
+apicurio.rest.mutability.artifact-version-content.enabled=true
+----
+
+When enabled, users can:
+
+* Create draft versions of artifacts
+* Edit draft content using the visual editor
+* Save changes iteratively
+* Finalize drafts to create immutable versions
+
+[role="_additional-resources"]
+.Additional resources
+* {LinkServiceRegistryUser}[{NameServiceRegistryUser}] - User Interface Configuration
+* Apicurio Studio Deprecation Announcement: https://www.apicur.io/blog/2025/10/23/studio-fully-deprecated
+
+
 [id="migration-scripts_{context}"]
 == Migration scripts reference
 
