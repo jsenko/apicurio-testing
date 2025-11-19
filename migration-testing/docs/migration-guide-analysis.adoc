@@ -2708,8 +2708,6 @@ Based on the analysis, here's the recommended reorganization of the migration gu
 3. **NEW: Complete Migration Workflow**
    - Step-by-step integrated procedure
    - Phase-based approach with checkpoints
-   - Time estimates
-   - Validation gates
 
 4. Migrating Registry Data (ENHANCED)
    - Export/import procedures (with authentication)
