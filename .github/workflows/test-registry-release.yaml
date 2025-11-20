@@ -547,7 +547,6 @@ jobs:
       NAMESPACE: keycloak26
       PROFILE: authn
       KEYCLOAK_VERSION: 26.3.1
-      KEYCLOAK_OPERATOR_VERSION: 26.4.5
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -573,7 +572,7 @@ jobs:
 
       - name: Install Keycloak Operator
         run: |
-          ./install-keycloak-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --keycloakVersion $KEYCLOAK_OPERATOR_VERSION
+          ./install-keycloak-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --keycloakVersion $KEYCLOAK_VERSION
 
       - name: Install Keycloak
         run: |
@@ -598,14 +597,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os419
-    if: always()  # Re-enabled - fixed feature compatibility issue
+    if: always()
 
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: keycloak22
       PROFILE: authn
       KEYCLOAK_VERSION: 22.0.3
-      KEYCLOAK_OPERATOR_VERSION: 22.0.3
+      KEYCLOAK_OPERATOR_VERSION: 26.4.5
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

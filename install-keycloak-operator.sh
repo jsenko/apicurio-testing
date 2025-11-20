@@ -9,26 +9,22 @@ source "$BASE_DIR/shared.sh"
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> --keycloakVersion <version> [OPTIONS]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [--keycloakVersion <version>] [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
     echo "  --namespace <namespace>         Kubernetes namespace to deploy Keycloak operator into"
-    echo "  --keycloakVersion <version>     Keycloak operator version to install (e.g., 22.0.3, 26.4.5)"
     echo ""
     echo "OPTIONAL PARAMETERS:"
     echo "  --cluster <name>                Name of the OpenShift cluster where Keycloak will be installed (default: \$USER)"
+    echo "  --keycloakVersion <version>     (Deprecated) Operator version - now uses latest from fast channel"
     echo "  -h, --help                      Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
-    echo "  # Install Keycloak operator v22.0.3 for Keycloak 22:"
-    echo "  $0 --cluster okd419 --namespace keycloak-ns --keycloakVersion 22.0.3"
-    echo ""
-    echo "  # Install Keycloak operator v26.4.5 for Keycloak 26:"
-    echo "  $0 --cluster okd419 --namespace keycloak-ns --keycloakVersion 26.4.5"
+    echo "  # Install latest Keycloak operator from fast channel:"
+    echo "  $0 --cluster okd419 --namespace keycloak-ns"
     echo ""
     echo "NOTES:"
-    echo "  - The operator version must exist in the OLM catalog"
-    echo "  - Use operator version that matches your Keycloak version (e.g., 22.0.3 for KC 22.x)"
+    echo "  - The operator is installed from the 'fast' channel which contains the latest stable version"
     echo "  - The cluster must already exist and be properly configured"
     echo "  - Kubeconfig file must be present at clusters/<cluster_name>/auth/kubeconfig"
 }
@@ -71,10 +67,9 @@ if [ -z "$NAMESPACE" ]; then
     exit 1
 fi
 
-if [ -z "$KEYCLOAK_OPERATOR_VERSION" ]; then
-    echo "Error: --keycloakVersion argument is required"
-    show_usage
-    exit 1
+# keycloakVersion is now optional (deprecated) - we use latest from fast channel
+if [ -n "$KEYCLOAK_OPERATOR_VERSION" ]; then
+    echo "Warning: --keycloakVersion is deprecated and will be ignored. Using latest from fast channel."
 fi
 
 # Validate namespace contains only letters and numbers

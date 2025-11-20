@@ -392,8 +392,20 @@ for template_file in "$KEYCLOAK_TEMPLATE_DIR"/*.yaml; do
     if [ -f "$template_file" ]; then
         # Get the filename without the path
         filename=$(basename "$template_file")
+
+        # Skip version-specific templates (they're handled separately)
+        if [[ "$filename" == *.v* ]]; then
+            continue
+        fi
+
         echo "Processing template: $filename"
-        
+
+        # For Keycloak CR, use version-specific template if Keycloak 22.x
+        if [[ "$filename" == "50-Keycloak.Keycloak.yaml" && "$KEYCLOAK_VERSION" =~ ^22\. ]]; then
+            echo "Using Keycloak 22-specific template for compatibility with operator v26+"
+            template_file="$KEYCLOAK_TEMPLATE_DIR/50-Keycloak.Keycloak.yaml.v22"
+        fi
+
         # Create the processed file in the app directory
         processed_file="$APP_DIR/$filename"
         envsubst < "$template_file" > "$processed_file"

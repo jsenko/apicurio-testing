@@ -33,8 +33,14 @@ spec:
     headers: xforwarded
   transaction:
     xaEnabled: false
-  # NOTE: No custom features needed for Apicurio Registry OIDC integration
-  # Standard OAuth2/OIDC features (always available) are sufficient
+  features:
+    enabled:
+      - recovery-codes
+      - scripts
+      - token-exchange
+      - admin-fine-grained-authz
+    disabled:
+      - impersonation
   startOptimized: false
   resources:
     requests:
