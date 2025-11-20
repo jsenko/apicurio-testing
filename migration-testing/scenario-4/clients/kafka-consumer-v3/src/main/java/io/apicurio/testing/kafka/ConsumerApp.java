@@ -1,7 +1,6 @@
 package io.apicurio.testing.kafka;
 
 import io.apicurio.registry.rest.client.models.ProblemDetails;
-import io.apicurio.registry.serde.Legacy8ByteIdHandler;
 import io.apicurio.registry.serde.avro.AvroKafkaDeserializer;
 import io.apicurio.registry.serde.avro.AvroSerdeConfig;
 import io.apicurio.registry.serde.avro.ReflectAvroDatumProvider;
@@ -92,12 +91,6 @@ public class ConsumerApp {
         String trustStorePath = System.getenv("TRUSTSTORE_PATH");
         String trustStorePassword = System.getenv().getOrDefault("TRUSTSTORE_PASSWORD", "registry123");
 
-        if (trustStorePath != null && !trustStorePath.isEmpty()) {
-            System.setProperty("javax.net.ssl.trustStore", trustStorePath);
-            System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
-            System.out.println("SSL TrustStore configured: " + trustStorePath);
-        }
-
         Properties props = new Properties();
 
         // Kafka consumer configuration
@@ -126,6 +119,23 @@ public class ConsumerApp {
             props.put(SerdeConfig.AUTH_CLIENT_ID, clientId);
             props.put(SerdeConfig.AUTH_CLIENT_SECRET, clientSecret);
             System.out.println("OAuth2 authentication configured");
+        }
+
+        // Configure TLS support
+
+        // Configure trust store system properties (needed for Keycloak connection)
+        if (trustStorePath != null && !trustStorePath.isEmpty()) {
+            System.setProperty("javax.net.ssl.trustStore", trustStorePath);
+            System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+            System.out.println("SSL TrustStore configured: " + trustStorePath);
+        }
+
+        // Configure trust store client properties (needed for Apicurio Registry SDK)
+        if (trustStorePath != null && !trustStorePath.isEmpty()) {
+            props.put(SerdeConfig.TLS_TRUSTSTORE_LOCATION, trustStorePath);
+            props.put(SerdeConfig.TLS_TRUSTSTORE_PASSWORD, trustStorePassword);
+            props.put(SerdeConfig.TLS_TRUSTSTORE_TYPE, "JKS");
+            System.out.println("SSL TrustStore configured: " + trustStorePath);
         }
 
         // Use Java reflection as the Avro Datum Provider

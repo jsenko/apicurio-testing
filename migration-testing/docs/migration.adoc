@@ -604,47 +604,337 @@ If you prefer, you can also use the Registry UI to export from v2 and import int
 [role="_abstract"]
 Review every application that integrates with {registry} {registry-v2} to ensure compatibility with the v3 REST API, SDKs, and client libraries. Update dependency coordinates, reconfigure endpoints, and adjust automation to account for the new data model.
 
+IMPORTANT: {registry} 3.x maintains backward compatibility with v2 client libraries and SerDes. You can continue using v2 clients with a v3 registry during your migration period, allowing gradual client updates.
+
 .Prerequisites
 * Existing {registry} {registry-v2} applications that rely on the v2 REST API or legacy client libraries.
 * Access to the source code or deployment configuration for each application you must update.
+* Understanding of your client application types (Kafka SerDes, REST API clients, SDK-based applications).
 
-.Procedure
-. Update your client configuration to target the v3 REST API base path:
-+
+=== Backward compatibility
+
+{registry} 3.x provides backward compatibility for existing v2 clients:
+
+* *v2 REST API* remains available at `/apis/registry/v2`
+* *v2 SerDes libraries* continue to work with v3 registry
+* *v2 client Kafka messages* can be consumed by v3 SerDes (with proper configuration)
+* *No immediate client updates required* for migration
+
+This allows you to:
+
+. Migrate the registry to v3 first
+. Test with existing v2 clients
+. Gradually update clients to v3 libraries over time
+
+=== Migration strategies
+
+==== Strategy 1: Gradual migration (recommended)
+
+Migrate registry first, then update clients incrementally:
+
+. Deploy {registry} 3.x
+. Verify v2 clients continue working
+. Update high-priority clients to v3 SerDes/SDKs
+. Gradually migrate remaining clients
+. Deprecate v2 API access once all clients updated
+
+*Benefits:*
+* Lower risk - clients continue working during migration
+* Flexible timeline for client updates
+* Easier rollback if issues occur
+
+==== Strategy 2: Big-bang migration
+
+Update all clients and registry simultaneously:
+
+. Prepare all client updates in advance
+. Deploy {registry} 3.x
+. Deploy updated client applications
+. Verify all integrations work
+
+*Benefits:*
+* Clean cutover to v3
+* No mixed v2/v3 client environment
+
+*Risks:*
+* Higher complexity and coordination required
+* More difficult to troubleshoot if issues arise
+
+=== Kafka SerDes migration
+
+Kafka SerDes applications are the most common {registry} integration and require careful migration planning.
+
+==== Maven dependency changes
+
+Update SerDes library dependencies from v2 to v3:
+
+*Registry 2.x dependencies:*
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.apicurio</groupId>
+    <artifactId>apicurio-registry-serdes-avro-serde</artifactId>
+    <version>2.6.13.Final</version>
+</dependency>
+----
+
+*Registry 3.x dependencies:*
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.apicurio</groupId>
+    <artifactId>apicurio-registry-avro-serde-kafka</artifactId>
+    <version>3.1.2</version>
+</dependency>
+----
+
+NOTE: Artifact IDs changed in v3. The v2 artifact ID was `apicurio-registry-serdes-avro-serde`, while v3 uses `apicurio-registry-avro-serde-kafka`.
+
+==== Configuration changes
+
+Update SerDes configuration properties for v3:
+
+*Registry 2.x SerDes configuration:*
+
 [source,java]
 ----
-String registryUrl = "https://new-registry.my-company.com/apis/registry/v3";
-RegistryClient client = RegistryClientFactory.create(registryUrl);
-----
-+
-Automation that previously targeted `/apis/registry/v2` continues to function, but new functionality is only exposed through the v3 API.
+Properties props = new Properties();
 
-. Refresh your client dependencies to the latest 3.x SDKs generated with Kiota. For Maven-based Java applications, use the new artifact identifier:
-+
-[source,xml,subs="attributes+"]
+// v2 SerDes configuration
+props.put(SerdeConfig.REGISTRY_URL, "https://registry-v2.example.com/apis/registry/v2");
+props.put(SerdeConfig.AUTO_REGISTER_ARTIFACT, Boolean.TRUE);
+props.put(SerdeConfig.ENABLE_HEADERS, false);
+props.put(SerdeConfig.ENABLE_CONFLUENT_ID_HANDLER, true);
+props.put(SerdeConfig.USE_ID, IdOption.contentId.name());
+
+// v2 OAuth2 configuration
+props.put(SerdeConfig.AUTH_SERVICE_URL, "https://keycloak.example.com");
+props.put(SerdeConfig.AUTH_REALM, "registry");
+props.put(SerdeConfig.AUTH_CLIENT_ID, "kafka-client");
+props.put(SerdeConfig.AUTH_CLIENT_SECRET, "secret");
+----
+
+*Registry 3.x SerDes configuration:*
+
+[source,java]
+----
+Properties props = new Properties();
+
+// v3 SerDes configuration
+props.put(SerdeConfig.REGISTRY_URL, "https://registry-v3.example.com/apis/registry/v3");
+props.put(SerdeConfig.AUTO_REGISTER_ARTIFACT, Boolean.TRUE);
+
+// v3 OAuth2 configuration (simplified)
+props.put(SerdeConfig.AUTH_TOKEN_ENDPOINT, "https://keycloak.example.com/realms/registry/protocol/openid-connect/token");
+props.put(SerdeConfig.AUTH_CLIENT_ID, "kafka-client");
+props.put(SerdeConfig.AUTH_CLIENT_SECRET, "secret");
+----
+
+*Key configuration differences:*
+
+[cols="1,1,1",options="header"]
+|===
+| Property
+| Registry 2.x
+| Registry 3.x
+
+| OAuth2 endpoint
+| `AUTH_SERVICE_URL` + `AUTH_REALM`
+| `AUTH_TOKEN_ENDPOINT` (full URL)
+
+| ID Handler
+| `ID_HANDLER` (optional default "8 byte handler")
+| `ID_HANDLER` (optional default "4 byte handler")
+
+| Confluent ID handler
+| `ENABLE_CONFLUENT_ID_HANDLER` (optional convenience property)
+| Removed
+
+| Content ID usage
+| `USE_ID` with `IdOption` (default "globalId")
+| `USE_ID` with `IdOption` (default "contentId")
+|===
+
+==== TLS/HTTPS configuration
+
+TLS configuration differs between v2 and v3 SerDes clients:
+
+*Registry 2.x (system properties):*
+
+[source,java]
+----
+// v2 SerDes clients use system properties for TLS configuration
+System.setProperty("javax.net.ssl.trustStore", "/path/to/truststore.jks");
+System.setProperty("javax.net.ssl.trustStorePassword", "password");
+----
+
+*Registry 3.x (SerdeConfig properties):*
+
+[source,java]
+----
+// v3 SerDes clients use SerdeConfig properties for TLS configuration
+Properties props = new Properties();
+
+// Configure trust store for Registry HTTPS connections
+props.put(SerdeConfig.TLS_TRUSTSTORE_LOCATION, "/path/to/truststore.jks");
+props.put(SerdeConfig.TLS_TRUSTSTORE_PASSWORD, "password");
+props.put(SerdeConfig.TLS_TRUSTSTORE_TYPE, "JKS");
+
+// System properties still needed for OAuth2 Keycloak connections
+System.setProperty("javax.net.ssl.trustStore", "/path/to/truststore.jks");
+System.setProperty("javax.net.ssl.trustStorePassword", "password");
+----
+
+IMPORTANT: v3 SerDes requires *both* SerdeConfig TLS properties (for Registry SDK connections) and system properties (for OAuth2 Keycloak connections). This is different from v2, which only used system properties.
+
+==== Message format compatibility
+
+With proper configuration, {registry} 3.x SerDes can read messages serialized by v2 SerDes:
+
+* *v3 consumers* can read messages produced by v2 producers
+* *v2 consumers* can read messages produced by v3 producers
+* *Mixed environment* (v2 and v3 clients) is fully supported
+
+This ensures zero data loss during migration.
+
+=== REST API client migration
+
+For applications using {registry} REST API directly (not Kafka SerDes):
+
+==== SDK migration
+
+Update to v3 Kiota-generated SDKs:
+
+*Registry 2.x SDK:*
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.apicurio</groupId>
+    <artifactId>apicurio-registry-client</artifactId>
+    <version>2.6.13.Final</version>
+</dependency>
+----
+
+*Registry 3.x SDK:*
+
+[source,xml]
 ----
 <dependency>
     <groupId>io.apicurio</groupId>
     <artifactId>apicurio-registry-java-sdk</artifactId>
-    <version>{registry-release}</version>
+    <version>3.1.2</version>
 </dependency>
 ----
-+
-Install the TypeScript, Python, or Go SDKs through the respective package managers (`npm install @apicurio/apicurio-registry-sdk`, `pip install apicurioregistrysdk`, or `go get github.com/apicurio/apicurio-registry/go-sdk`).
 
-. Align your integration code with the reorganized endpoints:
-* Manage artifact metadata at `/groups/{groupId}/artifacts/{artifactId}`.
-* Retrieve or create content exclusively through `/versions` endpoints.
-* Replace calls to `/test` endpoints with the `dryRun` query parameter.
-* Use `/search/groups` and `/search/versions` where you previously enumerated artifacts indirectly.
 
-. Adopt the branch API if you need parallel development streams. Branches allow you to promote or merge versions without duplicating artifacts.
+==== TLS/HTTPS configuration
 
-. If you build Kafka SerDes integrations, verify that serializers and deserializers still reference the correct registry URL and consider enabling group- or artifact-level rules introduced in 3.x to enforce compatibility upstream.
+TLS configuration differs between v2 and v3 clients:
+
+*Registry 2.x (system properties):*
+
+[source,java]
+----
+// v2 clients use system properties
+System.setProperty("javax.net.ssl.trustStore", "/path/to/truststore.jks");
+System.setProperty("javax.net.ssl.trustStorePassword", "password");
+----
+
+*Registry 3.x (RegistryClientOptions):*
+
+[source,java]
+----
+// v3 clients use RegistryClientOptions (recommended)
+RegistryClientOptions options = RegistryClientOptions.builder()
+    .trustStore(new File("/path/to/truststore.jks"))
+    .trustStorePassword("password")
+    .build();
+
+props.put(SerdeConfig.REGISTRY_CLIENT_OPTIONS, options);
+----
+
+=== Client authentication migration
+
+OAuth2/OIDC configuration changes for REST API client applications:
+
+*Registry 2.x client authentication:*
+
+[source,java]
+----
+import io.apicurio.registry.rest.client.RegistryClient;
+import io.apicurio.registry.rest.client.RegistryClientFactory;
+import io.apicurio.rest.client.auth.Auth;
+import io.apicurio.rest.client.auth.OidcAuth;
+import io.apicurio.rest.client.auth.exception.AuthErrorHandler;
+import io.apicurio.rest.client.spi.ApicurioHttpClient;
+import io.apicurio.rest.client.spi.ApicurioHttpClientFactory;
+
+// v2 clients configure auth server URL, not the full token URL
+String authServerUrl = "https://keycloak.example.com/realms/registry";
+String clientId = "my-client";
+String clientSecret = "my-secret";
+
+// Create HTTP client for OIDC authentication
+ApicurioHttpClient httpClient = ApicurioHttpClientFactory.create(authServerUrl,
+    new AuthErrorHandler());
+
+// Create OIDC auth with client credentials
+Auth auth = new OidcAuth(httpClient, clientId, clientSecret, null, null);
+
+// Create registry client with auth
+RegistryClient client = RegistryClientFactory.create(registryUrl, Collections.emptyMap(), auth);
+----
+
+*Registry 3.x SDK authentication:*
+
+[source,java]
+----
+import io.apicurio.registry.client.RegistryClientFactory;
+import io.apicurio.registry.client.RegistryClientOptions;
+import io.apicurio.registry.rest.client.RegistryClient;
+
+// v3 clients use RegistryClientOptions builder with full token endpoint URL
+String tokenEndpoint = "https://keycloak.example.com/realms/registry/protocol/openid-connect/token";
+String clientId = "my-client";
+String clientSecret = "my-secret";
+
+// Create options with OAuth2 client credentials
+RegistryClientOptions options = RegistryClientOptions.create(registryUrl)
+    .oauth2(tokenEndpoint, clientId, clientSecret, null);
+
+// Create registry client
+RegistryClient client = RegistryClientFactory.create(options);
+----
+
+*Key authentication differences:*
+
+[cols="1,1,1",options="header"]
+|===
+| Aspect
+| Registry 2.x
+| Registry 3.x
+
+| Configuration approach
+| Separate `Auth` object with `OidcAuth`
+| Fluent builder with `RegistryClientOptions`
+
+| OAuth2 endpoint
+| Full auth server URL with realm path
+| Full OIDC token endpoint URL
+
+| Factory method
+| `RegistryClientFactory.create(url, map, auth)`
+| `RegistryClientFactory.create(options)`
+|===
 
 [role="_additional-resources"]
 .Additional resources
 * {LinkServiceRegistryUser}[{NameServiceRegistryUser}]
+* Kafka SerDes Configuration Guide
+* Kiota SDK Documentation
 
 
 [id="migrating-registry-configuration_{context}"]
