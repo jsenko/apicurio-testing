@@ -50,6 +50,11 @@ spec:
       spec:
         containers:
           - name: keycloak
+            env:
+              - name: KEYCLOAK_ADMIN
+                value: admin
+              - name: KEYCLOAK_ADMIN_PASSWORD
+                value: admin
             livenessProbe:
               httpGet:
                 path: /health/live
@@ -68,6 +73,11 @@ spec:
               failureThreshold: 600
               periodSeconds: 1
   additionalOptions:
+    # Proxy configuration for edge TLS termination (required for Keycloak 22)
+    - name: proxy
+      value: edge
+    - name: hostname-strict-https
+      value: "false"
     # Database configuration - required because db spec is not reliable across operator versions
     - name: db
       value: postgres
