@@ -597,13 +597,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os419
-    if: false  # Disabled - configuration not currently working
+    if: always()
 
     env:
       CLUSTER_NAME: ci419
       NAMESPACE: keycloak22
       PROFILE: authn
-      KEYCLOAK_VERSION: 22.0
+      KEYCLOAK_VERSION: 22.0.3
+      KEYCLOAK_OPERATOR_VERSION: 26.4.5
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -629,7 +630,7 @@ jobs:
 
       - name: Install Keycloak Operator
         run: |
-          ./install-keycloak-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --keycloakVersion $KEYCLOAK_VERSION
+          ./install-keycloak-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --keycloakVersion $KEYCLOAK_OPERATOR_VERSION
 
       - name: Install Keycloak
         run: |
@@ -1316,7 +1317,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os419_keycloak22
-    if: false  # Disabled - configuration not currently working
 
     env:
       CLUSTER_NAME: ci419
@@ -1631,7 +1631,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - os419_keycloak22_integrationtests
-    if: false  # Disabled - configuration not currently working
+    if: always()
 
     env:
       CLUSTER_NAME: ci419

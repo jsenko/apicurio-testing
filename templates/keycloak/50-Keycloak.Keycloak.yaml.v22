@@ -1,0 +1,102 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak-instance
+  namespace: $NAMESPACE
+  labels:
+    app: keycloak
+spec:
+  instances: 1
+  image: quay.io/keycloak/keycloak:$KEYCLOAK_VERSION
+  db:
+    vendor: postgres
+    host: postgresql-keycloak
+    port: 5432
+    database: keycloak
+    usernameSecret:
+      name: keycloak-db-secret
+      key: username
+    passwordSecret:
+      name: keycloak-db-secret
+      key: password
+  http:
+    httpEnabled: true
+    httpPort: 8080
+    httpsPort: 8443
+  hostname:
+    hostname: $KEYCLOAK_INGRESS_URL
+    strict: false
+    strictBackchannel: false
+  ingress:
+    enabled: false
+  proxy:
+    headers: xforwarded
+  transaction:
+    xaEnabled: false
+  # NOTE: No custom features needed for Apicurio Registry OIDC integration
+  # Standard OAuth2/OIDC features (always available) are sufficient
+  # Features section removed for Keycloak 22 compatibility
+  startOptimized: false
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # Override pod template to use port 8080 for health probes (Keycloak 22 compatibility)
+  unsupported:
+    podTemplate:
+      spec:
+        containers:
+          - name: keycloak
+            env:
+              - name: KEYCLOAK_ADMIN
+                value: admin
+              - name: KEYCLOAK_ADMIN_PASSWORD
+                value: admin
+            livenessProbe:
+              httpGet:
+                path: /health/live
+                port: 8080
+                scheme: HTTP
+            readinessProbe:
+              httpGet:
+                path: /health/ready
+                port: 8080
+                scheme: HTTP
+            startupProbe:
+              httpGet:
+                path: /health/started
+                port: 8080
+                scheme: HTTP
+              failureThreshold: 600
+              periodSeconds: 1
+  additionalOptions:
+    # Proxy configuration for edge TLS termination (required for Keycloak 22)
+    - name: proxy
+      value: edge
+    - name: hostname-strict-https
+      value: "false"
+    # Database configuration - required because db spec is not reliable across operator versions
+    - name: db
+      value: postgres
+    - name: db-url-host
+      value: postgresql-keycloak
+    - name: db-url-port
+      value: "5432"
+    - name: db-url-database
+      value: keycloak
+    - name: db-username
+      secret:
+        name: keycloak-db-secret
+        key: username
+    - name: db-password
+      secret:
+        name: keycloak-db-secret
+        key: password
+    # Logging configuration
+    - name: spi-events-listener-jboss-logging-success-level
+      value: info
+    - name: spi-events-listener-jboss-logging-error-level
+      value: warn

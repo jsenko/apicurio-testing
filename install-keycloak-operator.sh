@@ -9,21 +9,22 @@ source "$BASE_DIR/shared.sh"
 # Function to display usage information
 # ##################################################
 show_usage() {
-    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [OPTIONS]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [--keycloakVersion <version>] [OPTIONS]"
     echo ""
     echo "REQUIRED PARAMETERS:"
-    echo "  --namespace <namespace>  Kubernetes namespace to deploy Keycloak into"
+    echo "  --namespace <namespace>         Kubernetes namespace to deploy Keycloak operator into"
     echo ""
     echo "OPTIONAL PARAMETERS:"
-    echo "  --cluster <name>         Name of the OpenShift cluster where Keycloak will be installed (default: \$USER)"
-    echo "  --keycloakVersion <ver>  (Deprecated) Keycloak version - no longer used"
-    echo "  -h, --help               Display this help message and exit"
+    echo "  --cluster <name>                Name of the OpenShift cluster where Keycloak will be installed (default: \$USER)"
+    echo "  --keycloakVersion <version>     (Deprecated) Operator version - now uses latest from fast channel"
+    echo "  -h, --help                      Display this help message and exit"
     echo ""
     echo "EXAMPLES:"
-    echo "  # Basic installation:"
+    echo "  # Install latest Keycloak operator from fast channel:"
     echo "  $0 --cluster okd419 --namespace keycloak-ns"
     echo ""
     echo "NOTES:"
+    echo "  - The operator is installed from the 'fast' channel which contains the latest stable version"
     echo "  - The cluster must already exist and be properly configured"
     echo "  - Kubeconfig file must be present at clusters/<cluster_name>/auth/kubeconfig"
 }
@@ -64,6 +65,11 @@ if [ -z "$NAMESPACE" ]; then
     echo "Error: --namespace argument is required"
     show_usage
     exit 1
+fi
+
+# keycloakVersion is now optional (deprecated) - we use latest from fast channel
+if [ -n "$KEYCLOAK_OPERATOR_VERSION" ]; then
+    echo "Warning: --keycloakVersion is deprecated and will be ignored. Using latest from fast channel."
 fi
 
 # Validate namespace contains only letters and numbers
