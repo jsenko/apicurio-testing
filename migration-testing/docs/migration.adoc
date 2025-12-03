@@ -51,23 +51,23 @@ Successful migration requires careful planning to minimize downtime and ensure d
 
 The migration approach you choose determines the amount of downtime your registry will experience:
 
-Zero-downtime migration (recommended):
+.Zero-downtime migration (recommended):
 
-* Use a reverse proxy or load balancer (nginx, HAProxy, etc.) to manage traffic routing
-* Run {registry} {registry-v2} and 3.x in parallel during migration
-* Switch traffic from v2 to v3 after data migration completes
-* *Read operation downtime:* 10-30 seconds (during traffic routing switchover)
-* *Write operation downtime:* 30-45 minutes (during export and import)
+. Use a reverse proxy or load balancer (nginx, HAProxy, etc.) to manage traffic routing
+. Run {registry} {registry-v2} and 3.x in parallel during migration
+. Switch traffic from v2 to v3 after data migration completes
+* Read operation downtime: 10-30 seconds (during traffic routing switchover)
+* Write operation downtime: 30-45 minutes (during export and import)
 
-Traditional maintenance window:
+.Traditional maintenance window:
 
-* Stop all client applications
-* Export data from {registry} {registry-v2}
-* Shut down {registry} {registry-v2}
-* Deploy and configure {registry} 3.x
-* Import data and validate
-* Resume client applications
-* *Total downtime:* 1-2 hours (depending on data volume)
+. Stop all client applications
+. Export data from {registry} {registry-v2}
+. Shut down {registry} {registry-v2}
+. Deploy and configure {registry} 3.x
+. Import data and validate
+. Resume client applications
+* Total downtime: 1-2 hours (depending on data volume)
 
 
 During a zero-downtime migration, you temporarily run both {registry} {registry-v2} and 3.x simultaneously. Plan for:
@@ -94,7 +94,7 @@ Timeline:
 [id="c-migration-rollback_{context}"]
 === Rolling back to {registry-v2}
 
-A key advantage of the parallel deployment approach is the ability to rollback if issues arise.
+A key advantage of the parallel deployment (zero-downtime migration) approach is the ability to rollback if issues arise.
 
 Options include:
 
@@ -201,7 +201,7 @@ The recommended migration approach uses a load balancer to manage traffic routin
                     └───────┬───────┘
                             │
         ┌───────────────────┼───────────────────┐
-        │ Phase 1-3         │      Phase 4+     │
+        │                   │                   │
         ↓                   ↓                   ↓
 ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
 │  Registry 2.x │   │  Registry 2.x │   │  Registry 3.x │
