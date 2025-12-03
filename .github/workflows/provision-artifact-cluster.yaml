@@ -1,0 +1,41 @@
+name: Provision artifact cluster
+on:
+  workflow_dispatch:
+    inputs:
+      cluster-name:
+        type: string
+        description: Cluster name
+        default: art
+        required: true
+
+jobs:
+
+  provision-cluster:
+    name: Provision OCP Cluster
+    uses: ./.github/workflows/provision-cluster.yaml
+    with:
+      cluster-name: ${{ inputs.cluster-name }}
+      cluster-version: "4.19"
+      compute-nodes: 2
+      force: true
+
+  configure-image-registry:
+    name: Configure Image Registry
+    runs-on: ubuntu-latest
+    needs: provision-cluster
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Load test cache
+        run: |
+          ./load-cache.sh --token "${{ secrets.ACCESS_TOKEN }}"
+
+      - name: Install Image Registry
+        run: |
+          ./install-image-registry.sh --cluster ${{ inputs.cluster-name }}
+
+      - name: Save cluster state
+        uses: ./.github/actions/save-cluster-state
+        if: always()
