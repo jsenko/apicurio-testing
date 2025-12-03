@@ -1,4 +1,4 @@
-name: Provision artifact cluster
+name: "[Infra] Provision and configure artifact cluster"
 on:
   workflow_dispatch:
     inputs:
@@ -7,22 +7,44 @@ on:
         description: Cluster name
         default: art
         required: true
+      skip-provisioning:
+        type: boolean
+        description: Skip cluster provisioning and use an existing cluster
+        default: false
+        required: false
 
 jobs:
 
   provision-cluster:
-    name: Provision OCP Cluster
-    uses: ./.github/workflows/provision-cluster.yaml
-    with:
-      cluster-name: ${{ inputs.cluster-name }}
-      cluster-version: "4.19"
-      compute-nodes: 2
-      force: true
+    name: Provision cluster
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: ${{ !inputs.skip-provisioning }}
+    steps:
 
-  configure-image-registry:
-    name: Configure Image Registry
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Call Provision cluster
+        uses: ./.github/actions/trigger-and-wait-workflow
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          repo: apicurio-testing
+          workflow-id: provision-cluster.yaml
+          ref: ${{ github.ref_name }}
+          workflow-inputs: |
+            {
+              "cluster-name": "${{ inputs.cluster-name }}",
+              "cluster-version": "4.19",
+              "compute-nodes": "2",
+              "force": "true"
+            }
+
+  configure-cluster:
+    name: Configure Cluster
     runs-on: ubuntu-latest
     needs: provision-cluster
+    if: always()
     steps:
 
       - name: Checkout code
@@ -32,9 +54,23 @@ jobs:
         run: |
           ./load-cache.sh --token "${{ secrets.ACCESS_TOKEN }}"
 
+      - name: Install OpenShift CLI
+        run: |
+          mkdir -p $HOME/bin
+          curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+          tar -xzf openshift-client-linux.tar.gz
+          mv oc kubectl $HOME/bin
+          rm openshift-client-linux.tar.gz
+          echo "$HOME/bin" >> $GITHUB_PATH
+          $HOME/bin/oc version --client
+
       - name: Install Image Registry
         run: |
           ./install-image-registry.sh --cluster ${{ inputs.cluster-name }}
+
+      - name: Install Sharry
+        run: |
+          ./install-sharry.sh --cluster ${{ inputs.cluster-name }}
 
       - name: Save cluster state
         uses: ./.github/actions/save-cluster-state

@@ -1,0 +1,181 @@
+name: 'Trigger and Wait for Workflow'
+description: 'Triggers a workflow via workflow_dispatch and waits for it to complete'
+inputs:
+  github-token:
+    description: 'GitHub token with workflow permissions'
+    required: true
+  owner:
+    description: 'Repository owner'
+    required: false
+    default: 'apicurio'
+  repo:
+    description: 'Repository name'
+    required: true
+  workflow-id:
+    description: 'Workflow ID or filename (e.g., provision-cluster.yaml)'
+    required: true
+  ref:
+    description: 'Git ref to run the workflow on'
+    required: true
+  workflow-inputs:
+    description: 'JSON string of workflow inputs'
+    required: false
+    default: '{}'
+  poll-interval:
+    description: 'Polling interval in seconds'
+    required: false
+    default: '30'
+  max-wait-time:
+    description: 'Maximum time to wait for workflow to start (in seconds)'
+    required: false
+    default: '180'
+outputs:
+  run-id:
+    description: 'The ID of the triggered workflow run'
+    value: ${{ steps.trigger-workflow.outputs.run-id }}
+  run-url:
+    description: 'The URL of the triggered workflow run'
+    value: ${{ steps.trigger-workflow.outputs.run-url }}
+  conclusion:
+    description: 'The conclusion of the workflow run'
+    value: ${{ steps.trigger-workflow.outputs.conclusion }}
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Trigger and wait for workflow
+      id: trigger-workflow
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const owner = '${{ inputs.owner }}';
+          const repo = '${{ inputs.repo }}';
+          const workflowId = '${{ inputs.workflow-id }}';
+          const ref = '${{ inputs.ref }}';
+          const workflowInputs = JSON.parse(`${{ inputs.workflow-inputs }}`);
+          const pollIntervalMs = parseInt('${{ inputs.poll-interval }}') * 1000;
+          const maxWaitTimeMs = parseInt('${{ inputs.max-wait-time }}') * 1000;
+          
+          // Generate a unique correlation ID to track this specific workflow run
+          const correlationId = `cid:${Math.random().toString(36).substring(7)}`;
+          
+          console.log(`Triggering ${workflowId} workflow in ${owner}/${repo}@${ref} with correlation ID: ${correlationId}`);
+          console.log(`Inputs: ${JSON.stringify(workflowInputs, null, 2)}`);
+          
+          // Add correlation ID to the inputs:
+          const inputsWithCorrelation = {
+            ...workflowInputs,
+            'correlation-id': correlationId
+          };
+          
+          // Trigger the workflow:
+          await github.rest.actions.createWorkflowDispatch({
+            owner,
+            repo,
+            workflow_id: workflowId,
+            ref,
+            inputs: inputsWithCorrelation
+          });
+          
+          console.log('✅ Workflow triggered, waiting for run to start...');
+          
+          // Wait for the workflow run to be created:
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          
+          // Find the workflow run by searching for our correlation ID:
+          let runId = null;
+          let runUrl = null;
+          const startTime = Date.now();
+          let attempts = 0;
+          const maxAttempts = Math.ceil(maxWaitTimeMs / 5000);
+          
+          while (!runId && attempts < maxAttempts) {
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: workflowId,
+              event: 'workflow_dispatch',
+              per_page: 30
+            });
+            
+            // Find the run with our correlation ID:
+            for (const run of runs.data.workflow_runs) {
+              try {
+                const runDetails = await github.rest.actions.getWorkflowRun({
+                  owner,
+                  repo,
+                  run_id: run.id
+                });
+                
+                // Check if this run was triggered with our correlation ID:
+                const displayTitle = runDetails.data.display_title || '';
+                if (displayTitle.includes(correlationId)) {
+                  runId = run.id;
+                  runUrl = run.html_url;
+                  console.log(`Found workflow run #${run.run_number}: ${runUrl}`);
+                  break;
+                }
+              } catch (error) {
+                // Continue searching if we can't access this run
+                continue;
+              }
+            }
+            
+            if (!runId) {
+              attempts++;
+              if (attempts % 3 === 0) {
+                console.log(`Still searching for workflow run... (attempt ${attempts}/${maxAttempts})`);
+              }
+              await new Promise(resolve => setTimeout(resolve, 5000));
+            } else {
+              break;
+            }
+          }
+          
+          if (!runId) {
+            throw new Error(`Failed to find the triggered workflow run with correlation ID: ${correlationId}`);
+          }
+          
+          // Set outputs:
+          core.setOutput('run-id', runId);
+          core.setOutput('run-url', runUrl);
+          
+          // Poll for completion:
+          console.log('\nWaiting for workflow to complete (this may take a long time)...');
+          let conclusion = null;
+          let status = null;
+          let pollCount = 0;
+          
+          while (conclusion === null) {
+            await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+            pollCount++;
+            
+            const run = await github.rest.actions.getWorkflowRun({
+              owner,
+              repo,
+              run_id: runId
+            });
+            
+            status = run.data.status;
+            conclusion = run.data.conclusion;
+            
+            if (pollCount % 2 === 0) { // Log every 2 poll intervals.
+              const elapsed = Math.floor((pollCount * pollIntervalMs) / 1000 / 60);
+              console.log(`Status: ${status}, elapsed: ${elapsed} minutes`);
+            }
+            
+            if (status === 'completed') {
+              break;
+            }
+          }
+          
+          console.log(`\n✅ Workflow completed with conclusion: ${conclusion}`);
+          console.log(`View run: ${runUrl}`);
+          
+          // Set conclusion output
+          core.setOutput('conclusion', conclusion);
+          
+          if (conclusion !== 'success') {
+            throw new Error(`Workflow failed with conclusion: ${conclusion}`);
+          }

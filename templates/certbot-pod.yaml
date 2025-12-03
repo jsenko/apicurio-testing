@@ -29,6 +29,15 @@ spec:
     volumeMounts:
     - name: letsencrypt
       mountPath: /etc/letsencrypt
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
   volumes:
   - name: letsencrypt
     emptyDir: {}

@@ -76,12 +76,15 @@ TOKEN=$(curl -s -d "{\"account\":\"admin\", \"password\":\"$PASSWORD\"}" "https:
 SHARE_ID=$(curl -s -X POST -H "Sharry-Auth: $TOKEN" -d '{"name":"default","validity":2592000000,"description":"Default","maxViews":999999999,"password":null}' "https://$HOST/api/v2/sec/upload/new" | jq -r .id)
 # Publish
 curl -s -X POST -H "Sharry-Auth: $TOKEN" -d '{"reuseId":true}' "https://$HOST/api/v2/sec/share/$SHARE_ID/publish" >/dev/null 2>&1
-READ_ID=$(curl -s -H "Sharry-Auth: $TOKEN" "https://sharry-infra.apps.jsenko.apicurio-testing.org/api/v2/sec/share/$SHARE_ID" | jq -r .publishInfo.id)
+READ_ID=$(curl -s -H "Sharry-Auth: $TOKEN" "https://$HOST/api/v2/sec/share/$SHARE_ID" | jq -r .publishInfo.id)
 
 rm "$CLUSTER_DIR/sharry-env" || true
-echo "export SHARRY_ADMIN_PASSWORD=\"$PASSWORD\"" >> "$CLUSTER_DIR/sharry-env"
+
 echo "export SHARRY_HOST=\"https://$HOST\"" >> "$CLUSTER_DIR/sharry-env"
+echo "export SHARRY_ADMIN_PASSWORD=\"$PASSWORD\"" >> "$CLUSTER_DIR/sharry-env"
+echo "" >> "$CLUSTER_DIR/sharry-env"
 echo "export SHARRY_SHARE_ID=\"$SHARE_ID\"" >> "$CLUSTER_DIR/sharry-env"
 echo "export SHARRY_SHARE_URL=\"https://$HOST/app/upload/$SHARE_ID\"" >> "$CLUSTER_DIR/sharry-env"
-echo "export SHARRY_READ_ID=\"$READ_ID" >> "$CLUSTER_DIR/sharry-env"
+echo "" >> "$CLUSTER_DIR/sharry-env"
+echo "export SHARRY_READ_ID=\"$READ_ID\"" >> "$CLUSTER_DIR/sharry-env"
 echo "export SHARRY_READ_URL=\"https://$HOST/app/open/$READ_ID\"" >> "$CLUSTER_DIR/sharry-env"
