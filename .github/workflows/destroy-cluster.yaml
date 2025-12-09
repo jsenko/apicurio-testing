@@ -1,45 +1,48 @@
 name: "[Infra] Destroy OCP cluster"
+run-name: "[Infra] Destroy OCP cluster ${{ inputs.cluster-name }}"
 on:
   workflow_dispatch:
     inputs:
       cluster-name:
         type: string
-        description: Name of a cluster to destroy. Must be present in the test cache.
+        description: Name of an existing cluster to destroy.
+        required: true
+  # Same parameters as above, see the descriptions.
+  workflow_call:
+    inputs:
+      cluster-name:
+        type: string
         required: true
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_DEFAULT_REGION: "us-east-1"
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  COMPUTE_NODES: 6
-  CONTROL_PLANE_NODES: 3
-  DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
-  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
   SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
 
 jobs:
 
   destroy-cluster:
-    name: Destroy cluster ${{ inputs.cluster-name }}
+    name: Destroy OCP cluster ${{ inputs.cluster-name }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
 
-      - name: Checkout $({{ github.ref }})
+      - name: Checkout ${{ github.ref }}
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Load test cache
-        run: |
-          ./load-cache.sh --token "${{ secrets.ACCESS_TOKEN }}"
+      - name: Restore cluster state
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          cluster-name: ${{ inputs.cluster-name }}
 
       - name: Destroy OpenShift cluster
         run: |
-          ./destroy-cluster.sh --cluster ${{ inputs.cluster-name }} \
+          ./destroy-cluster.sh --cluster ${{ inputs.cluster-name }}
 
-      - name: Save test cache
+      - name: Save cluster state
         uses: ./.github/actions/save-cluster-state

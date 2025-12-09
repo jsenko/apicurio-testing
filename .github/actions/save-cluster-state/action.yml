@@ -1,10 +1,10 @@
 name: 'Save Cluster State'
 description: 'Packages the clusters directory and saves it to the apicurio-testing-cache repository'
 runs:
-  using: 'composite'
+  using: composite
   steps:
 
-    - name: Package and save cluster state
+    - name: Save cache
       shell: bash
       run: |
         ./save-cache.sh -m "save test cache for workflow run ${{ github.run_id }}"

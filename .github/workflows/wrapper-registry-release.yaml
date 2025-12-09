@@ -1,5 +1,4 @@
-name: Test Apicurio Registry Release (Wrapper)
-
+name: "[Wrapper] [Test] Registry Release"
 on:
   workflow_dispatch:
     inputs:

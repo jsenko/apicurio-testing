@@ -1,5 +1,5 @@
 name: "[Infra] Provision OCP cluster"
-run-name: "[Infra] Provision OCP cluster ${{ inputs.correlation-id }}"
+run-name: "[Infra] Provision OCP ${{ inputs.cluster-version }} cluster ${{ inputs.cluster-name }}"
 on:
   workflow_dispatch:
     inputs:
@@ -25,18 +25,29 @@ on:
           the old DNS records in the apicurio-testing.org hosted zone in AWS Route53).
         required: true
         default: false
-      correlation-id:
+  # Same parameters as above, see the descriptions.
+  workflow_call:
+    inputs:
+      cluster-name:
         type: string
-        description: Correlation ID for tracking the workflow run (ignore if triggered manually).
-        required: false
-        default: ""
+        required: true
+      compute-nodes:
+        type: number
+        default: 3
+        required: true
+      cluster-version:
+        type: string
+        required: true
+        default: "4.19"
+      force:
+        type: boolean
+        required: true
+        default: false
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_DEFAULT_REGION: "us-east-1"
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  COMPUTE_NODES: ${{ inputs.compute-nodes }}
-  CONTROL_PLANE_NODES: 3
   DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
@@ -52,7 +63,7 @@ jobs:
     timeout-minutes: 90
     steps:
 
-      - name: Checkout $({{ github.ref }})
+      - name: Checkout ${{ github.ref }}
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -70,8 +81,8 @@ jobs:
           fi
           ./install-cluster.sh --cluster ${{ inputs.cluster-name }} \
               --ocpVersion ${{ inputs.cluster-version }} \
-              --controlPlaneNodes $CONTROL_PLANE_NODES \
-              --computeNodes $COMPUTE_NODES \
+              --controlPlaneNodes 3 \
+              --computeNodes ${{ inputs.compute-nodes }} \
               --log-level warn \
               $INSTALL_ARGS
 
@@ -79,5 +90,5 @@ jobs:
         run: |
           ./configure-pull-secret.sh --cluster ${{ inputs.cluster-name }}
 
-      - name: Save test cache
+      - name: Save cluster state
         uses: ./.github/actions/save-cluster-state

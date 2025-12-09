@@ -1,13 +1,47 @@
 name: 'Restore Cluster State'
 description: 'Restores the clusters directory from the apicurio-testing-cache repository'
+
 inputs:
   github-token:
-    description: 'GitHub access token for API calls and accessing the cache repository'
+    description: 'GitHub access token.'
     required: true
+  cluster-name:
+    description: 'Name of the cluster that will be used by the parent workflow.'
+    required: false
+
 runs:
-  using: 'composite'
+  using: composite
   steps:
-    - name: Restore cluster state
+
+    - name: Load cache
       shell: bash
       run: |
         ./load-cache.sh --token "${{ inputs.github-token }}"
+
+    - name: Install Kubernetes and OpenShift CLI
+      shell: bash
+      run: |
+        mkdir -p cache/bin
+        curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+        tar -xzf openshift-client-linux.tar.gz
+        mv oc kubectl cache/bin
+        rm openshift-client-linux.tar.gz
+        echo "$PWD/cache/bin" >> $GITHUB_PATH
+        cache/bin/kubectl version --client
+        cache/bin/oc version --client
+
+    - name: Configure kubectl
+      if: ${{ inputs.cluster-name != '' }}
+      shell: bash
+      run: |
+        echo "KUBECONFIG=$PWD/cache/clusters/${{ inputs.cluster-name }}/auth/kubeconfig" >> $GITHUB_ENV
+
+    - name: Extract Ingress host
+      if: ${{ inputs.cluster-name != '' }}
+      shell: bash
+      run: |
+        CONTEXT_NAME=$(kubectl config view -o json | jq -r '.["current-context"]')
+        CLUSTER_NAME=$(kubectl config view -o json | jq -r --arg context_name "$CONTEXT_NAME" '.contexts[] | select(.name == $context_name) | .context.cluster')
+        CLUSTER_API_URL=$(kubectl config view -o json | jq -r --arg cluster_name "$CLUSTER_NAME" '.clusters[] | select(.name == $cluster_name) | .cluster.server')
+        INGRESS_HOST=$(echo $CLUSTER_API_URL | sed 's|.*://api\.\(.*\):.*|apps.\1|')
+        echo "INGRESS_HOST=$INGRESS_HOST" >> $GITHUB_ENV

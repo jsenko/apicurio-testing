@@ -1,4 +1,4 @@
-name: Test Apicurio Registry Release
+name: "[Test] Registry Release"
 on:
   workflow_dispatch:
     inputs:
@@ -1691,9 +1691,9 @@ jobs:
         run: |
           ./destroy-cluster.sh --cluster $CLUSTER_NAME
 
-      - name: Cleanup cluster state
+      - name: Save cluster state
         if: ${{ inputs.skipClusterInstall != 'true' }}
-        uses: ./.github/actions/cleanup-cluster-state
+        uses: ./.github/actions/save-cluster-state
 
   os416:
     name: OpenShift 4.16
@@ -2142,9 +2142,9 @@ jobs:
         run: |
           ./destroy-cluster.sh --cluster $CLUSTER_NAME
 
-      - name: Cleanup cluster state
+      - name: Save cluster state
         if: ${{ inputs.skipClusterInstall != 'true' }}
-        uses: ./.github/actions/cleanup-cluster-state
+        uses: ./.github/actions/save-cluster-state
 
   save_workflow_metadata:
     name: Save Workflow Metadata
