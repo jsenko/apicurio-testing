@@ -23,6 +23,7 @@ jobs:
     uses: ./.github/workflows/provision-cluster.yaml
     with:
       cluster-name: ${{ inputs.cluster-name }}
+      cluster-version: "4.19"
       compute-nodes: 2
       force: true
     secrets: inherit
