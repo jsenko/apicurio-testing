@@ -7,14 +7,22 @@ on:
         type: string
         description: Cluster name
         required: true
+      control-nodes:
+        type: number
+        description: Number of control nodes (3 is recommended for resiliency, but we can use 1 for short-lived clusters).
+        default: 3
+        required: true
       compute-nodes:
         type: number
         description: Number of compute nodes (minimum of 2 is recommended).
-        default: 3
+        default: 2 # Lowered default to 2 to reduce resource usage. TODO: Monitor test performance and increase if needed.
         required: true
       cluster-version:
-        type: string
+        type: choice
         description: OCP version to install
+        options:
+          - "4.16"
+          - "4.19"
         required: true
         default: "4.19"
       force:
@@ -31,18 +39,18 @@ on:
       cluster-name:
         type: string
         required: true
+      control-nodes:
+        type: number
+        required: true
       compute-nodes:
         type: number
-        default: 3
         required: true
       cluster-version:
         type: string
         required: true
-        default: "4.19"
       force:
         type: boolean
         required: true
-        default: false
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

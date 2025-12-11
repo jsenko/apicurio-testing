@@ -163,6 +163,7 @@ jobs:
     with:
       cluster-name: ${{ inputs.cluster-name }}
       cluster-version: ${{ inputs.cluster-version }}
+      control-nodes: 1 # Try with 1 control node to reduce resource usage. TODO: Adjust later if needed.
       compute-nodes: 2
       force: true
     secrets: inherit

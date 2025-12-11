@@ -24,6 +24,7 @@ jobs:
     with:
       cluster-name: ${{ inputs.cluster-name }}
       cluster-version: "4.19"
+      control-nodes: 3
       compute-nodes: 2
       force: true
     secrets: inherit
