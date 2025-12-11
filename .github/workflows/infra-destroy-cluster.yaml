@@ -44,5 +44,21 @@ jobs:
         run: |
           ./destroy-cluster.sh --cluster ${{ inputs.cluster-name }}
 
+      - name: Delete cluster certificates cache
+        run: |
+          CLUSTER_NAME="${{ inputs.cluster-name }}"          
+          # Check if the cluster name starts with 'ci' and is longer than 5 characters:
+          if [[ "$CLUSTER_NAME" == ci* ]] && [[ ${#CLUSTER_NAME} -gt 5 ]]; then
+            CACHE_DIR="cache/certificates/$CLUSTER_NAME"
+            if [[ -d "$CACHE_DIR" ]]; then
+              echo "🗑️  Deleting certificates cache directory: $CACHE_DIR"
+              rm -rf "$CACHE_DIR"
+            else
+              echo "Certificates cache directory does not exist: $CACHE_DIR"
+            fi
+          else
+            echo "Skipping cache deletion (cluster name does not match criteria)."
+          fi
+
       - name: Save cluster state
         uses: ./.github/actions/save-cluster-state

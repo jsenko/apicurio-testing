@@ -69,6 +69,18 @@ jobs:
       matrix-json: ${{ steps.parse-catalog-images.outputs.matrix-json }}
     steps:
 
+      - name: Print Workflow Parameters
+        run: |
+          echo "📋 Workflow Input Parameters:"
+          echo "  release-version: ${{ inputs.release-version }}"
+          echo "  tests-tag: ${{ inputs.tests-tag }}"
+          echo "  operatorImage: ${{ inputs.operatorImage }}"
+          echo "  appImage: ${{ inputs.appImage }}"
+          echo "  uiImage: ${{ inputs.uiImage }}"
+          echo "  artifact-cluster-name: ${{ inputs.artifact-cluster-name }}"
+          echo "  catalog-images: ${{ inputs.catalog-images }}"
+          echo "  package-version: ${{ inputs.package-version }}"
+
       - name: Generate Random Suffix
         id: generate-suffix
         run: |
@@ -157,7 +169,7 @@ jobs:
       fail-fast: false
     uses: ./.github/workflows/subtest-registry-operator.yaml
     with:
-      cluster-name: ci${{ matrix.version-short }}-${{ needs.prepare.outputs.random-suffix }}
+      cluster-name: ci${{ matrix.version-short }}${{ needs.prepare.outputs.random-suffix }}
       skip-provision-cluster: false
       cluster-version: ${{ matrix.cluster-version }}
       release-version: ${{ inputs.release-version }}
