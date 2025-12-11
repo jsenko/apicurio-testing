@@ -10,5 +10,5 @@
    [...]
    [Success] Image image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:1234567 has been pushed to the registry.
    ```
-   Each OCP version used for testing requires a corresponding index image.
+   **Each OCP version used for testing requires a corresponding index image.**
 4. Run the OLM tests workflow. Provide the new index image URI.

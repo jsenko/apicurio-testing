@@ -1,0 +1,297 @@
+name: "[Subtest] Operator Release"
+run-name: "[Subtest] Operator Release on OCP ${{ inputs.cluster-version }}"
+on:
+  workflow_dispatch:
+    inputs:
+      # Test cluster:
+      cluster-name:
+        type: string
+        description: >-
+          Name of the test cluster. Can be a new cluster created by this workflow, or an existing cluster.
+        required: true
+        default: ci419
+      skip-provision-cluster:
+        type: boolean
+        description: Use an existing test cluster.
+        required: true
+        default: false
+      cluster-version:
+        type: choice
+        description: Version of the test cluster (required if not using an existing cluster).
+        options:
+          - "4.16"
+          - "4.19"
+        required: false
+        default: "4.19"
+      # Test configuration:
+      release-version:
+        type: string
+        description: Upstream version that the release was based on.
+        required: true
+      tests-tag:
+        type: string
+        description: Git ref to use when checking out the testsuite sources. Should either be the same as the upstream version, or `main`.
+        required: true
+        default: main
+      # Test artifacts:
+      operatorImage:
+        type: string
+        description: Operator image (optional - if not provided, the image from the upstream version will be used).
+        required: false
+      appImage:
+        type: string
+        description: Application image (optional - if not provided, the image from the upstream version will be used).
+        required: false
+      uiImage:
+        type: string
+        description: UI image (optional - if not provided, the image from the upstream version will be used).
+        required: false
+      # OLM
+      artifact-cluster-name:
+        type: string
+        description: >-
+          Name of the artifact cluster where the downstream catalog image is hosted. 
+          Catalog images must be prepared before running this test, see docs/Operator-Testing.md for details. 
+          If left empty, it is assumed that a publicly available (upstream) catalog image is used.
+        required: false
+      catalog-image:
+        type: string
+        description: >-
+          Upstream or downstream catalog image.
+          Upstream OLM catalog image can be the latest one, i.e. `quay.io/apicurio/apicurio-registry-3-operator-catalog:latest`.
+          Downstream catalog image is assumed to be hosted on the artifact cluster, 
+          e.g. `image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:1234567`.
+        required: true
+      package-version:
+        type: string
+        description: >-
+          CSV package version to install from the catalog image. For downstream, include the rebuild suffix, e.g. `3.1.4-r1`.
+        required: true
+      # Other
+      destroy-test-cluster:
+        type: boolean
+        description: >-
+          Destroy the test cluster after the tests have completed.
+          Can be set to `false` when you want to reuse the test cluster multiple times.
+          Does not have any effect if using an existing cluster already.
+        required: true
+        default: true
+  workflow_call:
+    inputs:
+      cluster-name:
+        type: string
+        required: true
+      skip-provision-cluster:
+        type: boolean
+        required: true
+      cluster-version:
+        type: string
+        required: false
+      release-version:
+        type: string
+        required: true
+      tests-tag:
+        type: string
+        required: true
+      operatorImage:
+        type: string
+        required: false
+      appImage:
+        type: string
+        required: false
+      uiImage:
+        type: string
+        required: false
+      artifact-cluster-name:
+        type: string
+        required: false
+      catalog-image:
+        type: string
+        required: true
+      package-version:
+        type: string
+        required: true
+      destroy-test-cluster:
+        type: boolean
+        required: true
+
+# Prevent multiple runs for the same cluster:
+#   - We're using OLM and using multiple catalog sources would have to be handled carefully,
+#     and would pose a risk of interfering with other tests runs.
+#   - ApicurioRegistry3 CRDs would be installed multiple times possibly overwrite each other.
+concurrency:
+  group: test-operator-${{ inputs.cluster-name }}
+  cancel-in-progress: false
+
+jobs:
+
+  validate-inputs:
+    name: Validate inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate cluster configuration
+        run: |
+          if [[ "${{ inputs.skip-provision-cluster }}" == "false" && -z "${{ inputs.cluster-version }}" ]]; then
+            echo "❌ Error: cluster-version is required when skip-provision-cluster is false"
+            exit 1
+          fi
+          echo "✅ Input validation passed"
+
+
+  record-start-time:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: validate-inputs
+    outputs:
+      start-time: ${{ steps.get-start-time.outputs.start-time }}
+    steps:
+
+      - name: Get Workflow Start Time
+        id: get-start-time
+        run: |
+          START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "start-time=$START_TIME" >> $GITHUB_OUTPUT
+          echo "Workflow start time: $START_TIME"
+
+
+  provision-cluster:
+    name: Provision cluster
+    uses: ./.github/workflows/provision-cluster.yaml
+    needs: record-start-time
+    if: >-
+      !cancelled() && needs.record-start-time.result == 'success' && !inputs.skip-provision-cluster
+    with:
+      cluster-name: ${{ inputs.cluster-name }}
+      cluster-version: ${{ inputs.cluster-version }}
+      compute-nodes: 2
+      force: true
+    secrets: inherit
+
+
+  test:
+    name: Operator tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 150 # TODO: Hopefully not more. Adjust later.
+    needs:
+      - provision-cluster
+    if: |
+      !cancelled() && (needs.provision-cluster.result == 'success' || needs.provision-cluster.result == 'skipped')
+
+    steps:
+
+      - name: Checkout ${{ github.ref }}
+        uses: actions/checkout@v4
+
+      - name: Restore cluster state
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          cluster-name: ${{ inputs.cluster-name }}
+
+      - name: Configure env. variables
+        run: |
+          echo "WORKSPACE=$PWD" >> $GITHUB_ENV
+
+      - name: Configure image registry pull secret
+        if: inputs.artifact-cluster-name != ''
+        run: |
+          mkdir -p cache/tmp
+          export DOCKER_CONFIG=cache/tmp/.docker
+          cat "cache/clusters/${{ inputs.artifact-cluster-name }}/image-registry-login" | bash
+          ./update-pull-secret.sh --cluster "${{ inputs.cluster-name }}" --docker-config $DOCKER_CONFIG
+
+      - name: Configure operator install file
+        run: |
+          ./configure-apicurio-operator-install-file.sh --cluster ${{ inputs.cluster-name }} \
+            --version ${{ inputs.release-version }} \
+            --namespace PLACEHOLDER_NAMESPACE \
+            --operatorImage "${{ inputs.operatorImage }}" \
+            --appImage "${{ inputs.appImage }}" \
+            --uiImage "${{ inputs.uiImage }}"
+
+      - name: Checkout Registry
+        run: |
+          git clone --branch ${{ inputs.tests-tag }} --depth 1 https://github.com/Apicurio/apicurio-registry.git
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+          cache-dependency-path: |
+            apicurio-registry/operator/pom.xml
+            apicurio-registry/operator/**/pom.xml
+
+      - name: Run remote tests
+        working-directory: apicurio-registry/operator
+        run: |
+          mvn -B verify -pl controller -am \
+            -DskipOperatorTests=false \
+            -Dtest.operator.deployment-type=remote \
+            -Dtest.operator.install-file=$WORKSPACE/templates/registry-operator/${{ inputs.release-version }}/apicurio-registry-operator-configured.yaml \
+            -Dtest.operator.ingress-host=$INGRESS_HOST \
+            -Dgroups=smoke
+          # ^ TODO: Temporary, to run the workflow quickly, remove...
+
+      - name: Check OLM v1 support
+        run: |
+          if kubectl get crd clusterextensions.olm.operatorframework.io &>/dev/null; then
+            echo "✅ OLM v1 (ClusterExtension CRD) is supported."
+            echo "OLM_V1_SUPPORTED=true" >> $GITHUB_ENV
+          else
+            echo "❌ OLM v1 (ClusterExtension CRD) is NOT supported"
+            echo "OLM_V1_SUPPORTED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Run OLM v1 tests
+        if: env.OLM_V1_SUPPORTED == 'true'
+        working-directory: apicurio-registry/operator
+        run: |
+          mvn -B verify -pl olm-tests -am \
+            -DskipOperatorTests=false \
+            -Dtest.operator.olm-version=1 \
+            -Dtest.operator.catalog-image=${{ inputs.catalog-image }} \
+            -Dregistry.version=${{ inputs.package-version }} \
+            -Dgroups=OLM
+
+      - name: Run OLM v0 tests
+        working-directory: apicurio-registry/operator
+        run: |
+          mvn -B verify -pl olm-tests -am \
+            -DskipOperatorTests=false \
+            -Dtest.operator.catalog-image=${{ inputs.catalog-image }} \
+            -Dregistry.version=${{ inputs.package-version }} \
+            -Dgroups=OLM
+
+
+  destroy-cluster:
+    name: Destroy cluster
+    uses: ./.github/workflows/destroy-cluster.yaml
+    needs: test
+    if: >-
+      !cancelled() && !inputs.skip-provision-cluster && inputs.destroy-test-cluster
+    with:
+      cluster-name: ${{ inputs.cluster-name }}
+    secrets: inherit
+
+
+  save_workflow_metadata:
+    name: Save Workflow Metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - record-start-time
+      - destroy-cluster
+    if: >-
+      !cancelled() && needs.record-start-time.result == 'success'
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Commit workflow metadata to repository
+        uses: ./.github/actions/commit-workflow-metadata
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          workflow-start-time: ${{ needs.record-start-time.outputs.start-time }}

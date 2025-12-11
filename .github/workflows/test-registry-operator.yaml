@@ -1,24 +1,8 @@
 name: "[Test] Operator Release"
-run-name: "[Test] Operator Release on OCP ${{ inputs.cluster-version }}"
+run-name: "[Test] Operator Release"
 on:
   workflow_dispatch:
     inputs:
-      # Test cluster:
-      cluster-name:
-        description: >-
-          Name of the test cluster. Can be a new cluster created by this workflow, or an existing cluster.
-        required: true
-        default: ci419
-      skip-provision-cluster:
-        type: boolean
-        description: Use an existing test cluster.
-        required: true
-        default: false
-      cluster-version:
-        type: string
-        description: Version of the test cluster (required if not using an existing cluster).
-        required: false
-        default: "4.19"
       # Test configuration:
       release-version:
         description: Upstream version that the release was based on.
@@ -41,60 +25,30 @@ on:
       artifact-cluster-name:
         type: string
         description: >-
-          Name of the artifact cluster where the downstream catalog image is hosted. 
+          Name of the artifact cluster where the downstream catalog images are hosted. 
           Catalog images must be prepared before running this test, see docs/Operator-Testing.md for details. 
           If left empty, it is assumed that a publicly available (upstream) catalog image is used.
         required: false
-      catalog-image:
+      catalog-images:
         type: string
         description: >-
-          Upstream or downstream catalog image.
-          Upstream OLM catalog image can be the latest one, i.e. `quay.io/apicurio/apicurio-registry-3-operator-catalog:latest`.
-          Downstream catalog image is assumed to be hosted on the artifact cluster, 
-          e.g. `image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:1234567`.
+          Upstream or downstream catalog image(s) in the `cluster-version=catalog-image,…` format, for example:
+          `4.16=image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:123,4.19=image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:456`
         required: true
+        default: >
+          4.16=,
+          4.19=
       package-version:
         type: string
         description: >-
           CSV package version to install from the catalog image. For downstream, include the rebuild suffix, e.g. `3.1.4-r1`.
         required: true
-      # Other
-      destroy-test-cluster:
-        type: boolean
-        description: >-
-          Destroy the test cluster after the tests have completed.
-          Can be set to `false` when you want to reuse the test cluster multiple times.
-          Does not have any effect if using an existing cluster already.
-        required: true
-        default: true
-
-# Prevent multiple runs for the same cluster:
-#   - We're using OLM and using multiple catalog sources would have to be handled carefully,
-#     and would pose a risk of interfering with other tests runs.
-#   - ApicurioRegistry3 CRDs would be installed multiple times possibly overwrite each other.
-concurrency:
-  group: test-operator-${{ inputs.cluster-name }}
-  cancel-in-progress: false
 
 jobs:
-
-  validate-inputs:
-    name: Validate inputs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Validate cluster configuration
-        run: |
-          if [[ "${{ inputs.skip-provision-cluster }}" == "false" && -z "${{ inputs.cluster-version }}" ]]; then
-            echo "❌ Error: cluster-version is required when skip-provision-cluster is false"
-            exit 1
-          fi
-          echo "✅ Input validation passed"
-
 
   record-start-time:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: validate-inputs
     outputs:
       start-time: ${{ steps.get-start-time.outputs.start-time }}
     steps:
@@ -107,126 +61,114 @@ jobs:
           echo "Workflow start time: $START_TIME"
 
 
-  provision-cluster:
-    name: Provision cluster
-    uses: ./.github/workflows/provision-cluster.yaml
-    needs: record-start-time
-    if: >-
-      !cancelled() && needs.record-start-time.result == 'success' && !inputs.skip-provision-cluster
-    with:
-      cluster-name: ${{ inputs.cluster-name }}
-      cluster-version: ${{ inputs.cluster-version }}
-      compute-nodes: 2
-      force: true
-    secrets: inherit
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      random-suffix: ${{ steps.generate-suffix.outputs.random-suffix }}
+      matrix-json: ${{ steps.parse-catalog-images.outputs.matrix-json }}
+    steps:
+
+      - name: Generate Random Suffix
+        id: generate-suffix
+        run: |
+          SUFFIX=$(tr -cd [:alnum:] < /dev/urandom | head -c3)
+          echo "random-suffix=$SUFFIX" >> $GITHUB_OUTPUT
+          echo "Generated random suffix: $SUFFIX"
+
+      - name: Parse Catalog Images
+        id: parse-catalog-images
+        run: |
+          INPUT="${{ inputs.catalog-images }}"
+          
+          # Remove all whitespace, newlines, and tabs:
+          INPUT=$(echo "$INPUT" | tr -d '[:space:]')
+          
+          # Check if input contains '=':
+          if [[ "$INPUT" == *"="* ]]; then
+            echo "📦 Parsing multi-version catalog images..."
+          
+            # Parse comma-separated key=value pairs:
+            IFS=',' read -ra PAIRS <<< "$INPUT"
+          
+            declare -A CATALOG_MAP
+          
+            for pair in "${PAIRS[@]}"; do
+          
+              # Skip empty pairs:
+              if [[ -z "$pair" ]]; then
+                continue
+              fi
+          
+              # Extract version and image:
+              if [[ "$pair" == *"="* ]]; then
+                VERSION="${pair%%=*}"
+                IMAGE="${pair#*=}"
+          
+                # Skip if either version or image is empty:
+                if [[ -n "$VERSION" && -n "$IMAGE" ]]; then
+                  CATALOG_MAP["$VERSION"]="$IMAGE"
+                  echo "  $VERSION -> $IMAGE"
+                fi
+              fi
+
+            done
+          
+            # Validate that we have at least one version:
+            if [[ ${#CATALOG_MAP[@]} -eq 0 ]]; then
+              echo "❌ Error: No valid version=image pairs found."
+              exit 1
+            fi
+          
+            # Build JSON matrix
+            MATRIX_JSON='{"include":['
+            FIRST=true
+            for VERSION in "${!CATALOG_MAP[@]}"; do
+              IMAGE="${CATALOG_MAP[$VERSION]}"
+          
+              # Remove dots from version for cluster name (e.g., 4.16 -> 416):
+              VERSION_SHORT="${VERSION//./}"
+          
+              if [[ "$FIRST" == true ]]; then
+                FIRST=false
+              else
+                MATRIX_JSON+=","
+              fi
+          
+              MATRIX_JSON+="{\"cluster-version\":\"$VERSION\",\"catalog-image\":\"$IMAGE\",\"version-short\":\"$VERSION_SHORT\"}"
+            done
+            MATRIX_JSON+=']}'
+          
+            echo "matrix-json=$MATRIX_JSON" >> $GITHUB_OUTPUT
+            echo "Generated matrix JSON: $MATRIX_JSON"
+          else
+            echo "❌ Error: No valid version=image pairs found."
+            exit 1
+          fi
 
 
   test:
-    name: Operator tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 150 # TODO: Hopefully not more. Adjust later.
+    name: Test on OCP ${{ matrix.cluster-version }}
     needs:
-      - provision-cluster
-    if: |
-      !cancelled() && (needs.provision-cluster.result == 'success' || needs.provision-cluster.result == 'skipped')
-
-    steps:
-
-      - name: Checkout ${{ github.ref }}
-        uses: actions/checkout@v4
-
-      - name: Restore cluster state
-        uses: ./.github/actions/restore-cluster-state
-        with:
-          github-token: ${{ secrets.ACCESS_TOKEN }}
-          cluster-name: ${{ inputs.cluster-name }}
-
-      - name: Configure env. variables
-        run: |
-          echo "WORKSPACE=$PWD" >> $GITHUB_ENV
-
-      - name: Configure image registry pull secret
-        if: inputs.artifact-cluster-name != ''
-        run: |
-          mkdir -p cache/tmp
-          export DOCKER_CONFIG=cache/tmp/.docker
-          cat "cache/clusters/${{ inputs.artifact-cluster-name }}/image-registry-login" | bash
-          ./update-pull-secret.sh --cluster "${{ inputs.cluster-name }}" --docker-config $DOCKER_CONFIG
-
-      - name: Configure operator install file
-        run: |
-          ./configure-apicurio-operator-install-file.sh --cluster ${{ inputs.cluster-name }} \
-            --version ${{ inputs.release-version }} \
-            --namespace PLACEHOLDER_NAMESPACE \
-            --operatorImage "${{ inputs.operatorImage }}" \
-            --appImage "${{ inputs.appImage }}" \
-            --uiImage "${{ inputs.uiImage }}"
-
-      - name: Checkout Registry
-        run: |
-          git clone --branch ${{ inputs.tests-tag }} --depth 1 https://github.com/Apicurio/apicurio-registry.git
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: temurin
-          cache: maven
-          cache-dependency-path: |
-            apicurio-registry/operator/pom.xml
-            apicurio-registry/operator/**/pom.xml
-
-      - name: Run remote tests
-        working-directory: apicurio-registry/operator
-        run: |
-          mvn -B verify -pl controller -am \
-            -DskipOperatorTests=false \
-            -Dtest.operator.deployment-type=remote \
-            -Dtest.operator.install-file=$WORKSPACE/templates/registry-operator/${{ inputs.release-version }}/apicurio-registry-operator-configured.yaml \
-            -Dtest.operator.ingress-host=$INGRESS_HOST \
-            -Dgroups=smoke
-          # ^ TODO: Temporary, to run the workflow quickly, remove...
-
-      - name: Check OLM v1 support
-        run: |
-          if kubectl get crd clusterextensions.olm.operatorframework.io &>/dev/null; then
-            echo "✅ OLM v1 (ClusterExtension CRD) is supported."
-            echo "OLM_V1_SUPPORTED=true" >> $GITHUB_ENV
-          else
-            echo "❌ OLM v1 (ClusterExtension CRD) is NOT supported"
-            echo "OLM_V1_SUPPORTED=false" >> $GITHUB_ENV
-          fi
-
-      - name: Run OLM v1 tests
-        if: env.OLM_V1_SUPPORTED == 'true'
-        working-directory: apicurio-registry/operator
-        run: |
-          mvn -B verify -pl olm-tests -am \
-            -DskipOperatorTests=false \
-            -Dtest.operator.olm-version=1 \
-            -Dtest.operator.catalog-image=${{ inputs.catalog-image }} \
-            -Dregistry.version=${{ inputs.package-version }} \
-            -Dgroups=OLM
-
-      - name: Run OLM v0 tests
-        working-directory: apicurio-registry/operator
-        run: |
-          mvn -B verify -pl olm-tests -am \
-            -DskipOperatorTests=false \
-            -Dtest.operator.catalog-image=${{ inputs.catalog-image }} \
-            -Dregistry.version=${{ inputs.package-version }} \
-            -Dgroups=OLM
-
-
-  destroy-cluster:
-    name: Destroy cluster
-    uses: ./.github/workflows/destroy-cluster.yaml
-    needs: test
-    if: >-
-      !cancelled() && !inputs.skip-provision-cluster && inputs.destroy-test-cluster
+      - record-start-time
+      - prepare
+    strategy:
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix-json) }}
+      fail-fast: false
+    uses: ./.github/workflows/subtest-registry-operator.yaml
     with:
-      cluster-name: ${{ inputs.cluster-name }}
-    secrets: inherit
+      cluster-name: ci${{ matrix.version-short }}-${{ needs.prepare.outputs.random-suffix }}
+      skip-provision-cluster: false
+      cluster-version: ${{ matrix.cluster-version }}
+      release-version: ${{ inputs.release-version }}
+      tests-tag: ${{ inputs.tests-tag }}
+      operatorImage: ${{ inputs.operatorImage }}
+      appImage: ${{ inputs.appImage }}
+      uiImage: ${{ inputs.uiImage }}
+      artifact-cluster-name: ${{ inputs.artifact-cluster-name }}
+      catalog-image: ${{ matrix.catalog-image }}
+      package-version: ${{ inputs.package-version }}
+      destroy-test-cluster: true
 
 
   save_workflow_metadata:
@@ -235,7 +177,7 @@ jobs:
     timeout-minutes: 5
     needs:
       - record-start-time
-      - destroy-cluster
+      - test
     if: >-
       !cancelled() && needs.record-start-time.result == 'success'
     steps:
