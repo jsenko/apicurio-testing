@@ -169,6 +169,8 @@ jobs:
       catalog-image: ${{ matrix.catalog-image }}
       package-version: ${{ inputs.package-version }}
       destroy-test-cluster: true
+    secrets: inherit
+
 
 
   save_workflow_metadata:
