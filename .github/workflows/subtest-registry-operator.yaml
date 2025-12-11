@@ -156,7 +156,7 @@ jobs:
 
   provision-cluster:
     name: Provision cluster
-    uses: ./.github/workflows/provision-cluster.yaml
+    uses: ./.github/workflows/infra-provision-cluster.yaml
     needs: record-start-time
     if: >-
       !cancelled() && needs.record-start-time.result == 'success' && !inputs.skip-provision-cluster
@@ -267,7 +267,7 @@ jobs:
 
   destroy-cluster:
     name: Destroy cluster
-    uses: ./.github/workflows/destroy-cluster.yaml
+    uses: ./.github/workflows/infra-destroy-cluster.yaml
     needs: test
     if: >-
       !cancelled() && !inputs.skip-provision-cluster && inputs.destroy-test-cluster

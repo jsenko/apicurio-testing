@@ -152,12 +152,12 @@ platform:
 
 **Files to Update**:
 
-1. **`.github/workflows/provision-cluster.yaml`**
+1. **`.github/workflows/infra-provision-cluster.yaml`**
    - Update installer download to use OCP
    - Update version input (default to 4.16)
    - Update pull secret reference
 
-2. **`.github/workflows/destroy-cluster.yaml`**
+2. **`.github/workflows/infra-destroy-cluster.yaml`**
    - Update any OKD-specific resource tags
    - Ensure AWS cleanup works for OCP clusters
 
@@ -242,11 +242,11 @@ inputs:
 #### 4.2 Automated Testing via GitHub Actions
 
 **Test Workflow**:
-- [ ] Trigger `provision-cluster.yaml` with OCP 4.16
+- [ ] Trigger `infra-provision-cluster.yaml` with OCP 4.16
 - [ ] Verify cluster provisions successfully
 - [ ] Trigger `test-registry-release.yaml`
 - [ ] Verify all test profiles pass
-- [ ] Trigger `destroy-cluster.yaml`
+- [ ] Trigger `infra-destroy-cluster.yaml`
 - [ ] Verify cluster destroyed and AWS resources cleaned up
 
 #### 4.3 Performance Comparison
@@ -303,7 +303,7 @@ inputs:
 - [ ] `README.md` - Update platform references
 - [ ] `install-cluster.sh` - Remove OKD version options
 - [ ] `generate-install-config.sh` - Remove OKD template paths
-- [ ] `.github/workflows/provision-cluster.yaml` - Remove OKD versions
+- [ ] `.github/workflows/infra-provision-cluster.yaml` - Remove OKD versions
 - [ ] `.github/workflows/test-registry-release.yaml` - Remove OKD matrix
 
 **Rename Files** (if desired):
@@ -461,9 +461,9 @@ Trigger rollback if:
 10. Validate all tests pass
 
 ### Priority 3 (Must Have - Week 1-2)
-11. Update `.github/workflows/provision-cluster.yaml`
+11. Update `.github/workflows/infra-provision-cluster.yaml`
 12. Update `.github/workflows/test-registry-release.yaml`
-13. Update `.github/workflows/destroy-cluster.yaml`
+13. Update `.github/workflows/infra-destroy-cluster.yaml`
 14. Test automated workflows
 
 ### Priority 4 (Cleanup - Week 2)

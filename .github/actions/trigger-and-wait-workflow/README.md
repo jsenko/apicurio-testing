@@ -12,16 +12,16 @@ This composite action triggers a GitHub workflow via `workflow_dispatch` and wai
 
 ## Inputs
 
-| Input             | Description                                              | Required | Default    |
-|-------------------|----------------------------------------------------------|----------|------------|
-| `github-token`    | GitHub token with workflow permissions                   | Yes      | -          |
-| `owner`           | Repository owner                                         | No       | `apicurio` |
-| `repo`            | Repository name                                          | Yes      | -          |
-| `workflow-id`     | Workflow ID or filename (e.g., `provision-cluster.yaml`) | Yes      | -          |
-| `ref`             | Git ref to run the workflow on                           | Yes      | -          |
-| `workflow-inputs` | JSON string of workflow inputs                           | No       | `{}`       |
-| `poll-interval`   | Polling interval in seconds                              | No       | `30`       |
-| `max-wait-time`   | Maximum time to wait for workflow to start (in seconds)  | No       | `180`      |
+| Input             | Description                                                    | Required | Default    |
+|-------------------|----------------------------------------------------------------|----------|------------|
+| `github-token`    | GitHub token with workflow permissions                         | Yes      | -          |
+| `owner`           | Repository owner                                               | No       | `apicurio` |
+| `repo`            | Repository name                                                | Yes      | -          |
+| `workflow-id`     | Workflow ID or filename (e.g., `infra-provision-cluster.yaml`) | Yes      | -          |
+| `ref`             | Git ref to run the workflow on                                 | Yes      | -          |
+| `workflow-inputs` | JSON string of workflow inputs                                 | No       | `{}`       |
+| `poll-interval`   | Polling interval in seconds                                    | No       | `30`       |
+| `max-wait-time`   | Maximum time to wait for workflow to start (in seconds)        | No       | `180`      |
 
 ## Outputs
 
@@ -40,7 +40,7 @@ This composite action triggers a GitHub workflow via `workflow_dispatch` and wai
     github-token: ${{ secrets.ACCESS_TOKEN }}
     owner: apicurio
     repo: apicurio-testing
-    workflow-id: provision-cluster.yaml
+    workflow-id: infra-provision-cluster.yaml
     ref: ${{ github.ref_name }}
     workflow-inputs: |
       {

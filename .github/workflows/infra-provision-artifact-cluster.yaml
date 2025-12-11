@@ -20,7 +20,7 @@ jobs:
     name: Provision cluster
     if: >-
       !inputs.skip-provisioning
-    uses: ./.github/workflows/provision-cluster.yaml
+    uses: ./.github/workflows/infra-provision-cluster.yaml
     with:
       cluster-name: ${{ inputs.cluster-name }}
       cluster-version: "4.19"

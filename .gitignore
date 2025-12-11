@@ -1,3 +1,5 @@
+*-maven-repository.zip
+*.tmp
 .idea
 .notes
 .trash~
@@ -6,9 +8,8 @@
 /clusters.zip
 /clusters/
 /logs/
-/okd-installers/
 /ocp-installers/
+/okd-installers/
 /secrets.env
 /workflow-cache/
 /workflow-results/
-*-maven-repository.zip

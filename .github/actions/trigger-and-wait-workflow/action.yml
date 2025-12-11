@@ -12,7 +12,7 @@ inputs:
     description: 'Repository name'
     required: true
   workflow-id:
-    description: 'Workflow ID or filename (e.g., provision-cluster.yaml)'
+    description: 'Workflow ID or filename (e.g., infra-provision-cluster.yaml)'
     required: true
   ref:
     description: 'Git ref to run the workflow on'
