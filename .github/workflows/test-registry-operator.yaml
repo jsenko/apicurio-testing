@@ -84,7 +84,9 @@ jobs:
       - name: Generate Random Suffix
         id: generate-suffix
         run: |
-          SUFFIX=$(tr -cd [:alnum:] < /dev/urandom | head -c3)
+          FIRST_CHAR=$(tr -cd 'a-z' < /dev/urandom | head -c1)
+          REST_CHARS=$(tr -cd 'a-z0-9' < /dev/urandom | head -c2)
+          SUFFIX="${FIRST_CHAR}${REST_CHARS}"
           echo "random-suffix=$SUFFIX" >> $GITHUB_OUTPUT
           echo "Generated random suffix: $SUFFIX"
 
