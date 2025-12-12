@@ -238,31 +238,50 @@ jobs:
       - name: Configure env. variables
         run: |
           echo "WORKSPACE=$PWD" >> $GITHUB_ENV
+          echo "DOCKER_CONFIG=cache/clusters/${{ inputs.cluster-name }}/.docker" >> $GITHUB_ENV
 
       - name: Configure image registry pull secret
         if: inputs.artifact-cluster-name != ''
         run: |
-          mkdir -p cache/tmp
-          export DOCKER_CONFIG=cache/tmp/.docker
           cat "cache/clusters/${{ inputs.artifact-cluster-name }}/image-registry-login" | bash
           ./update-pull-secret.sh --cluster "${{ inputs.cluster-name }}" --docker-config $DOCKER_CONFIG
 
-      - name: Configure image registry pull secret
-        if: inputs.artifact-cluster-name != ''
+      - name: Check images
         run: |
-          mkdir -p cache/tmp
-          export DOCKER_CONFIG=cache/tmp/.docker
-          cat "cache/clusters/${{ inputs.artifact-cluster-name }}/image-registry-login" | bash
-          ./update-pull-secret.sh --cluster "${{ inputs.cluster-name }}" --docker-config $DOCKER_CONFIG
+          echo "🔍 Checking images..."          
 
-      - name: Check catalog image
-        run: |
+          # Check catalog image (required)
+          echo "Checking catalog image: ${{ needs.process-inputs.outputs.catalog-image }}"
           if docker pull "${{ needs.process-inputs.outputs.catalog-image }}"; then
             echo "✅ Successfully pulled catalog image."
           else
             echo "❌ Failed to pull catalog image."
             exit 1
           fi
+          
+          # Check optional images:
+          declare -A IMAGES=(
+            ["operator"]="${{ inputs.operatorImage }}"
+            ["app"]="${{ inputs.appImage }}"
+            ["ui"]="${{ inputs.uiImage }}"
+          )
+          
+          for IMAGE_TYPE in "${!IMAGES[@]}"; do
+            IMAGE_URL="${IMAGES[$IMAGE_TYPE]}"
+            if [[ -n "$IMAGE_URL" ]]; then
+              echo "Checking $IMAGE_TYPE image: $IMAGE_URL"
+              if docker pull "$IMAGE_URL"; then
+                echo "✅ Successfully pulled $IMAGE_TYPE image."
+              else
+                echo "❌ Failed to pull $IMAGE_TYPE image."
+                exit 1
+              fi
+            else
+              echo "ℹ️  ${IMAGE_TYPE^} image not provided, skipping check."
+            fi
+          done
+          
+          echo "✅ All image checks completed successfully."
 
       - name: Configure operator install file
         run: |
