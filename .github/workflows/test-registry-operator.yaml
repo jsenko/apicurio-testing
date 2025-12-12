@@ -50,6 +50,7 @@ on:
 jobs:
 
   record-start-time:
+    name: Record start time
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -65,8 +66,10 @@ jobs:
 
 
   prepare:
+    name: Prepare test matrix
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: record-start-time
     outputs:
       random-suffix: ${{ steps.generate-suffix.outputs.random-suffix }}
       matrix-json: ${{ steps.parse-catalog-images.outputs.matrix-json }}
@@ -167,7 +170,6 @@ jobs:
   test:
     name: Test on OCP ${{ matrix.cluster-version }}
     needs:
-      - record-start-time
       - prepare
     strategy:
       matrix: ${{ fromJson(needs.prepare.outputs.matrix-json) }}

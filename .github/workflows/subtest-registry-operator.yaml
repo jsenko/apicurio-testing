@@ -127,6 +127,7 @@ concurrency:
 jobs:
 
   record-start-time:
+    name: Record start time
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:

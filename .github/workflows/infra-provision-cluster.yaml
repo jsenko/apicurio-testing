@@ -70,7 +70,7 @@ concurrency:
 jobs:
 
   provision-cluster:
-    name: Provision OpenShift ${{ inputs.cluster-version }}
+    name: Provision OCP ${{ inputs.cluster-version }} cluster ${{ inputs.cluster-name }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
