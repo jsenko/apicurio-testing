@@ -76,6 +76,7 @@ on:
           Does not have any effect if using an existing cluster already.
         required: true
         default: true
+  # Same parameters as above, see the descriptions.
   workflow_call:
     inputs:
       cluster-name:
@@ -120,28 +121,14 @@ on:
 #     and would pose a risk of interfering with other tests runs.
 #   - ApicurioRegistry3 CRDs would be installed multiple times possibly overwrite each other.
 concurrency:
-  group: test-operator-${{ inputs.cluster-name }}
+  group: subtest-registry-operator-${{ inputs.cluster-name }}
   cancel-in-progress: false
 
 jobs:
 
-  validate-inputs:
-    name: Validate inputs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Validate cluster configuration
-        run: |
-          if [[ "${{ inputs.skip-provision-cluster }}" == "false" && -z "${{ inputs.cluster-version }}" ]]; then
-            echo "❌ Error: cluster-version is required when skip-provision-cluster is false"
-            exit 1
-          fi
-          echo "✅ Input validation passed"
-
-
   record-start-time:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: validate-inputs
     outputs:
       start-time: ${{ steps.get-start-time.outputs.start-time }}
     steps:
@@ -154,12 +141,45 @@ jobs:
           echo "Workflow start time: $START_TIME"
 
 
+  check-inputs:
+    name: Check inputs
+    runs-on: ubuntu-latest
+    needs: record-start-time
+    if: >-
+      !cancelled() && needs.record-start-time.result == 'success'
+    steps:
+
+      - name: Print Workflow Inputs
+        run: |
+          echo "📋 Workflow Input Parameters:"
+          echo "  cluster-name: ${{ inputs.cluster-name }}"
+          echo "  skip-provision-cluster: ${{ inputs.skip-provision-cluster }}"
+          echo "  cluster-version: ${{ inputs.cluster-version }}"
+          echo "  release-version: ${{ inputs.release-version }}"
+          echo "  tests-tag: ${{ inputs.tests-tag }}"
+          echo "  operatorImage: ${{ inputs.operatorImage }}"
+          echo "  appImage: ${{ inputs.appImage }}"
+          echo "  uiImage: ${{ inputs.uiImage }}"
+          echo "  artifact-cluster-name: ${{ inputs.artifact-cluster-name }}"
+          echo "  catalog-image: ${{ inputs.catalog-image }}"
+          echo "  package-version: ${{ inputs.package-version }}"
+          echo "  destroy-test-cluster: ${{ inputs.destroy-test-cluster }}"
+
+      - name: Validate cluster configuration
+        run: |
+          if [[ "${{ inputs.skip-provision-cluster }}" == "false" && -z "${{ inputs.cluster-version }}" ]]; then
+            echo "❌ Error: cluster-version is required when skip-provision-cluster is false"
+            exit 1
+          fi
+          echo "✅ Input validation passed"
+
+
   provision-cluster:
     name: Provision cluster
     uses: ./.github/workflows/infra-provision-cluster.yaml
-    needs: record-start-time
+    needs: check-inputs
     if: >-
-      !cancelled() && needs.record-start-time.result == 'success' && !inputs.skip-provision-cluster
+      !cancelled() && needs.check-inputs.result == 'success' && !inputs.skip-provision-cluster
     with:
       cluster-name: ${{ inputs.cluster-name }}
       cluster-version: ${{ inputs.cluster-version }}
@@ -173,8 +193,7 @@ jobs:
     name: Operator tests
     runs-on: ubuntu-latest
     timeout-minutes: 150 # TODO: Hopefully not more. Adjust later.
-    needs:
-      - provision-cluster
+    needs: provision-cluster
     if: |
       !cancelled() && (needs.provision-cluster.result == 'success' || needs.provision-cluster.result == 'skipped')
 
@@ -200,6 +219,23 @@ jobs:
           export DOCKER_CONFIG=cache/tmp/.docker
           cat "cache/clusters/${{ inputs.artifact-cluster-name }}/image-registry-login" | bash
           ./update-pull-secret.sh --cluster "${{ inputs.cluster-name }}" --docker-config $DOCKER_CONFIG
+
+      - name: Configure image registry pull secret
+        if: inputs.artifact-cluster-name != ''
+        run: |
+          mkdir -p cache/tmp
+          export DOCKER_CONFIG=cache/tmp/.docker
+          cat "cache/clusters/${{ inputs.artifact-cluster-name }}/image-registry-login" | bash
+          ./update-pull-secret.sh --cluster "${{ inputs.cluster-name }}" --docker-config $DOCKER_CONFIG
+
+      - name: Check catalog image
+        run: |
+          if docker pull "${{ inputs.catalog-image }}"; then
+            echo "✅ Successfully pulled catalog image."
+          else
+            echo "❌ Failed to pull catalog image."
+            exit 1
+          fi
 
       - name: Configure operator install file
         run: |
