@@ -314,9 +314,7 @@ jobs:
             -DskipOperatorTests=false \
             -Dtest.operator.deployment-type=remote \
             -Dtest.operator.install-file=$WORKSPACE/templates/registry-operator/${{ inputs.release-version }}/apicurio-registry-operator-configured.yaml \
-            -Dtest.operator.ingress-host=$INGRESS_HOST \
-            -Dgroups=smoke
-          # ^ TODO: Temporary, to run the workflow quickly, remove...
+            -Dtest.operator.ingress-host=$INGRESS_HOST
 
       - name: Check OLM v1 support
         run: |
@@ -336,8 +334,7 @@ jobs:
             -DskipOperatorTests=false \
             -Dtest.operator.olm-version=1 \
             -Dtest.operator.catalog-image=${{ needs.process-inputs.outputs.catalog-image }} \
-            -Dregistry.version=${{ inputs.package-version }} \
-            -Dgroups=OLM
+            -Dregistry.version=${{ inputs.package-version }}
 
       - name: Run OLM v0 tests
         working-directory: apicurio-registry/operator
@@ -345,8 +342,7 @@ jobs:
           mvn -B verify -pl olm-tests -am \
             -DskipOperatorTests=false \
             -Dtest.operator.catalog-image=${{ needs.process-inputs.outputs.catalog-image }} \
-            -Dregistry.version=${{ inputs.package-version }} \
-            -Dgroups=OLM
+            -Dregistry.version=${{ inputs.package-version }}
 
 
   destroy-cluster:
