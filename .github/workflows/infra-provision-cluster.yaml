@@ -63,6 +63,10 @@ env:
   OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
   SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
 
+concurrency:
+  group: infra-provision-cluster-${{ inputs.cluster-name }}
+  cancel-in-progress: true
+
 jobs:
 
   provision-cluster:
