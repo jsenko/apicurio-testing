@@ -18,6 +18,14 @@ runs:
       run: |
         ./load-cache.sh --token "${{ inputs.github-token }}"
 
+    - name: Check that the cluster exists in cache
+      shell: bash
+      run: |
+        if [ "${{ inputs.cluster-name }}" != "" ] && [ ! -d "cache/clusters/${{ inputs.cluster-name }}" ]; then
+          echo "Error: Cluster '${{ inputs.cluster-name }}' not found in cache."
+          exit 1
+        fi
+
     - name: Install Kubernetes and OpenShift CLI
       shell: bash
       run: |
