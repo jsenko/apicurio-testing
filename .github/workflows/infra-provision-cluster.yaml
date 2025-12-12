@@ -89,7 +89,7 @@ jobs:
           fi
           ./install-cluster.sh --cluster ${{ inputs.cluster-name }} \
               --ocpVersion ${{ inputs.cluster-version }} \
-              --controlPlaneNodes 3 \
+              --controlPlaneNodes ${{ inputs.control-nodes }} \
               --computeNodes ${{ inputs.compute-nodes }} \
               --log-level warn \
               $INSTALL_ARGS
