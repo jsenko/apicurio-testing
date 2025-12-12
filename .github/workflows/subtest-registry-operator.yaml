@@ -141,10 +141,12 @@ jobs:
           echo "Workflow start time: $START_TIME"
 
 
-  check-inputs:
-    name: Check inputs
+  process-inputs:
+    name: Process inputs
     runs-on: ubuntu-latest
     needs: record-start-time
+    outputs:
+      catalog-image: ${{ steps.transform-catalog-image.outputs.catalog-image }}
     if: >-
       !cancelled() && needs.record-start-time.result == 'success'
     steps:
@@ -165,6 +167,27 @@ jobs:
           echo "  package-version: ${{ inputs.package-version }}"
           echo "  destroy-test-cluster: ${{ inputs.destroy-test-cluster }}"
 
+      - name: Transform catalog image URL
+        id: transform-catalog-image
+        run: |
+          CATALOG_IMAGE="${{ inputs.catalog-image }}"
+          ARTIFACT_CLUSTER="${{ inputs.artifact-cluster-name }}"
+          
+          # Only transform if artifact-cluster-name is provided and catalog image uses registry-proxy:
+          if [[ -n "$ARTIFACT_CLUSTER" && "$CATALOG_IMAGE" == registry-proxy.engineering.redhat.com/* ]]; then
+            # Transform the URL
+            TRANSFORMED_IMAGE="${CATALOG_IMAGE/registry-proxy.engineering.redhat.com/image-registry-infra.apps.$ARTIFACT_CLUSTER.apicurio-testing.org}"
+          
+            echo "⚠️  WARNING: Catalog image URL was transformed:"
+            echo "  Original: $CATALOG_IMAGE"
+            echo "  Transformed: $TRANSFORMED_IMAGE"
+          
+            echo "catalog-image=$TRANSFORMED_IMAGE" >> $GITHUB_OUTPUT
+          else
+            echo "ℹ️  Catalog image URL does not need transformation."
+            echo "catalog-image=$CATALOG_IMAGE" >> $GITHUB_OUTPUT
+          fi
+
       - name: Validate cluster configuration
         run: |
           if [[ "${{ inputs.skip-provision-cluster }}" == "false" && -z "${{ inputs.cluster-version }}" ]]; then
@@ -177,9 +200,9 @@ jobs:
   provision-cluster:
     name: Provision cluster
     uses: ./.github/workflows/infra-provision-cluster.yaml
-    needs: check-inputs
+    needs: process-inputs
     if: >-
-      !cancelled() && needs.check-inputs.result == 'success' && !inputs.skip-provision-cluster
+      !cancelled() && needs.process-inputs.result == 'success' && !inputs.skip-provision-cluster
     with:
       cluster-name: ${{ inputs.cluster-name }}
       cluster-version: ${{ inputs.cluster-version }}
@@ -193,9 +216,13 @@ jobs:
     name: Operator tests
     runs-on: ubuntu-latest
     timeout-minutes: 150 # TODO: Hopefully not more. Adjust later.
-    needs: provision-cluster
-    if: |
-      !cancelled() && (needs.provision-cluster.result == 'success' || needs.provision-cluster.result == 'skipped')
+    needs:
+      - process-inputs
+      - provision-cluster
+    if: >-
+      !cancelled()
+        && (needs.provision-cluster.result == 'success' || needs.provision-cluster.result == 'skipped')
+        && needs.process-inputs.result == 'success'
 
     steps:
 
@@ -230,7 +257,7 @@ jobs:
 
       - name: Check catalog image
         run: |
-          if docker pull "${{ inputs.catalog-image }}"; then
+          if docker pull "${{ needs.process-inputs.outputs.catalog-image }}"; then
             echo "✅ Successfully pulled catalog image."
           else
             echo "❌ Failed to pull catalog image."
@@ -288,7 +315,7 @@ jobs:
           mvn -B verify -pl olm-tests -am \
             -DskipOperatorTests=false \
             -Dtest.operator.olm-version=1 \
-            -Dtest.operator.catalog-image=${{ inputs.catalog-image }} \
+            -Dtest.operator.catalog-image=${{ needs.process-inputs.outputs.catalog-image }} \
             -Dregistry.version=${{ inputs.package-version }} \
             -Dgroups=OLM
 
@@ -297,7 +324,7 @@ jobs:
         run: |
           mvn -B verify -pl olm-tests -am \
             -DskipOperatorTests=false \
-            -Dtest.operator.catalog-image=${{ inputs.catalog-image }} \
+            -Dtest.operator.catalog-image=${{ needs.process-inputs.outputs.catalog-image }} \
             -Dregistry.version=${{ inputs.package-version }} \
             -Dgroups=OLM
 
