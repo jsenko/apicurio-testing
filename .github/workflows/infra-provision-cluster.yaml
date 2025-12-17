@@ -75,6 +75,15 @@ jobs:
     timeout-minutes: 90
     steps:
 
+      - name: Print workflow parameters
+        run: |
+          echo "📋 Workflow Input Parameters:"
+          echo "  cluster-name: ${{ inputs.cluster-name }}"
+          echo "  control-nodes: ${{ inputs.control-nodes }}"
+          echo "  compute-nodes: ${{ inputs.compute-nodes }}"
+          echo "  cluster-version: ${{ inputs.cluster-version }}"
+          echo "  force: ${{ inputs.force }}"
+
       - name: Checkout ${{ github.ref }}
         uses: actions/checkout@v4
         with:
