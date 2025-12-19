@@ -332,6 +332,7 @@ jobs:
         run: |
           mvn -B verify -pl olm-tests -am \
             -DskipOperatorTests=false \
+            -Dgroups=OLM \
             -Dtest.operator.olm-version=1 \
             -Dtest.operator.catalog-image=${{ needs.process-inputs.outputs.catalog-image }} \
             -Dregistry.version=${{ inputs.package-version }}
@@ -341,6 +342,7 @@ jobs:
         run: |
           mvn -B verify -pl olm-tests -am \
             -DskipOperatorTests=false \
+            -Dgroups=OLM \
             -Dtest.operator.catalog-image=${{ needs.process-inputs.outputs.catalog-image }} \
             -Dregistry.version=${{ inputs.package-version }}
 
