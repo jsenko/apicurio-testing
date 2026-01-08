@@ -372,7 +372,13 @@ fi
 
 # Wait for the health endpoint to be ready
 echo "Waiting for Apicurio Registry health endpoint to be ready..."
-HEALTH_URL="http://$APP_INGRESS_URL/health/ready"
+# Use HTTPS for profiles that configure TLS on routes (e.g., authn)
+if [[ "$PROFILE" == "authn" ]]; then
+    HEALTH_PROTOCOL="https"
+else
+    HEALTH_PROTOCOL="http"
+fi
+HEALTH_URL="$HEALTH_PROTOCOL://$APP_INGRESS_URL/health/ready"
 wait_for_health_endpoint "$HEALTH_URL"
 if [[ $? -ne 0 ]]; then
   echo ""
@@ -389,6 +395,6 @@ fi
 echo "Apicurio Registry is up!"
 echo ""
 echo "You can access the application here:"
-echo "    User Interface: http://$UI_INGRESS_URL"
-echo "    REST API:       http://$APP_INGRESS_URL"
+echo "    User Interface: $HEALTH_PROTOCOL://$UI_INGRESS_URL"
+echo "    REST API:       $HEALTH_PROTOCOL://$APP_INGRESS_URL"
 echo ""
