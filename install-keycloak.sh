@@ -367,6 +367,8 @@ export APPS_URL="apps.$CLUSTER_NAME.$BASE_DOMAIN"
 export KEYCLOAK_INGRESS_URL="keycloak-$NAMESPACE.$APPS_URL"
 export KEYCLOAK_HEALTH_URL="keycloak-health-$NAMESPACE.$APPS_URL"
 export KEYCLOAK_DB_PASSWORD
+export POSTGRES_USER="keycloak"
+export POSTGRES_DB="keycloak"
 
 mkdir -p $APP_DIR
 
