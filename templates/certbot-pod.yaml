@@ -29,6 +29,10 @@ spec:
     volumeMounts:
     - name: letsencrypt
       mountPath: /etc/letsencrypt
+    - name: letsencrypt-work
+      mountPath: /var/lib/letsencrypt
+    - name: letsencrypt-logs
+      mountPath: /var/log/letsencrypt
     securityContext:
       allowPrivilegeEscalation: false
       capabilities:
@@ -40,4 +44,8 @@ spec:
         type: RuntimeDefault
   volumes:
   - name: letsencrypt
+    emptyDir: {}
+  - name: letsencrypt-work
+    emptyDir: {}
+  - name: letsencrypt-logs
     emptyDir: {}

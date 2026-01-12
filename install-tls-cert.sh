@@ -338,7 +338,7 @@ fi
 
 # Run certbot command
 echo "Running certbot to generate certificate for domain: $DOMAIN"
-CERTBOT_CMD="certbot certonly --dns-route53 -d \"$DOMAIN\" --agree-tos --email \"$EMAIL\" --non-interactive"
+CERTBOT_CMD="certbot certonly --dns-route53 -d \"$DOMAIN\" --agree-tos --email \"$EMAIL\" --non-interactive --config-dir /etc/letsencrypt --work-dir /var/lib/letsencrypt --logs-dir /var/log/letsencrypt"
 echo "Executing: $CERTBOT_CMD"
 
 if kubectl exec certbot-pod -n "$NAMESPACE" -- sh -c "$CERTBOT_CMD"; then
