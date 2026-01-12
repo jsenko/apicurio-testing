@@ -238,50 +238,60 @@ fi
 
 mkdir -p "$CERT_DIR"
 
-# Check if certificate already exists and is still valid (less than 60 days old)
+# Check if certificate already exists and is still valid (has more than 15 days before expiration)
 PRIVKEY_FILE="$CERT_DIR/privkey.pem"
-if [ -f "$PRIVKEY_FILE" ]; then
-    # Get the creation/modification time of the file in seconds since epoch
-    if command -v stat >/dev/null 2>&1; then
-        # Use stat command (works on most Linux systems)
-        if stat --version 2>/dev/null | grep -q GNU; then
-            # GNU stat (Linux)
-            FILE_TIME=$(stat -c %Y "$PRIVKEY_FILE" 2>/dev/null)
-        else
-            # BSD stat (macOS)
-            FILE_TIME=$(stat -f %m "$PRIVKEY_FILE" 2>/dev/null)
-        fi
-    else
-        FILE_TIME=""
-    fi
-    
-    if [ -n "$FILE_TIME" ]; then
-        CURRENT_TIME=$(date +%s)
-        SIXTY_DAYS_IN_SECONDS=$((60 * 24 * 60 * 60))  # 60 days * 24 hours * 60 minutes * 60 seconds
-        AGE_IN_SECONDS=$((CURRENT_TIME - FILE_TIME))
-        
-        if [ $AGE_IN_SECONDS -lt $SIXTY_DAYS_IN_SECONDS ]; then
-            DAYS_OLD=$((AGE_IN_SECONDS / 86400))  # Convert seconds to days
-            echo "Certificate already exists and is only $DAYS_OLD days old (less than 60 days)."
-            echo "Certificate location: $PRIVKEY_FILE"
-            echo "Updating the cluster's default ingress to use the existing certificate."
+FULLCHAIN_FILE="$CERT_DIR/fullchain.pem"
 
-            kubectl create secret tls apicurio-tls-cert \
-              --cert=$CERT_DIR/fullchain.pem \
-              --key=$CERT_DIR/privkey.pem \
-              -n openshift-ingress
-            kubectl patch ingresscontroller default \
-              -n openshift-ingress-operator \
-              --type=merge \
-              -p '{"spec":{"defaultCertificate":{"name":"apicurio-tls-cert"}}}'
-
-            exit 0
-        else
-            DAYS_OLD=$((AGE_IN_SECONDS / 86400))
-            echo "Existing certificate is $DAYS_OLD days old (more than 60 days). Generating new certificate..."
-        fi
+if [ -f "$PRIVKEY_FILE" ] && [ -f "$FULLCHAIN_FILE" ]; then
+    # Verify the certificate is valid and not corrupted
+    if ! openssl x509 -noout -in "$FULLCHAIN_FILE" 2>/dev/null; then
+        echo "Warning: Existing certificate appears corrupted. Generating new certificate..."
     else
-        echo "Warning: Could not determine age of existing certificate. Proceeding with generation..."
+        # Extract the expiration date from the certificate
+        CERT_END_DATE=$(openssl x509 -enddate -noout -in "$FULLCHAIN_FILE" 2>/dev/null | cut -d= -f2)
+
+        if [ -n "$CERT_END_DATE" ]; then
+            # Convert expiration date to epoch seconds (platform-specific)
+            if date -d "2024-01-01" +%s >/dev/null 2>&1; then
+                # GNU date (Linux)
+                CERT_END_EPOCH=$(date -d "$CERT_END_DATE" +%s 2>/dev/null)
+            else
+                # BSD date (macOS) - format: "Jan 12 12:34:56 2026 GMT"
+                CERT_END_EPOCH=$(date -j -f "%b %d %T %Y %Z" "$CERT_END_DATE" +%s 2>/dev/null)
+            fi
+
+            CURRENT_EPOCH=$(date +%s)
+
+            # Calculate days until expiration (only if we successfully parsed the date)
+            if [ -z "$CERT_END_EPOCH" ]; then
+                echo "Warning: Could not parse certificate expiration date. Proceeding with generation..."
+            else
+                SECONDS_UNTIL_EXPIRY=$((CERT_END_EPOCH - CURRENT_EPOCH))
+                DAYS_UNTIL_EXPIRY=$((SECONDS_UNTIL_EXPIRY / 86400))
+
+                # Renew if less than 15 days remaining
+                if [ $DAYS_UNTIL_EXPIRY -gt 15 ]; then
+                    echo "Certificate is valid for $DAYS_UNTIL_EXPIRY more days (expires: $CERT_END_DATE)"
+                    echo "Certificate location: $CERT_DIR"
+                    echo "Updating the cluster's default ingress to use the existing certificate."
+
+                    kubectl create secret tls apicurio-tls-cert \
+                      --cert=$FULLCHAIN_FILE \
+                      --key=$PRIVKEY_FILE \
+                      -n openshift-ingress
+                    kubectl patch ingresscontroller default \
+                      -n openshift-ingress-operator \
+                      --type=merge \
+                      -p '{"spec":{"defaultCertificate":{"name":"apicurio-tls-cert"}}}'
+
+                    exit 0
+                else
+                    echo "Certificate expires in $DAYS_UNTIL_EXPIRY days (on $CERT_END_DATE). Generating new certificate..."
+                fi
+            fi
+        else
+            echo "Warning: Could not read certificate expiration date. Proceeding with generation..."
+        fi
     fi
 fi
 
