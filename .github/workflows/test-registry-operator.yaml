@@ -33,14 +33,14 @@ on:
         type: string
         description: >-
           Upstream or downstream catalog image(s) in the `cluster-version=catalog-image,…` format, for example:
-          `4.16=image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:123,4.19=image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:456`.
+          `4.16=image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:123,4.20=image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:456`.
           Upstream OLM catalog image can be the latest one, i.e. `quay.io/apicurio/apicurio-registry-3-operator-catalog:latest`.
           Downstream catalog image is assumed to be hosted on the artifact cluster, 
           but the original downstream image URI can also be used and the workflow will attempt to transform the URI.
         required: true
         default: >
           4.16=,
-          4.19=
+          4.20=
       package-version:
         type: string
         description: >-

@@ -148,8 +148,8 @@ jobs:
           echo "run-id=${{ github.run_id }}" >> $GITHUB_OUTPUT
           echo "run-date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
-  os419:
-    name: OpenShift 4.19
+  os420:
+    name: OpenShift 4.20
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -159,8 +159,8 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "us-east-1"
-      OPENSHIFT_VERSION: "4.19"
-      CLUSTER_NAME: ci419
+      OPENSHIFT_VERSION: "4.20"
+      CLUSTER_NAME: ci420
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       CONTROL_PLANE_NODES: 3
       COMPUTE_NODES: 3 # TODO: Increase if needed.
@@ -223,14 +223,14 @@ jobs:
         if: ${{ inputs.skipClusterInstall != 'true' && always() }}
         uses: ./.github/actions/save-cluster-state
 
-  os419_inmemory:
+  os420_inmemory:
     name: Apicurio Registry (in-memory)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os419
+    needs: os420
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: inmemory
       PROFILE: inmemory
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
@@ -270,15 +270,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_pg17:
+  os420_pg17:
     name: Apicurio Registry (pg 17)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os419
+    needs: os420
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: pg17
       PROFILE: postgresql
       POSTGRESQL_VERSION: 17
@@ -322,15 +322,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_pg12:
+  os420_pg12:
     name: Apicurio Registry (pg12)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os419
+    needs: os420
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: pg12
       PROFILE: postgresql
       POSTGRESQL_VERSION: 12
@@ -374,15 +374,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql84:
+  os420_mysql84:
     name: Apicurio Registry (mysql 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os419
+    needs: os420
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: mysql84
       PROFILE: mysql
       MYSQL_VERSION: 8.4
@@ -426,15 +426,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql80:
+  os420_mysql80:
     name: Apicurio Registry (mysql 8.0)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: os419
+    needs: os420
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: mysql80
       PROFILE: mysql
       MYSQL_VERSION: 8.0
@@ -478,15 +478,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_strimzi047:
+  os420_strimzi047:
     name: Apicurio Registry (strimzi 0.47)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419
+    needs: os420
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: ksql047
       PROFILE: kafkasql
       STRIMZI_VERSION: 0.47.0
@@ -535,15 +535,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_keycloak26:
+  os420_keycloak26:
     name: Apicurio Registry (keycloak 26)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419
+    needs: os420
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: keycloak26
       PROFILE: authn
       KEYCLOAK_VERSION: 26.3.1
@@ -592,15 +592,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_keycloak22:
+  os420_keycloak22:
     name: Apicurio Registry (keycloak 22)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419
+    needs: os420
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: keycloak22
       PROFILE: authn
       KEYCLOAK_VERSION: 22.0.3
@@ -650,14 +650,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_inmemory_uitests:
+  os420_inmemory_uitests:
     name: UI Tests (in mem)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os419_inmemory
+    needs: os420_inmemory
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: inmemory
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
@@ -698,14 +698,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_inmemory_integrationtests:
+  os420_inmemory_integrationtests:
     name: Integration Tests (in mem)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_inmemory_uitests
+    needs: os420_inmemory_uitests
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: inmemory
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
@@ -748,14 +748,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_inmemory_dastscan:
+  os420_inmemory_dastscan:
     name: DAST Scan (in mem)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: os419_inmemory_integrationtests
+    needs: os420_inmemory_integrationtests
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: inmemory
       RAPIDAST_TAG: development
 
@@ -815,14 +815,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_pg17_uitests:
+  os420_pg17_uitests:
     name: UI Tests (pg17)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os419_pg17
+    needs: os420_pg17
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: pg17
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
@@ -863,14 +863,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_pg17_integrationtests:
+  os420_pg17_integrationtests:
     name: Integration Tests (pg17)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_pg17_uitests
+    needs: os420_pg17_uitests
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: pg17
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: all
@@ -914,14 +914,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_pg12_integrationtests:
+  os420_pg12_integrationtests:
     name: Integration Tests (pg12)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_pg12
+    needs: os420_pg12
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: pg12
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: smoke
@@ -965,14 +965,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql84_uitests:
+  os420_mysql84_uitests:
     name: UI Tests (mysql 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os419_mysql84
+    needs: os420_mysql84
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: mysql84
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
@@ -1013,14 +1013,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql80_uitests:
+  os420_mysql80_uitests:
     name: UI Tests (mysql 8.0)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os419_mysql80
+    needs: os420_mysql80
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: mysql80
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
@@ -1061,14 +1061,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql84_integrationtests:
+  os420_mysql84_integrationtests:
     name: Integration Tests (mysql 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_mysql84_uitests
+    needs: os420_mysql84_uitests
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: mysql84
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: all
@@ -1112,14 +1112,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_mysql80_integrationtests:
+  os420_mysql80_integrationtests:
     name: Integration Tests (mysql 8.0)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_mysql80_uitests
+    needs: os420_mysql80_uitests
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: mysql80
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: smoke
@@ -1163,14 +1163,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_strimzi047_uitests:
+  os420_strimzi047_uitests:
     name: UI Tests (strimzi 0.47)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os419_strimzi047
+    needs: os420_strimzi047
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: ksql047
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
@@ -1211,14 +1211,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_strimzi047_integrationtests:
+  os420_strimzi047_integrationtests:
     name: Integration Tests (strimzi 0.47)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_strimzi047_uitests
+    needs: os420_strimzi047_uitests
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: ksql047
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
 
@@ -1261,14 +1261,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_keycloak26_integrationtests:
+  os420_keycloak26_integrationtests:
     name: Integration Tests (keycloak 26)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_keycloak26
+    needs: os420_keycloak26
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: keycloak26
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: auth
@@ -1312,14 +1312,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_keycloak22_integrationtests:
+  os420_keycloak22_integrationtests:
     name: Integration Tests (keycloak 22)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os419_keycloak22
+    needs: os420_keycloak22
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: keycloak22
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: auth
@@ -1363,14 +1363,14 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_keycloak26_dastscan:
+  os420_keycloak26_dastscan:
     name: DAST Scan (keycloak 26)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: os419_keycloak26_integrationtests
+    needs: os420_keycloak26_integrationtests
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: keycloak26
       RAPIDAST_TAG: development
 
@@ -1430,18 +1430,18 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os419_inmemory_teardown:
+  os420_inmemory_teardown:
     name: Destroy Registry (inmemory)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_inmemory_uitests
-      - os419_inmemory_integrationtests
-      - os419_inmemory_dastscan
+      - os420_inmemory_uitests
+      - os420_inmemory_integrationtests
+      - os420_inmemory_dastscan
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: inmemory
 
     steps:
@@ -1459,17 +1459,17 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_pg17_teardown:
+  os420_pg17_teardown:
     name: Destroy Registry (pg17)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_pg17_uitests
-      - os419_pg17_integrationtests
+      - os420_pg17_uitests
+      - os420_pg17_integrationtests
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: pg17
 
     steps:
@@ -1487,16 +1487,16 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_pg12_teardown:
+  os420_pg12_teardown:
     name: Destroy Registry (pg12)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_pg12_integrationtests
+      - os420_pg12_integrationtests
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: pg12
 
     steps:
@@ -1514,17 +1514,17 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_mysql84_teardown:
+  os420_mysql84_teardown:
     name: Destroy Registry (mysql 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_mysql84_uitests
-      - os419_mysql84_integrationtests
+      - os420_mysql84_uitests
+      - os420_mysql84_integrationtests
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: mysql84
 
     steps:
@@ -1542,16 +1542,16 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_mysql80_teardown:
+  os420_mysql80_teardown:
     name: Destroy Registry (mysql 8.0)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_mysql80_integrationtests
+      - os420_mysql80_integrationtests
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: mysql80
 
     steps:
@@ -1569,17 +1569,17 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_strimzi047_teardown:
+  os420_strimzi047_teardown:
     name: Destroy Registry (strimzi 0.47)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_strimzi047_uitests
-      - os419_strimzi047_integrationtests
+      - os420_strimzi047_uitests
+      - os420_strimzi047_integrationtests
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: ksql047
 
     steps:
@@ -1597,17 +1597,17 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_keycloak26_teardown:
+  os420_keycloak26_teardown:
     name: Destroy Registry (keycloak 26)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_keycloak26_integrationtests
-      - os419_keycloak26_dastscan
+      - os420_keycloak26_integrationtests
+      - os420_keycloak26_dastscan
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: keycloak26
 
     steps:
@@ -1625,16 +1625,16 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_keycloak22_teardown:
+  os420_keycloak22_teardown:
     name: Destroy Registry (keycloak 22)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os419_keycloak22_integrationtests
+      - os420_keycloak22_integrationtests
     if: always()
 
     env:
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
       NAMESPACE: keycloak22
 
     steps:
@@ -1652,20 +1652,20 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os419_teardown:
-    name: Destroy OpenShift 4.19
+  os420_teardown:
+    name: Destroy OpenShift 4.20
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs:
       - initialize-globals
-      - os419_inmemory_teardown
-      - os419_pg17_teardown
-      - os419_pg12_teardown
-      - os419_mysql84_teardown
-      - os419_mysql80_teardown
-      - os419_strimzi047_teardown
-      - os419_keycloak26_teardown
-      - os419_keycloak22_teardown
+      - os420_inmemory_teardown
+      - os420_pg17_teardown
+      - os420_pg12_teardown
+      - os420_mysql84_teardown
+      - os420_mysql80_teardown
+      - os420_strimzi047_teardown
+      - os420_keycloak26_teardown
+      - os420_keycloak22_teardown
     if: always()
 
     env:
@@ -1674,7 +1674,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "us-east-1"
-      CLUSTER_NAME: ci419
+      CLUSTER_NAME: ci420
 
     steps:
       - name: Checkout Code
@@ -2152,7 +2152,7 @@ jobs:
     timeout-minutes: 5
     needs:
       - initialize-globals
-      - os419_teardown
+      - os420_teardown
       - os416_teardown
     if: always()
 

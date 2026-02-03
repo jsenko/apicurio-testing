@@ -9,7 +9,7 @@ on:
         description: >-
           Name of the test cluster. Can be a new cluster created by this workflow, or an existing cluster.
         required: true
-        default: ci419
+        default: ci420
       skip-provision-cluster:
         type: boolean
         description: Use an existing test cluster.
@@ -20,9 +20,9 @@ on:
         description: Version of the test cluster (required if not using an existing cluster).
         options:
           - "4.16"
-          - "4.19"
+          - "4.20"
         required: false
-        default: "4.19"
+        default: "4.20"
       # Test configuration:
       release-version:
         type: string

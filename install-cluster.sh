@@ -89,7 +89,7 @@ usage() {
     echo    "                               Must contain only letters and numbers"
     echo    ""
     echo    "Optional Parameters:"
-    echo    "  --ocpVersion <version>       OCP version to install (default: 4.19)"
+    echo    "  --ocpVersion <version>       OCP version to install (default: 4.20)"
     echo    "  --region <aws-region>        AWS region to deploy to (default: us-east-1)"
     echo    "  --computeNodes <count>       Number of compute/worker nodes (default: 3)"
     echo    "  --controlPlaneNodes <count>  Number of control plane/master nodes (default: 3)"
@@ -102,7 +102,7 @@ usage() {
 
 # Initialize variables
 CLUSTER_NAME="$USER"
-OCP_VERSION="4.19"
+OCP_VERSION="4.20"
 REGION="us-east-1"
 COMPUTE_NODES="3"
 CONTROL_PLANE_NODES="3"
