@@ -22,9 +22,9 @@ on:
         description: OCP version to install
         options:
           - "4.16"
-          - "4.19"
+          - "4.20"
         required: true
-        default: "4.19"
+        default: "4.20"
       force:
         type: boolean
         description: |
