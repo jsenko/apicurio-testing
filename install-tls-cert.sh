@@ -355,6 +355,20 @@ if kubectl exec certbot-pod -n "$NAMESPACE" -- sh -c "$CERTBOT_CMD"; then
         echo "  - fullchain.pem (certificate + intermediate chain)"
         echo ""
         echo "These certificates are valid for 90 days."
+        echo ""
+        echo "Updating the cluster's default ingress to use the new certificate..."
+
+        kubectl create secret tls apicurio-tls-cert \
+            --cert=$CERT_DIR/fullchain.pem \
+            --key=$CERT_DIR/privkey.pem \
+            -n openshift-ingress
+
+        kubectl patch ingresscontroller default \
+            -n openshift-ingress-operator \
+            --type=merge \
+            -p '{"spec":{"defaultCertificate":{"name":"apicurio-tls-cert"}}}'
+
+        echo "✓ Certificate installed globally in OpenShift cluster"
     else
         echo ""
         echo "Certificates were generated but could not be copied to local filesystem."
