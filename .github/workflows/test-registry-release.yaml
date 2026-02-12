@@ -776,6 +776,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Restore cluster state
         if: always()
         uses: ./.github/actions/restore-cluster-state
@@ -941,6 +944,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Restore cluster state
         if: always()
@@ -1140,6 +1146,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Restore cluster state
         if: always()
         uses: ./.github/actions/restore-cluster-state
@@ -1336,6 +1345,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Restore cluster state
         if: always()
@@ -2054,6 +2066,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Restore cluster state
         if: always()
         uses: ./.github/actions/restore-cluster-state
@@ -2235,6 +2250,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Restore cluster state
         if: always()
