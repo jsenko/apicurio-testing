@@ -224,5 +224,39 @@ if ! wait_for_strimzi_ready $NAMESPACE; then
     exit 1
 fi
 
+# Wait for Strimzi CRDs to be established
+echo "Waiting for Strimzi CRDs to be established..."
+CRDS_TO_WAIT_FOR="kafkas.kafka.strimzi.io kafkanodepools.kafka.strimzi.io"
+for crd in $CRDS_TO_WAIT_FOR; do
+    echo "Waiting for CRD: $crd"
+    timeout=60
+    elapsed=0
+    interval=2
+
+    while [ $elapsed -lt $timeout ]; do
+        if kubectl get crd $crd >/dev/null 2>&1; then
+            # CRD exists, check if it's established
+            established=$(kubectl get crd $crd -o jsonpath='{.status.conditions[?(@.type=="Established")].status}' 2>/dev/null)
+            if [ "$established" = "True" ]; then
+                echo "✓ CRD $crd is established"
+                break
+            else
+                echo "CRD $crd exists but not established yet... (${elapsed}s/${timeout}s)"
+            fi
+        else
+            echo "CRD $crd not found yet... (${elapsed}s/${timeout}s)"
+        fi
+
+        sleep $interval
+        elapsed=$((elapsed + interval))
+    done
+
+    if [ $elapsed -ge $timeout ]; then
+        echo "ERROR: CRD $crd did not become established within ${timeout} seconds"
+        exit 1
+    fi
+done
+
+echo "All required Strimzi CRDs are established!"
 echo "Strimzi Operator installation completed successfully!"
 echo "You can now install Kafka clusters in namespace $NAMESPACE."
