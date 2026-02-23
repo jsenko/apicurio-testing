@@ -193,27 +193,34 @@ download_okd_installer() {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --version <okd-version>"
+    echo "Usage: $0 --version <okd-version> [--retries <count>]"
     echo ""
     echo "Required Parameters:"
     echo "  --version <okd-version>      OKD version to download (e.g., 4.19)"
     echo ""
     echo "Options:"
+    echo "  --retries <count>            Max retry attempts (default: 3)"
     echo "  -h, --help                   Show this help message"
     echo ""
     echo "Example:"
     echo "  $0 --version 4.19"
+    echo "  $0 --version 4.19 --retries 5"
     exit 1
 }
 
 # Initialize variables
 OKD_VERSION=""
+MAX_RETRIES=3
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --version)
             OKD_VERSION="$2"
+            shift 2
+            ;;
+        --retries)
+            MAX_RETRIES="$2"
             shift 2
             ;;
         -h|--help)
@@ -232,6 +239,7 @@ if [[ -z "$OKD_VERSION" ]]; then
     usage
 fi
 
-# Download the OKD installer
-download_okd_installer "$OKD_VERSION"
+# Download the OKD installer with retry
+retry_with_backoff "$MAX_RETRIES" "Download OKD installer v${OKD_VERSION}" \
+    download_okd_installer "$OKD_VERSION"
 exit $?

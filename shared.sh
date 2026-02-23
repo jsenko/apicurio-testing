@@ -90,6 +90,37 @@ function error_exit() {
     exit "${2:-1}"
 }
 
+# Retries a command with exponential backoff.
+# Usage: retry_with_backoff <max_retries> <label> <command...>
+# Backoff schedule: 2^attempt seconds (2s, 4s, 8s, 16s, ...)
+function retry_with_backoff() {
+    local max_retries="$1"
+    local label="$2"
+    shift 2
+
+    if [[ -z "$max_retries" || -z "$label" || -z "$*" ]]; then
+        error_exit "retry_with_backoff requires at least 3 arguments: MAX_RETRIES LABEL COMMAND..."
+    fi
+
+    local attempt=1
+    while true; do
+        echo "Attempt $attempt/$max_retries for '$label'..."
+        if "$@"; then
+            return 0
+        fi
+
+        if [[ $attempt -ge $max_retries ]]; then
+            error "All $max_retries attempt(s) for '$label' have failed."
+            return 1
+        fi
+
+        local delay=$(( 2 ** attempt ))
+        warning "Attempt $attempt/$max_retries for '$label' failed. Retrying in ${delay}s..."
+        sleep "$delay"
+        attempt=$(( attempt + 1 ))
+    done
+}
+
 function wait_for() {
 
   local LABEL=$1
