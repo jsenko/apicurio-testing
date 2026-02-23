@@ -270,8 +270,8 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os420_pg17:
-    name: Apicurio Registry (pg 17)
+  os420_pg18:
+    name: Apicurio Registry (pg 18)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: os420
@@ -279,9 +279,9 @@ jobs:
 
     env:
       CLUSTER_NAME: ci420
-      NAMESPACE: pg17
+      NAMESPACE: pg18
       PROFILE: postgresql
-      POSTGRESQL_VERSION: 17
+      POSTGRESQL_VERSION: 18
       DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -820,15 +820,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os420_pg17_uitests:
-    name: UI Tests (pg17)
+  os420_pg18_uitests:
+    name: UI Tests (pg18)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: os420_pg17
+    needs: os420_pg18
 
     env:
       CLUSTER_NAME: ci420
-      NAMESPACE: pg17
+      NAMESPACE: pg18
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       IS_DOWNSTREAM_VERSION: ${{ inputs.isDownstream }}
 
@@ -868,15 +868,15 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
-  os420_pg17_integrationtests:
-    name: Integration Tests (pg17)
+  os420_pg18_integrationtests:
+    name: Integration Tests (pg18)
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    needs: os420_pg17_uitests
+    needs: os420_pg18_uitests
 
     env:
       CLUSTER_NAME: ci420
-      NAMESPACE: pg17
+      NAMESPACE: pg18
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
       TEST_PROFILE: all
 
@@ -1499,18 +1499,18 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
-  os420_pg17_teardown:
-    name: Destroy Registry (pg17)
+  os420_pg18_teardown:
+    name: Destroy Registry (pg18)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
-      - os420_pg17_uitests
-      - os420_pg17_integrationtests
+      - os420_pg18_uitests
+      - os420_pg18_integrationtests
     if: always()
 
     env:
       CLUSTER_NAME: ci420
-      NAMESPACE: pg17
+      NAMESPACE: pg18
 
     steps:
       - name: Checkout Code
@@ -1699,7 +1699,7 @@ jobs:
     needs:
       - initialize-globals
       - os420_inmemory_teardown
-      - os420_pg17_teardown
+      - os420_pg18_teardown
       - os420_pg12_teardown
       - os420_mysql84_teardown
       - os420_mysql80_teardown
