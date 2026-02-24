@@ -1,4 +1,4 @@
-name: "[Wrapper] [Infra] Provision Artifact Cluster for Release"
+name: "[Wrapper] [Infra] Provision and configure artifact OCP cluster"
 on:
   workflow_dispatch:
     inputs:
