@@ -25,8 +25,8 @@ on:
       artifact-cluster-name:
         type: string
         description: >-
-          Name of the artifact cluster where the downstream catalog images are hosted. 
-          Catalog images must be prepared before running this test, see docs/Operator-Testing.md for details. 
+          Name of the artifact cluster where the downstream catalog images are hosted.
+          Catalog images must be prepared before running this test, see docs/Operator-Testing.md for details.
           If left empty, it is assumed that a publicly available (upstream) catalog image is used.
         required: false
       catalog-images:
@@ -35,7 +35,7 @@ on:
           Upstream or downstream catalog image(s) in the `cluster-version=catalog-image,…` format, for example:
           `4.16=image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:123,4.20=image-registry-infra.apps.art.apicurio-testing.org/rh-osbs/iib:456`.
           Upstream OLM catalog image can be the latest one, i.e. `quay.io/apicurio/apicurio-registry-3-operator-catalog:latest`.
-          Downstream catalog image is assumed to be hosted on the artifact cluster, 
+          Downstream catalog image is assumed to be hosted on the artifact cluster,
           but the original downstream image URI can also be used and the workflow will attempt to transform the URI.
         required: true
         default: >
@@ -45,6 +45,33 @@ on:
         type: string
         description: >-
           CSV package version to install from the catalog image. For downstream, include the rebuild suffix, e.g. `3.1.4-r1`.
+        required: true
+  workflow_call:
+    inputs:
+      release-version:
+        type: string
+        required: true
+      tests-tag:
+        type: string
+        required: true
+        default: main
+      operatorImage:
+        type: string
+        required: false
+      appImage:
+        type: string
+        required: false
+      uiImage:
+        type: string
+        required: false
+      artifact-cluster-name:
+        type: string
+        required: false
+      catalog-images:
+        type: string
+        required: true
+      package-version:
+        type: string
         required: true
 
 jobs:

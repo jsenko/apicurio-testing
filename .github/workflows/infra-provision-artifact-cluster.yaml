@@ -13,6 +13,18 @@ on:
         description: Skip cluster provisioning and use an existing cluster
         default: false
         required: false
+  workflow_call:
+    inputs:
+      cluster-name:
+        type: string
+        description: Cluster name
+        default: art
+        required: true
+      skip-provisioning:
+        type: boolean
+        description: Skip cluster provisioning and use an existing cluster
+        default: false
+        required: false
 
 jobs:
 
