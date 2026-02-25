@@ -1,0 +1,95 @@
+name: "[Wrapper] [Infra] Destroy artifact OCP cluster"
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version
+        required: true
+        type: string
+      issueNumber:
+        description: Release tracker issue number in apicurio/rhboar-releases
+        required: true
+        type: string
+      stepId:
+        description: Release step ID
+        required: false
+        type: string
+        default: destroy-artifact-cluster
+      cluster-name:
+        description: Artifact cluster name
+        required: false
+        type: string
+        default: art
+
+jobs:
+  destroy:
+    name: Destroy Artifact Cluster
+    uses: ./.github/workflows/infra-destroy-cluster.yaml
+    with:
+      cluster-name: ${{ inputs.cluster-name }}
+    secrets: inherit
+
+  report-results:
+    name: Report Results to Release Issue
+    runs-on: ubuntu-latest
+    needs: destroy
+    if: always()
+
+    steps:
+      - name: Determine result
+        id: result
+        run: |
+          if [[ "${{ needs.destroy.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "message=**Artifact Cluster Destroyed Successfully**" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "message=**Artifact Cluster Destruction Failed**" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post result comment to release issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+          script: |
+            const emoji = '${{ steps.result.outputs.emoji }}';
+            const message = '${{ steps.result.outputs.message }}';
+            const version = '${{ inputs.version }}';
+            const clusterName = '${{ inputs.cluster-name }}';
+            const stepId = '${{ inputs.stepId }}';
+            const status = '${{ steps.result.outputs.status }}';
+            const workflowUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+
+            let command;
+            if (status === 'success') {
+              command = `/complete ${stepId}`;
+            } else {
+              command = `/fail ${stepId}`;
+            }
+
+            const commentBody = `${emoji} ${message}
+
+            **Version:** ${version}
+            **Cluster:** ${clusterName}
+
+            **Workflow Run**
+            * ${workflowUrl}
+
+            ---
+
+            ${command}`;
+
+            await github.rest.issues.createComment({
+              owner: 'apicurio',
+              repo: 'rhboar-releases',
+              issue_number: ${{ inputs.issueNumber }},
+              body: commentBody
+            });
+
+      - name: Fail job if destruction failed
+        if: steps.result.outputs.status == 'failure'
+        run: |
+          echo "Artifact cluster destruction failed. Failing this job."
+          exit 1
