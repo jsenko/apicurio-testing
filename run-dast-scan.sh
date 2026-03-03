@@ -6,7 +6,7 @@ show_usage() {
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local rapidast_templates_dir="$script_dir/templates/rapidast"
     
-    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [--config <config_file>] [--tag <rapidast_tag>] [--authEnabled <true|false>]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [--config <config_file>] [--tag <rapidast_tag>] [--authEnabled <true|false>] [--gcsKeyFile <path>]"
     echo ""
     echo "This script runs RapiDAST (Rapid DAST) security scanning against a deployed application."
     echo "The target application URL should be configured in the provided rapidast YAML configuration file."
@@ -31,10 +31,13 @@ show_usage() {
     
     echo "  --tag               Optional. Git branch/tag of rapidast to use (default: development)"
     echo "  --authEnabled       Optional. Enable OAuth2 authentication (true|false). When enabled, automatically derives auth settings."
+    echo "  --gcsKeyFile        Optional. Path to Google Cloud Storage service account key file. When provided, scan results"
+    echo "                      are exported to the ProdSec central storage bucket (secaut-bucket)."
     echo ""
     echo "Example: $0 --cluster okd419 --namespace testns1"
     echo "Example: $0 --cluster okd419 --namespace testns1 --config registry_v3_authenticated.yaml --tag 2.12.1"
     echo "Example: $0 --cluster okd419 --namespace testns1 --authEnabled true"
+    echo "Example: $0 --cluster okd419 --namespace testns1 --gcsKeyFile /path/to/gcs-key.json"
 }
 
 ACCESS_TOKEN=""
@@ -164,6 +167,7 @@ NAMESPACE=""
 CONFIG_FILE=""
 RAPIDAST_TAG="development"
 AUTH_ENABLED="false"
+GCS_KEY_FILE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -185,6 +189,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --authEnabled)
             AUTH_ENABLED="$2"
+            shift 2
+            ;;
+        --gcsKeyFile)
+            GCS_KEY_FILE="$2"
             shift 2
             ;;
         -h|--help)
@@ -221,6 +229,14 @@ if [ -n "$AUTH_ENABLED" ] && [ "$AUTH_ENABLED" != "true" ] && [ "$AUTH_ENABLED" 
     echo "Error: --authEnabled must be 'true' or 'false'"
     show_usage
     exit 1
+fi
+
+# Validate GCS key file if provided
+if [ -n "$GCS_KEY_FILE" ]; then
+    if [ ! -f "$GCS_KEY_FILE" ]; then
+        echo "Error: GCS key file not found: $GCS_KEY_FILE"
+        exit 1
+    fi
 fi
 
 # Set base domain for URL construction
@@ -344,6 +360,13 @@ export DAST_BASE_URL=$REGISTRY_APP_URL
 RAPIDAST_CONFIG=$DAST_TESTS_DIR/rapidast-config.yaml
 envsubst < $BASE_DIR/templates/rapidast/$CONFIG_FILE > $RAPIDAST_CONFIG
 
+# Inject Google Cloud Storage export configuration if a GCS key file was provided
+if [ -n "$GCS_KEY_FILE" ]; then
+    echo "Configuring Google Cloud Storage export..."
+    GCS_CONFIG="  googleCloudStorage:\n    keyFile: \"$GCS_KEY_FILE\"\n    bucketName: secaut-bucket\n    directory: \"apicurio-registry\""
+    sed -i "/^config:/a\\$GCS_CONFIG" $RAPIDAST_CONFIG
+fi
+
 # Check if Python 3.12+ is available
 if ! command -v python3.12 &> /dev/null; then
     if ! command -v python3 &> /dev/null; then
@@ -370,6 +393,11 @@ if [ -n "$AUTH_TOKEN_URL" ]; then
     echo "OAuth2 Authentication: Enabled (Token URL: $AUTH_TOKEN_URL)"
 else
     echo "OAuth2 Authentication: Disabled"
+fi
+if [ -n "$GCS_KEY_FILE" ]; then
+    echo "GCS Export: Enabled (bucket: secaut-bucket, directory: apicurio-registry)"
+else
+    echo "GCS Export: Disabled"
 fi
 echo "Available application URLs:"
 echo "  Registry App:  $REGISTRY_APP_URL"

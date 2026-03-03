@@ -762,7 +762,7 @@ jobs:
     env:
       CLUSTER_NAME: ci420
       NAMESPACE: inmemory
-      RAPIDAST_TAG: development
+      RAPIDAST_TAG: 2.12.1
 
     steps:
       - name: Checkout Code
@@ -774,6 +774,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Write GCS key file
+        if: inputs.isDownstream == 'true'
+        run: |
+          echo "${{ secrets.GCS_SA_KEY }}" > ${{ runner.temp }}/gcs-key.json
+
       - name: Restore cluster state
         if: always()
         uses: ./.github/actions/restore-cluster-state
@@ -782,7 +787,11 @@ jobs:
 
       - name: Run DAST Scanner (v3)
         run: |
-          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_unauthenticated.yaml --tag $RAPIDAST_TAG
+          GCS_ARGS=""
+          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+            GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
+          fi
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_unauthenticated.yaml --tag $RAPIDAST_TAG $GCS_ARGS
 
       - name: Commit DAST scan results to repository
         uses: ./.github/actions/commit-dast-scan-results
@@ -795,7 +804,11 @@ jobs:
 
       - name: Run DAST Scanner (v2)
         run: |
-          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v2_unauthenticated.yaml --tag $RAPIDAST_TAG
+          GCS_ARGS=""
+          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+            GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
+          fi
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v2_unauthenticated.yaml --tag $RAPIDAST_TAG $GCS_ARGS
 
       - name: Commit DAST scan results to repository
         uses: ./.github/actions/commit-dast-scan-results
@@ -808,7 +821,11 @@ jobs:
 
       - name: Run DAST Scanner (ccompat v7)
         run: |
-          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config ccompat_v7_unauthenticated.yaml --tag $RAPIDAST_TAG
+          GCS_ARGS=""
+          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+            GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
+          fi
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config ccompat_v7_unauthenticated.yaml --tag $RAPIDAST_TAG $GCS_ARGS
 
       - name: Commit DAST scan results to repository
         uses: ./.github/actions/commit-dast-scan-results
@@ -1412,7 +1429,7 @@ jobs:
     env:
       CLUSTER_NAME: ci420
       NAMESPACE: keycloak26
-      RAPIDAST_TAG: development
+      RAPIDAST_TAG: 2.12.1
 
     steps:
       - name: Checkout Code
@@ -1424,6 +1441,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Write GCS key file
+        if: inputs.isDownstream == 'true'
+        run: |
+          echo "${{ secrets.GCS_SA_KEY }}" > ${{ runner.temp }}/gcs-key.json
+
       - name: Restore cluster state
         if: always()
         uses: ./.github/actions/restore-cluster-state
@@ -1432,7 +1454,11 @@ jobs:
 
       - name: Run DAST Scanner (v3)
         run: |
-          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true
+          GCS_ARGS=""
+          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+            GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
+          fi
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true $GCS_ARGS
 
       - name: Commit DAST scan results to repository
         uses: ./.github/actions/commit-dast-scan-results
@@ -1445,7 +1471,11 @@ jobs:
 
       - name: Run DAST Scanner (v2)
         run: |
-          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v2_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true
+          GCS_ARGS=""
+          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+            GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
+          fi
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v2_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true $GCS_ARGS
 
       - name: Commit DAST scan results to repository
         uses: ./.github/actions/commit-dast-scan-results
@@ -1458,7 +1488,11 @@ jobs:
 
       - name: Run DAST Scanner (ccompat v7)
         run: |
-          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config ccompat_v7_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true
+          GCS_ARGS=""
+          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+            GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
+          fi
+          ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config ccompat_v7_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true $GCS_ARGS
 
       - name: Commit DAST scan results to repository
         uses: ./.github/actions/commit-dast-scan-results
