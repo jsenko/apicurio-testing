@@ -650,6 +650,120 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
+  os420_elastic90:
+    name: Apicurio Registry (elastic 9.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os420
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci420
+      NAMESPACE: elastic90
+      PROFILE: search
+      ELASTICSEARCH_VERSION: 9.0.0
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install Elasticsearch Operator
+        run: |
+          ./install-elasticsearch-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+      - name: Install Elasticsearch
+        run: |
+          ./install-elasticsearch.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --elasticsearchVersion $ELASTICSEARCH_VERSION
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os420_elastic92:
+    name: Apicurio Registry (elastic 9.2)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os420
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci420
+      NAMESPACE: elastic92
+      PROFILE: search
+      ELASTICSEARCH_VERSION: 9.2.2
+      DOCKER_SERVER: ${{ secrets.DOCKER_SERVER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Verify kubectl
+        run: kubectl version --client
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install Elasticsearch Operator
+        run: |
+          ./install-elasticsearch-operator.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+      - name: Install Elasticsearch
+        run: |
+          ./install-elasticsearch.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --elasticsearchVersion $ELASTICSEARCH_VERSION
+
+      - name: Install Apicurio Registry
+        run: |
+          ./install-apicurio-registry.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --profile $PROFILE
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
   os420_inmemory_uitests:
     name: UI Tests (in mem)
     runs-on: ubuntu-latest
@@ -1420,6 +1534,118 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
 
 
+  os420_elastic90_integrationtests:
+    name: Integration Tests (elastic 9.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os420_elastic90
+
+    env:
+      CLUSTER_NAME: ci420
+      NAMESPACE: elastic90
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      TEST_PROFILE: smoke
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Configure Docker API version
+        if: always()
+        run: |
+          echo "api.version=1.44" > ~/.docker-java.properties
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
+  os420_elastic92_integrationtests:
+    name: Integration Tests (elastic 9.2)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: os420_elastic92
+
+    env:
+      CLUSTER_NAME: ci420
+      NAMESPACE: elastic92
+      APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
+      TEST_PROFILE: smoke
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Configure Docker API version
+        if: always()
+        run: |
+          echo "api.version=1.44" > ~/.docker-java.properties
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Run Integration Tests
+        run: |
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+
+      - name: Commit integration test results to repository
+        if: always()
+        uses: ./.github/actions/commit-integration-test-results
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Commit pod logs to repository
+        if: failure()
+        uses: ./.github/actions/commit-pod-logs
+        with:
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          namespace: ${{ env.NAMESPACE }}
+          job-name: ${{ github.job }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+
   os420_keycloak26_dastscan:
     name: DAST Scan (keycloak 26)
     runs-on: ubuntu-latest
@@ -1726,6 +1952,60 @@ jobs:
           ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
 
 
+  os420_elastic90_teardown:
+    name: Destroy Registry (elastic 9.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - os420_elastic90_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci420
+      NAMESPACE: elastic90
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Destroy Namespace
+        run: |
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+
+  os420_elastic92_teardown:
+    name: Destroy Registry (elastic 9.2)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - os420_elastic92_integrationtests
+    if: always()
+
+    env:
+      CLUSTER_NAME: ci420
+      NAMESPACE: elastic92
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore cluster state
+        if: always()
+        uses: ./.github/actions/restore-cluster-state
+        with:
+          github-token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Destroy Namespace
+        run: |
+          ./destroy-namespace.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE
+
+
   os420_teardown:
     name: Destroy OpenShift 4.20
     runs-on: ubuntu-latest
@@ -1740,6 +2020,8 @@ jobs:
       - os420_strimzi0491_teardown
       - os420_keycloak26_teardown
       - os420_keycloak22_teardown
+      - os420_elastic90_teardown
+      - os420_elastic92_teardown
     if: always()
 
     env:

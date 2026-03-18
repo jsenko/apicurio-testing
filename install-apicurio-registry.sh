@@ -88,67 +88,65 @@ apply_all_yaml_files() {
 
 
 # ##################################################
-# Function to poll a Microprofile Health readiness 
-# endpoint until it becomes UP.
+# Function to poll the system info endpoint until
+# the application is up and responding.
+#
+# Note: In Apicurio Registry 3.2.0+, health check
+# endpoints (/health/ready, /health/live) moved to
+# a dedicated management port (9000) and are no
+# longer available on the main application port
+# (8080). Instead we poll /apis/registry/v3/system/info
+# which is still served on the main port.
 # ##################################################
-wait_for_health_endpoint() {
+wait_for_ready_endpoint() {
     local url="$1"
     local timeout="${2:-600}"  # Default timeout of 10 minutes (600 seconds)
     local interval="${3:-5}"   # Default polling interval of 5 seconds
-    
-    echo "Polling health endpoint: $url"
+
+    echo "Polling readiness endpoint: $url"
     echo "Timeout: ${timeout}s, Polling interval: ${interval}s"
-    
+
     local start_time=$(date +%s)
     local end_time=$((start_time + timeout))
-    
+
     # Initial wait period
-    echo "Waiting 30 seconds before starting health endpoint polling..."
+    echo "Waiting 30 seconds before starting readiness endpoint polling..."
     sleep 30
-    
+
     while [ $(date +%s) -lt $end_time ]; do
-        # Use curl to get the JSON response from the health endpoint
-        local response=$(curl -sL --max-time 10 "$url" 2>/dev/null)
+        local http_code=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 10 "$url" 2>/dev/null)
         local curl_exit_code=$?
 
-        # Check if curl succeeded and we got a response
-        if [ $curl_exit_code -eq 0 ] && [ -n "$response" ]; then
-            # Parse JSON to check if status is "UP" using jq
-            local status=$(echo "$response" | jq -r '.status // empty' 2>/dev/null)
-
-            if [ "$status" = "UP" ]; then
-                echo "Health endpoint is ready! Status: UP"
-                return 0
-            else
-                echo "Health endpoint responded but status is not UP (status: $status), waiting ${interval}s..."
-            fi
+        # Check if curl succeeded and we got a 200 response
+        if [ $curl_exit_code -eq 0 ] && [ "$http_code" = "200" ]; then
+            echo "Readiness endpoint is responding! (HTTP 200)"
+            return 0
+        elif [ $curl_exit_code -eq 0 ] && [ -n "$http_code" ] && [ "$http_code" != "000" ]; then
+            echo "Readiness endpoint responded with HTTP $http_code, waiting ${interval}s..."
         else
             # Get verbose curl output to determine the type of failure
             local curl_verbose=$(curl -k -s -v --max-time 10 "$url" 2>&1)
 
             # Detect specific connection failure types
             if echo "$curl_verbose" | grep -qi "Connection refused"; then
-                echo "Health endpoint not ready - Connection refused (app not listening on port), waiting ${interval}s..."
+                echo "Readiness endpoint not ready - Connection refused (app not listening on port), waiting ${interval}s..."
             elif echo "$curl_verbose" | grep -qi "Connection timed out\|Operation timed out"; then
-                echo "Health endpoint not ready - Connection timeout (network/routing issue), waiting ${interval}s..."
+                echo "Readiness endpoint not ready - Connection timeout (network/routing issue), waiting ${interval}s..."
             elif echo "$curl_verbose" | grep -qi "Could not resolve host\|Name or service not known"; then
-                echo "Health endpoint not ready - DNS resolution failed for $url, waiting ${interval}s..."
+                echo "Readiness endpoint not ready - DNS resolution failed for $url, waiting ${interval}s..."
             elif echo "$curl_verbose" | grep -qi "SSL certificate problem\|SSL.*error\|certificate verify failed"; then
-                echo "Health endpoint not ready - TLS/SSL certificate issue, waiting ${interval}s..."
+                echo "Readiness endpoint not ready - TLS/SSL certificate issue, waiting ${interval}s..."
             elif echo "$curl_verbose" | grep -qi "Empty reply from server"; then
-                echo "Health endpoint not ready - Server closing connection immediately, waiting ${interval}s..."
-            elif echo "$curl_verbose" | grep -qi "HTTP.*[45][0-9][0-9]"; then
-                local http_code=$(echo "$curl_verbose" | grep -o "HTTP.*[45][0-9][0-9]" | head -n1)
-                echo "Health endpoint not ready - Server returned error ($http_code), waiting ${interval}s..."
+                echo "Readiness endpoint not ready - Server closing connection immediately, waiting ${interval}s..."
             else
-                echo "Health endpoint not reachable yet (curl exit code: $curl_exit_code), waiting ${interval}s..."
+                echo "Readiness endpoint not reachable yet (curl exit code: $curl_exit_code), waiting ${interval}s..."
             fi
         fi
 
         sleep $interval
     done
-    
-    echo "ERROR: Health endpoint did not become ready within ${timeout} seconds"
+
+    echo "ERROR: Readiness endpoint did not become ready within ${timeout} seconds"
     return 1
 }
 
@@ -335,12 +333,12 @@ export APICURIO_REGISTRY_VERSION
 export NAMESPACE
 export PROFILE
 
-export POSTGRESQL_VERSION
 export MYSQL_VERSION
 export MYSQL_USER
 export MYSQL_DATABASE
 export MYSQL_PASSWORD
 export MYSQL_ROOT_PASSWORD
+export POSTGRESQL_VERSION
 export POSTGRESQL_USER
 export POSTGRESQL_DATABASE
 export POSTGRESQL_PASSWORD
@@ -389,20 +387,20 @@ else
     exit 1
 fi
 
-# Wait for the health endpoint to be ready
-echo "Waiting for Apicurio Registry health endpoint to be ready..."
+# Wait for the application to be ready
+echo "Waiting for Apicurio Registry to be ready..."
 # Use HTTPS for profiles that configure TLS on routes (e.g., authn)
 if [[ "$PROFILE" == "authn" ]]; then
     HEALTH_PROTOCOL="https"
 else
     HEALTH_PROTOCOL="http"
 fi
-HEALTH_URL="$HEALTH_PROTOCOL://$APP_INGRESS_URL/health/ready"
-wait_for_health_endpoint "$HEALTH_URL"
+HEALTH_URL="$HEALTH_PROTOCOL://$APP_INGRESS_URL/apis/registry/v3/system/info"
+wait_for_ready_endpoint "$HEALTH_URL"
 if [[ $? -ne 0 ]]; then
   echo ""
   echo "--"
-  echo "ERROR: Apicurio Registry health endpoint did not become ready in time."
+  echo "ERROR: Apicurio Registry did not become ready in time."
   echo "--"
   echo ""
   echo "Collecting debugging information..."
