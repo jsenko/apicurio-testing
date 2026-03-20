@@ -11,7 +11,7 @@ show_usage() {
     echo "  --cluster           Optional. The OpenShift cluster name (default: \$USER)"
     echo "  --namespace         Required. The namespace where Registry is deployed"
     echo "  --tag               Optional. Git branch/tag to test against (default: main)"
-    echo "  --testProfile       Optional. Test profile to run (default: all). Allowed values: all, smoke, auth"
+    echo "  --testProfile       Optional. Test profile to run (default: all). Allowed values: all, smoke, auth, search"
     echo "  --registryProtocol  Optional. Registry protocol (default: http)"
     echo "  --registryHost      Optional. Registry host (default: registry-app-NAMESPACE.apps.CLUSTER_NAME.apicurio-testing.org)"
     echo "  --registryPort      Optional. Registry port (default: 80)"
@@ -96,8 +96,8 @@ if [ -z "$TEST_PROFILE" ]; then
 fi
 
 # Validate the test profile value
-if [[ "$TEST_PROFILE" != "all" && "$TEST_PROFILE" != "smoke" && "$TEST_PROFILE" != "auth" ]]; then
-    echo "Error: Invalid testProfile value '$TEST_PROFILE'. Allowed values are: all, smoke, auth"
+if [[ "$TEST_PROFILE" != "all" && "$TEST_PROFILE" != "smoke" && "$TEST_PROFILE" != "auth" && "$TEST_PROFILE" != "search" ]]; then
+    echo "Error: Invalid testProfile value '$TEST_PROFILE'. Allowed values are: all, smoke, auth, search"
     show_usage
     exit 1
 fi
