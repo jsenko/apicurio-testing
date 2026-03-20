@@ -1544,7 +1544,7 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: elastic90
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: smoke
+      TEST_PROFILE: search
 
     steps:
       - name: Checkout Code
@@ -1600,7 +1600,7 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: elastic92
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: smoke
+      TEST_PROFILE: search
 
     steps:
       - name: Checkout Code
