@@ -1009,7 +1009,6 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: pg18
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: all
 
     steps:
       - name: Checkout Code
@@ -1034,7 +1033,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -1090,7 +1089,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_PROFILE
 
       - name: Commit integration test results to repository
         if: always()
@@ -1217,7 +1216,6 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: mysql84
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: all
 
     steps:
       - name: Checkout Code
@@ -1242,7 +1240,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -1298,7 +1296,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_PROFILE
 
       - name: Commit integration test results to repository
         if: always()
@@ -1457,7 +1455,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE --registryProtocol https --registryPort 443
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_PROFILE --registryProtocol https --registryPort 443
 
       - name: Commit integration test results to repository
         if: always()
@@ -1513,7 +1511,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE --registryProtocol https --registryPort 443
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_PROFILE --registryProtocol https --registryPort 443
 
       - name: Commit integration test results to repository
         if: always()
@@ -1569,7 +1567,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_PROFILE
 
       - name: Commit integration test results to repository
         if: always()
@@ -1625,7 +1623,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_PROFILE
 
       - name: Commit integration test results to repository
         if: always()
