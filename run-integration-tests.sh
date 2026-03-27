@@ -2,7 +2,7 @@
 
 # Function to display usage information
 show_usage() {
-    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [--tag <registry_tag>] [--testProfile <profile>] [--registryProtocol <protocol>] [--registryHost <host>] [--registryPort <port>] [--realmName <realm>]"
+    echo "Usage: $0 [--cluster <cluster_name>] --namespace <namespace> [--tag <registry_tag>] [--testGroups <groups>] [--registryProtocol <protocol>] [--registryHost <host>] [--registryPort <port>] [--realmName <realm>]"
     echo ""
     echo "This script runs the apicurio-registry integration tests against a deployed Registry instance."
     echo "The Registry URL is constructed as: http://registry-app-NAMESPACE.apps.CLUSTER_NAME.apicurio-testing.org"
@@ -11,13 +11,13 @@ show_usage() {
     echo "  --cluster           Optional. The OpenShift cluster name (default: \$USER)"
     echo "  --namespace         Required. The namespace where Registry is deployed"
     echo "  --tag               Optional. Git branch/tag to test against (default: main)"
-    echo "  --testProfile       Optional. Test profile to run (default: all). Allowed values: all, smoke, auth, search"
+    echo "  --testGroups       Optional. Test group(s) to run (default: smoke | serdes | acceptance). Examples: smoke, auth, 'smoke | serdes'"
     echo "  --registryProtocol  Optional. Registry protocol (default: http)"
     echo "  --registryHost      Optional. Registry host (default: registry-app-NAMESPACE.apps.CLUSTER_NAME.apicurio-testing.org)"
     echo "  --registryPort      Optional. Registry port (default: 80)"
     echo "  --realmName         Optional. Keycloak realm name (default: registry)"
     echo ""
-    echo "Example: $0 --cluster okd419 --namespace testns1 --tag main --testProfile smoke"
+    echo "Example: $0 --cluster okd419 --namespace testns1 --tag main --testGroups smoke"
     echo "Example: $0 --cluster okd419 --namespace testns1 --registryProtocol https --registryPort 443 --realmName myrealm"
 }
 
@@ -25,7 +25,7 @@ show_usage() {
 CLUSTER_NAME="$USER"
 NAMESPACE=""
 APICURIO_REGISTRY_TAG="main"
-TEST_PROFILE="all"
+TEST_GROUPS=""
 REGISTRY_PROTOCOL=""
 REGISTRY_HOST=""
 REGISTRY_PORT=""
@@ -45,8 +45,8 @@ while [[ $# -gt 0 ]]; do
             APICURIO_REGISTRY_TAG="$2"
             shift 2
             ;;
-        --testProfile)
-            TEST_PROFILE="$2"
+        --testGroups)
+            TEST_GROUPS="$2"
             shift 2
             ;;
         --registryProtocol)
@@ -90,17 +90,8 @@ if [ -z "$NAMESPACE" ]; then
     exit 1
 fi
 
-if [ -z "$TEST_PROFILE" ]; then
-    TEST_PROFILE=all
-    exit 1
-fi
-
-# Validate the test profile value
-if [[ "$TEST_PROFILE" != "all" && "$TEST_PROFILE" != "smoke" && "$TEST_PROFILE" != "auth" && "$TEST_PROFILE" != "search" ]]; then
-    echo "Error: Invalid testProfile value '$TEST_PROFILE'. Allowed values are: all, smoke, auth, search"
-    show_usage
-    exit 1
-fi
+# If no test profile specified, use the default groups from the pom.xml
+# (smoke | serdes | acceptance)
 
 if [ -z "$REGISTRY_PROTOCOL" ]; then
     REGISTRY_PROTOCOL=http
@@ -171,13 +162,17 @@ echo "Cluster: $CLUSTER_NAME"
 echo "Namespace: $NAMESPACE"
 echo ""
 echo "------------------------------------"
-echo "Running Integration Tests ($TEST_PROFILE profile)..."
+echo "Running Integration Tests (groups: ${TEST_GROUPS:-default})..."
 echo "------------------------------------"
 
+# Build the mvnw command arguments
+MVNW_ARGS=(verify -am --no-transfer-progress -Pintegration-tests)
+if [ -n "$TEST_GROUPS" ]; then
+    MVNW_ARGS+=("-Dgroups=$TEST_GROUPS")
+fi
+
 # Run the integration tests
-./mvnw verify -am --no-transfer-progress \
-    -Pintegration-tests \
-    -P$TEST_PROFILE \
+./mvnw "${MVNW_ARGS[@]}" \
     -pl integration-tests \
     -Dmaven.javadoc.skip=true \
     -Dquarkus.oidc.token-path=$TOKEN_AUTH_URL \

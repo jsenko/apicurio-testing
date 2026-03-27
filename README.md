@@ -212,7 +212,7 @@ apicurio-testing/
 ./install-apicurio-registry.sh --cluster test420 --namespace auth --profile authn
 
 # Run auth tests
-./run-integration-tests.sh --cluster test420 --namespace auth --testProfile auth
+./run-integration-tests.sh --cluster test420 --namespace auth --testGroups auth
 ```
 
 ### Test Migration (v2.6 → v3.1)

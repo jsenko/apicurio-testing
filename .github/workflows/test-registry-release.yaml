@@ -1009,7 +1009,6 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: pg18
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: all
 
     steps:
       - name: Checkout Code
@@ -1034,7 +1033,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -1065,7 +1064,7 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: pg12
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: smoke
+      TEST_GROUPS: smoke
 
     steps:
       - name: Checkout Code
@@ -1090,7 +1089,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_GROUPS
 
       - name: Commit integration test results to repository
         if: always()
@@ -1217,7 +1216,6 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: mysql84
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: all
 
     steps:
       - name: Checkout Code
@@ -1242,7 +1240,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
 
       - name: Commit integration test results to repository
         if: always()
@@ -1273,7 +1271,7 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: mysql80
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: smoke
+      TEST_GROUPS: smoke
 
     steps:
       - name: Checkout Code
@@ -1298,7 +1296,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_GROUPS
 
       - name: Commit integration test results to repository
         if: always()
@@ -1432,7 +1430,7 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: keycloak26
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: auth
+      TEST_GROUPS: auth
 
     steps:
       - name: Checkout Code
@@ -1457,7 +1455,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE --registryProtocol https --registryPort 443
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_GROUPS --registryProtocol https --registryPort 443
 
       - name: Commit integration test results to repository
         if: always()
@@ -1488,7 +1486,7 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: keycloak22
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: auth
+      TEST_GROUPS: auth
 
     steps:
       - name: Checkout Code
@@ -1513,7 +1511,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE --registryProtocol https --registryPort 443
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_GROUPS --registryProtocol https --registryPort 443
 
       - name: Commit integration test results to repository
         if: always()
@@ -1544,7 +1542,7 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: elastic90
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: search
+      TEST_GROUPS: search
 
     steps:
       - name: Checkout Code
@@ -1569,7 +1567,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_GROUPS
 
       - name: Commit integration test results to repository
         if: always()
@@ -1600,7 +1598,7 @@ jobs:
       CLUSTER_NAME: ci420
       NAMESPACE: elastic92
       APICURIO_REGISTRY_VERSION: ${{ inputs.releaseVersion }}
-      TEST_PROFILE: search
+      TEST_GROUPS: search
 
     steps:
       - name: Checkout Code
@@ -1625,7 +1623,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testProfile $TEST_PROFILE
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} --testGroups $TEST_GROUPS
 
       - name: Commit integration test results to repository
         if: always()
