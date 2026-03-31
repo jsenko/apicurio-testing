@@ -167,6 +167,7 @@ echo "------------------------------------"
 
 # Build the mvnw command arguments
 MVNW_ARGS=(verify -am --no-transfer-progress -Pintegration-tests)
+MVNW_ARGS+=("-Dsurefire.skip=true")
 if [ -n "$TEST_GROUPS" ]; then
     MVNW_ARGS+=("-Dgroups=$TEST_GROUPS")
 fi
