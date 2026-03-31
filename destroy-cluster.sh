@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to destroy OKD cluster
+# Script to destroy OCP cluster
 # Usage: ./destroy-cluster.sh [--cluster <cluster-name>]
 
 # Get the directory where this script is located
@@ -58,7 +58,7 @@ usage() {
 
 # Initialize variables
 CLUSTER_NAME="$USER"
-OKD_VERSION=""
+OCP_VERSION=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -86,7 +86,7 @@ fi
 # Validate required environment variables
 validate_env_vars
 
-echo "Destroying OKD cluster with name: $CLUSTER_NAME"
+echo "Destroying OCP cluster with name: $CLUSTER_NAME"
 
 load_cluster_config "$CLUSTER_NAME"
 
@@ -94,13 +94,13 @@ load_cluster_config "$CLUSTER_NAME"
 cd "$CLUSTER_DIR"
 
 # Ensure the openshift-install binary is available
-OKD_VERSION=$(cat "$CLUSTER_DIR/version")
-"$BASE_DIR/download-okd-installer.sh" --version "$OKD_VERSION"
+OCP_VERSION=$(cat "$CLUSTER_DIR/version")
+"$BASE_DIR/download-ocp-installer.sh" --version "$OCP_VERSION"
 if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to download openshift-install for OKD version $OKD_VERSION."
+    echo "Error: Failed to download openshift-install for OCP version $OCP_VERSION."
     exit 1
 fi
-OPENSHIFT_INSTALLER="$BIN_DIR/$OKD_VERSION/openshift-install"
+OPENSHIFT_INSTALLER="$BIN_DIR/$OCP_VERSION/openshift-install"
 
 # Destroy the cluster
 $OPENSHIFT_INSTALLER destroy cluster --log-level=info
