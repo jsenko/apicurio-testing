@@ -165,14 +165,20 @@ echo "------------------------------------"
 echo "Running Integration Tests (groups: ${TEST_GROUPS:-default})..."
 echo "------------------------------------"
 
-# Build the mvnw command arguments
-MVNW_ARGS=(verify -am --no-transfer-progress -Pintegration-tests)
-MVNW_ARGS+=("-Dsurefire.skip=true")
+# Step 1: Build dependency modules (skip all tests to avoid -Dgroups leaking into
+# modules that don't have JUnit 5 on their test classpath)
+echo "Building dependency modules..."
+./mvnw install -am --no-transfer-progress \
+    -pl integration-tests \
+    -DskipTests \
+    -Dmaven.javadoc.skip=true
+
+# Step 2: Run integration tests (failsafe) in the integration-tests module only
+MVNW_ARGS=(verify --no-transfer-progress -Pintegration-tests)
 if [ -n "$TEST_GROUPS" ]; then
     MVNW_ARGS+=("-Dgroups=$TEST_GROUPS")
 fi
 
-# Run the integration tests
 ./mvnw "${MVNW_ARGS[@]}" \
     -pl integration-tests \
     -Dmaven.javadoc.skip=true \
