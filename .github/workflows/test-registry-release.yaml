@@ -26,6 +26,10 @@ on:
         description: Skip cluster install
         required: true
         default: false
+      smokeOnly:
+        description: Run only smoke tests (for respin releases)
+        required: false
+        default: 'false'
       dryRun:
         description: Dry run mode - skip committing results to apicurio-testing-results
         required: false
@@ -60,6 +64,11 @@ on:
         default: 'false'
       skipClusterInstall:
         description: Skip cluster install
+        required: false
+        type: string
+        default: 'false'
+      smokeOnly:
+        description: Run only smoke tests (for respin releases)
         required: false
         type: string
         default: 'false'
@@ -115,6 +124,7 @@ jobs:
           echo "  testsTag: ${{ inputs.testsTag }}"
           echo "  isDownstream: ${{ inputs.isDownstream }}"
           echo "  skipClusterInstall: ${{ inputs.skipClusterInstall }}"
+          echo "  smokeOnly: ${{ inputs.smokeOnly }}"
           echo "  dryRun: ${{ inputs.dryRun }}"
 
           # Create JSON representation of all inputs
@@ -127,6 +137,7 @@ jobs:
             "testsTag": "${{ inputs.testsTag }}",
             "isDownstream": "${{ inputs.isDownstream }}",
             "skipClusterInstall": "${{ inputs.skipClusterInstall }}",
+            "smokeOnly": "${{ inputs.smokeOnly }}",
             "dryRun": "${{ inputs.dryRun }}"
           }
           EOF
@@ -329,7 +340,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: os420
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -381,7 +392,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: os420
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -433,7 +444,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: os420
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -485,7 +496,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os420
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -542,7 +553,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os420
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -599,7 +610,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os420
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -657,7 +668,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os420
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -714,7 +725,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os420
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -848,7 +859,11 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
+          EXTRA_ARGS=""
+          if [[ "${{ inputs.smokeOnly }}" == "true" ]]; then
+            EXTRA_ARGS="--testGroups smoke"
+          fi
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} $EXTRA_ARGS
 
       - name: Commit integration test results to repository
         if: always()
@@ -874,6 +889,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: os420_inmemory_integrationtests
+    if: ${{ inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -1035,7 +1051,11 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }}
+          EXTRA_ARGS=""
+          if [[ "${{ inputs.smokeOnly }}" == "true" ]]; then
+            EXTRA_ARGS="--testGroups smoke"
+          fi
+          ./run-integration-tests.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --tag ${{ inputs.testsTag }} $EXTRA_ARGS
 
       - name: Commit integration test results to repository
         if: always()
@@ -1793,7 +1813,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - os420_pg12_integrationtests
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -1821,7 +1841,7 @@ jobs:
     needs:
       - os420_mysql84_uitests
       - os420_mysql84_integrationtests
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -1848,7 +1868,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - os420_mysql80_integrationtests
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -1876,7 +1896,7 @@ jobs:
     needs:
       - os420_strimzi0491_uitests
       - os420_strimzi0491_integrationtests
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -1904,7 +1924,7 @@ jobs:
     needs:
       - os420_keycloak26_integrationtests
       - os420_keycloak26_dastscan
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -1931,7 +1951,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - os420_keycloak22_integrationtests
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -1958,7 +1978,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - os420_elastic90_integrationtests
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -1985,7 +2005,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - os420_elastic92_integrationtests
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci420
@@ -2055,7 +2075,7 @@ jobs:
     name: OpenShift 4.16
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    if: ${{ inputs.skipClusterInstall != 'true' }}
+    if: ${{ inputs.skipClusterInstall != 'true' && inputs.smokeOnly != 'true' }}
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
@@ -2292,7 +2312,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     needs: os416
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci416
@@ -2454,7 +2474,7 @@ jobs:
     needs:
       - os416_strimzi043_uitests
       - os416_strimzi043_integrationtests
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       CLUSTER_NAME: ci416
@@ -2483,7 +2503,7 @@ jobs:
       - initialize-globals
       - os416_inmemory_teardown
       - os416_strimzi043_teardown
-    if: always()
+    if: ${{ always() && inputs.smokeOnly != 'true' }}
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
