@@ -124,14 +124,11 @@ jobs:
           DESTROYED="${{ steps.cleanup.outputs.destroyed-clusters }}"
           EXPIRING="${{ steps.cleanup.outputs.expiring-clusters }}"
           DRY_RUN="${{ inputs.dry-run || 'false' }}"
-          WEBHOOK="${{ secrets.SLACK_NOTIFICATION_WEBHOOK }}"
-
-          if [[ -z "$WEBHOOK" ]]; then
-            echo "⚠️  SLACK_NOTIFICATION_WEBHOOK secret is not set. Skipping notification."
-            exit 0
-          fi
+          WEBHOOK_DESTROYED="${{ secrets.SLACK_GENERAL_NOTIFICATION_WEBHOOK }}"
+          WEBHOOK_EXPIRING="${{ secrets.SLACK_IMPORTANT_NOTIFICATION_WEBHOOK }}"
 
           SLACK_USERS_FILE="slack-users.json"
+          LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           # Helper: resolve GitHub user to Slack mention
           resolve_mention() {
@@ -147,10 +144,24 @@ jobs:
             fi
           }
 
-          MESSAGE=""
+          # Send a Slack message to the given webhook
+          send_slack() {
+            local WEBHOOK="$1"
+            local MESSAGE="$2"
+            if [[ -z "$WEBHOOK" ]]; then
+              echo "⚠️  Webhook not set. Skipping notification."
+              return
+            fi
+            local PAYLOAD
+            PAYLOAD=$(jq -n \
+              --arg text "🧹 *Cluster Cleanup Report*\n\n${MESSAGE}\n<${LINK}|View workflow run>" \
+              '{text: $text}')
+            curl -s -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$WEBHOOK"
+          }
 
-          # Expiring soon warnings
+          # Expiring soon warnings → important webhook
           if [[ -n "$EXPIRING" ]]; then
+            MESSAGE=""
             IFS=',' read -ra PAIRS <<< "$EXPIRING"
             for PAIR in "${PAIRS[@]}"; do
               if [[ -z "$PAIR" ]]; then
@@ -162,10 +173,12 @@ jobs:
               USER_MENTION=$(resolve_mention "$GITHUB_USER")
               MESSAGE="${MESSAGE}• ⚠️ Cluster *${CLUSTER_NAME}* (created by ${USER_MENTION}) expires in ~${REMAINING_H}h\n"
             done
+            send_slack "$WEBHOOK_EXPIRING" "$MESSAGE"
           fi
 
-          # Destroyed clusters
+          # Destroyed clusters → regular webhook
           if [[ -n "$DESTROYED" ]]; then
+            MESSAGE=""
             IFS=',' read -ra PAIRS <<< "$DESTROYED"
             for PAIR in "${PAIRS[@]}"; do
               if [[ -z "$PAIR" ]]; then
@@ -180,11 +193,5 @@ jobs:
                 MESSAGE="${MESSAGE}• 🗑️ Cluster *${CLUSTER_NAME}* (created by ${USER_MENTION}) has been destroyed (expired)\n"
               fi
             done
+            send_slack "$WEBHOOK_DESTROYED" "$MESSAGE"
           fi
-
-          LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          PAYLOAD=$(jq -n \
-            --arg text "🧹 *Cluster Cleanup Report*\n\n${MESSAGE}\n<${LINK}|View workflow run>" \
-            '{text: $text}')
-
-          curl -s -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$WEBHOOK"
