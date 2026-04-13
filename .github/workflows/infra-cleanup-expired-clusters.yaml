@@ -92,7 +92,7 @@ jobs:
               echo "⏳ Cluster '$CLUSTER_NAME' expires at $EXPIRATION_ISO (~${REMAINING_H}h remaining, created by ${CREATED_BY:-unknown})."
 
               # Check if cluster is expiring soon (less than 20% of total time remaining)
-              if [[ -f "$CLUSTER_DIR/created-at" ]] && [[ ! -f "$CLUSTER_DIR/expiration-warned" ]]; then
+              if [[ -f "$CLUSTER_DIR/created-at" ]] && [[ "$DRY_RUN" == "true" || ! -f "$CLUSTER_DIR/expiration-warned" ]]; then
                 CREATED_AT_ISO=$(cat "$CLUSTER_DIR/created-at")
                 CREATED_AT_EPOCH=$(date -u -d "$CREATED_AT_ISO" +%s 2>/dev/null)
                 if [[ -n "$CREATED_AT_EPOCH" ]]; then
@@ -144,6 +144,8 @@ jobs:
             fi
           }
 
+          NL=$'\n'
+
           # Send a Slack message to the given webhook
           send_slack() {
             local WEBHOOK="$1"
@@ -153,15 +155,13 @@ jobs:
               return
             fi
             local PAYLOAD
-            PAYLOAD=$(jq -n \
-              --arg text "🧹 *Cluster Cleanup Report*\n\n${MESSAGE}\n<${LINK}|View workflow run>" \
-              '{text: $text}')
+            PAYLOAD=$(jq -n --arg text "$MESSAGE" '{text: $text}')
             curl -s -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$WEBHOOK"
           }
 
           # Expiring soon warnings → important webhook
           if [[ -n "$EXPIRING" ]]; then
-            MESSAGE=""
+            MESSAGE="Cluster Cleanup Report${NL}"
             IFS=',' read -ra PAIRS <<< "$EXPIRING"
             for PAIR in "${PAIRS[@]}"; do
               if [[ -z "$PAIR" ]]; then
@@ -171,14 +171,18 @@ jobs:
               GITHUB_USER=$(echo "$PAIR" | cut -d: -f2)
               REMAINING_H=$(echo "$PAIR" | cut -d: -f3)
               USER_MENTION=$(resolve_mention "$GITHUB_USER")
-              MESSAGE="${MESSAGE}• ⚠️ Cluster *${CLUSTER_NAME}* (created by ${USER_MENTION}) expires in ~${REMAINING_H}h\n"
+              MESSAGE="${MESSAGE}${NL}Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) expires in ~${REMAINING_H}h"
+              if [[ "$DRY_RUN" == "true" ]]; then
+                MESSAGE="${MESSAGE} (dry run)"
+              fi
             done
+            MESSAGE="${MESSAGE}${NL}${NL}${LINK}"
             send_slack "$WEBHOOK_EXPIRING" "$MESSAGE"
           fi
 
           # Destroyed clusters → regular webhook
           if [[ -n "$DESTROYED" ]]; then
-            MESSAGE=""
+            MESSAGE="Cluster Cleanup Report${NL}"
             IFS=',' read -ra PAIRS <<< "$DESTROYED"
             for PAIR in "${PAIRS[@]}"; do
               if [[ -z "$PAIR" ]]; then
@@ -188,10 +192,11 @@ jobs:
               GITHUB_USER="${PAIR#*:}"
               USER_MENTION=$(resolve_mention "$GITHUB_USER")
               if [[ "$DRY_RUN" == "true" ]]; then
-                MESSAGE="${MESSAGE}• 🗑️ Cluster *${CLUSTER_NAME}* (created by ${USER_MENTION}) has expired (dry run, not destroyed)\n"
+                MESSAGE="${MESSAGE}${NL}Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) has expired (dry run, not destroyed)"
               else
-                MESSAGE="${MESSAGE}• 🗑️ Cluster *${CLUSTER_NAME}* (created by ${USER_MENTION}) has been destroyed (expired)\n"
+                MESSAGE="${MESSAGE}${NL}Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) has been destroyed (expired)"
               fi
             done
+            MESSAGE="${MESSAGE}${NL}${NL}${LINK}"
             send_slack "$WEBHOOK_DESTROYED" "$MESSAGE"
           fi
