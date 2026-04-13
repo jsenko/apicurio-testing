@@ -131,6 +131,7 @@ jobs:
           LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           # Helper: resolve GitHub user to Slack mention
+          UNRESOLVED_USERS=""
           resolve_mention() {
             local GITHUB_USER="$1"
             local SLACK_ID=""
@@ -140,11 +141,15 @@ jobs:
             if [[ -n "$SLACK_ID" ]]; then
               echo "<@${SLACK_ID}>"
             else
+              if [[ "$GITHUB_USER" != "apicurio-ci" ]]; then
+                UNRESOLVED_USERS="true"
+              fi
               echo "$GITHUB_USER"
             fi
           }
 
           NL=$'\n'
+          SLACK_USERS_LINK="https://github.com/${{ github.repository }}/blob/main/${SLACK_USERS_FILE}"
 
           # Send a Slack message to the given webhook
           send_slack() {
@@ -176,11 +181,15 @@ jobs:
                 MESSAGE="${MESSAGE} (dry run)"
               fi
             done
+            if [[ -n "$UNRESOLVED_USERS" ]]; then
+              MESSAGE="${MESSAGE}${NL}${NL}To get mentioned, add your GitHub-to-Slack mapping in ${SLACK_USERS_LINK}"
+            fi
             MESSAGE="${MESSAGE}${NL}${NL}${LINK}"
             send_slack "$WEBHOOK_EXPIRING" "$MESSAGE"
           fi
 
           # Destroyed clusters → regular webhook
+          UNRESOLVED_USERS=""
           if [[ -n "$DESTROYED" ]]; then
             MESSAGE="Cluster Cleanup Report${NL}"
             IFS=',' read -ra PAIRS <<< "$DESTROYED"
@@ -197,6 +206,9 @@ jobs:
                 MESSAGE="${MESSAGE}${NL}Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) has been destroyed (expired)"
               fi
             done
+            if [[ -n "$UNRESOLVED_USERS" ]]; then
+              MESSAGE="${MESSAGE}${NL}${NL}To get mentioned, add your GitHub-to-Slack mapping in ${SLACK_USERS_LINK}"
+            fi
             MESSAGE="${MESSAGE}${NL}${NL}${LINK}"
             send_slack "$WEBHOOK_DESTROYED" "$MESSAGE"
           fi
