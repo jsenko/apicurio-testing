@@ -166,7 +166,7 @@ jobs:
 
           # Expiring soon warnings → important webhook
           if [[ -n "$EXPIRING" ]]; then
-            MESSAGE="Cluster Cleanup Report${NL}"
+            MESSAGE=":warning: Cluster Cleanup Report${NL}"
             IFS=',' read -ra PAIRS <<< "$EXPIRING"
             for PAIR in "${PAIRS[@]}"; do
               if [[ -z "$PAIR" ]]; then
@@ -176,7 +176,7 @@ jobs:
               GITHUB_USER=$(echo "$PAIR" | cut -d: -f2)
               REMAINING_H=$(echo "$PAIR" | cut -d: -f3)
               USER_MENTION=$(resolve_mention "$GITHUB_USER")
-              MESSAGE="${MESSAGE}${NL}Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) expires in ~${REMAINING_H}h"
+              MESSAGE="${MESSAGE}${NL}:hourglass_flowing_sand: Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) expires in ~${REMAINING_H}h"
               if [[ "$DRY_RUN" == "true" ]]; then
                 MESSAGE="${MESSAGE} (dry run)"
               fi
@@ -191,7 +191,7 @@ jobs:
           # Destroyed clusters → regular webhook
           UNRESOLVED_USERS=""
           if [[ -n "$DESTROYED" ]]; then
-            MESSAGE="Cluster Cleanup Report${NL}"
+            MESSAGE=":broom: Cluster Cleanup Report${NL}"
             IFS=',' read -ra PAIRS <<< "$DESTROYED"
             for PAIR in "${PAIRS[@]}"; do
               if [[ -z "$PAIR" ]]; then
@@ -201,9 +201,9 @@ jobs:
               GITHUB_USER="${PAIR#*:}"
               USER_MENTION=$(resolve_mention "$GITHUB_USER")
               if [[ "$DRY_RUN" == "true" ]]; then
-                MESSAGE="${MESSAGE}${NL}Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) has expired (dry run, not destroyed)"
+                MESSAGE="${MESSAGE}${NL}:wastebasket: Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) has expired (dry run, not destroyed)"
               else
-                MESSAGE="${MESSAGE}${NL}Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) has been destroyed (expired)"
+                MESSAGE="${MESSAGE}${NL}:wastebasket: Cluster '${CLUSTER_NAME}' (created by ${USER_MENTION}) has been destroyed (expired)"
               fi
             done
             if [[ -n "$UNRESOLVED_USERS" ]]; then
