@@ -153,6 +153,104 @@ deploy_operator() {
 }
 
 # ##################################################
+# Function to wait for the operator pod to become
+# ready after deployment.
+# ##################################################
+wait_for_operator_ready() {
+    local namespace="$1"
+    local timeout=300
+    local interval=10
+    local elapsed=0
+
+    echo "Waiting for Apicurio Registry Operator pod to become ready..."
+    echo "Looking for pod with label 'app=apicurio-registry-operator' in namespace $namespace..."
+    echo "Timeout: ${timeout}s, Polling interval: ${interval}s"
+
+    while [ $elapsed -lt $timeout ]; do
+        local pod_names=$(kubectl get pods -l app=apicurio-registry-operator -n "$namespace" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+
+        if [ -z "$pod_names" ]; then
+            echo "No operator pods found yet, waiting for creation... (${elapsed}s/${timeout}s)"
+        else
+            for pod_name in $pod_names; do
+                local ready_status=$(kubectl get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "Unknown")
+                local phase=$(kubectl get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
+
+                if [ "$ready_status" = "True" ]; then
+                    echo "Operator pod $pod_name is ready (Phase: $phase)"
+                    return 0
+                else
+                    echo "Operator pod $pod_name: Ready=$ready_status, Phase=$phase (${elapsed}s/${timeout}s)"
+                fi
+            done
+        fi
+
+        sleep $interval
+        elapsed=$((elapsed + interval))
+    done
+
+    echo ""
+    echo "ERROR: Apicurio Registry Operator pod did not become ready within ${timeout} seconds"
+    echo ""
+
+    output_operator_debug_info "$namespace"
+
+    return 1
+}
+
+# ##################################################
+# Function to output debugging information when
+# the operator fails to become ready.
+# ##################################################
+output_operator_debug_info() {
+    local namespace="$1"
+
+    echo "Collecting debugging information..."
+    echo ""
+    echo "=========================================="
+    echo "OPERATOR DEBUGGING INFORMATION"
+    echo "=========================================="
+    echo ""
+
+    echo "==================== DEPLOYMENTS ===================="
+    kubectl get deployments -n "$namespace" -o wide 2>/dev/null || echo "Failed to get deployments"
+    echo ""
+    kubectl describe deployments -n "$namespace" 2>/dev/null || echo "Failed to describe deployments"
+    echo ""
+
+    echo "==================== REPLICASETS ===================="
+    kubectl get replicasets -n "$namespace" -o wide 2>/dev/null || echo "Failed to get replicasets"
+    echo ""
+
+    echo "==================== PODS ===================="
+    kubectl get pods -n "$namespace" -o wide 2>/dev/null || echo "Failed to get pods"
+    echo ""
+    kubectl describe pods -n "$namespace" 2>/dev/null || echo "Failed to describe pods"
+    echo ""
+
+    echo "==================== EVENTS ===================="
+    kubectl get events -n "$namespace" --sort-by='.lastTimestamp' 2>/dev/null || echo "Failed to get events"
+    echo ""
+
+    echo "==================== POD LOGS ===================="
+    local pods=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+    if [ -n "$pods" ]; then
+        for pod in $pods; do
+            echo "--- Logs for pod: $pod ---"
+            kubectl logs "$pod" -n "$namespace" --tail=100 2>/dev/null || echo "Failed to get logs for pod $pod"
+            echo ""
+        done
+    else
+        echo "No pods found in namespace $namespace"
+    fi
+
+    echo "=========================================="
+    echo "END OPERATOR DEBUGGING INFORMATION"
+    echo "=========================================="
+    echo ""
+}
+
+# ##################################################
 # Function to display deployment summary
 # ##################################################
 display_summary() {
@@ -181,6 +279,12 @@ main() {
 
     # Deploy operator
     deploy_operator
+
+    # Wait for operator to become ready
+    if ! wait_for_operator_ready "$OPERATOR_NAMESPACE"; then
+        echo "ERROR: Apicurio Registry Operator failed to start. Aborting."
+        exit 1
+    fi
 
     # Display summary
     display_summary

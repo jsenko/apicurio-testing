@@ -215,6 +215,39 @@ output_debug_info() {
     echo "END DEBUGGING INFORMATION"
     echo "=========================================="
     echo ""
+
+    local operator_ns="apicurio-registry-operator"
+    echo "=========================================="
+    echo "OPERATOR NAMESPACE ($operator_ns)"
+    echo "=========================================="
+    echo ""
+
+    echo "==================== OPERATOR PODS ===================="
+    kubectl get pods -n "$operator_ns" -o wide 2>/dev/null || echo "Failed to get pods"
+    echo ""
+    kubectl describe pods -n "$operator_ns" 2>/dev/null || echo "Failed to describe pods"
+    echo ""
+
+    echo "==================== OPERATOR EVENTS ===================="
+    kubectl get events -n "$operator_ns" --sort-by='.lastTimestamp' 2>/dev/null || echo "Failed to get events"
+    echo ""
+
+    echo "==================== OPERATOR POD LOGS ===================="
+    local operator_pods=$(kubectl get pods -n "$operator_ns" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+    if [ -n "$operator_pods" ]; then
+        for pod in $operator_pods; do
+            echo "--- Logs for pod: $pod ---"
+            kubectl logs "$pod" -n "$operator_ns" --tail=100 2>/dev/null || echo "Failed to get logs for pod $pod"
+            echo ""
+        done
+    else
+        echo "No pods found in namespace $operator_ns"
+    fi
+
+    echo "=========================================="
+    echo "END OPERATOR NAMESPACE INFORMATION"
+    echo "=========================================="
+    echo ""
 }
 
 
