@@ -159,10 +159,26 @@ jobs:
           echo "run-id=${{ github.run_id }}" >> $GITHUB_OUTPUT
           echo "run-date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
+  validate-secrets:
+    name: Validate Secrets
+    runs-on: ubuntu-latest
+    if: inputs.isDownstream == 'true'
+    steps:
+      - name: Check GCS_SA_KEY secret
+        run: |
+          if [ -z "$GCS_SA_KEY" ]; then
+            echo "::error::GCS_SA_KEY secret is empty or not configured (required when isDownstream is true)"
+            exit 1
+          fi
+        env:
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+
   os420:
     name: OpenShift 4.20
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    needs: validate-secrets
+    if: ${{ !cancelled() && (needs.validate-secrets.result == 'success' || needs.validate-secrets.result == 'skipped') }}
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
@@ -920,7 +936,7 @@ jobs:
       - name: Run DAST Scanner (v3)
         run: |
           GCS_ARGS=""
-          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+          if [ -s "${{ runner.temp }}/gcs-key.json" ]; then
             GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
           fi
           ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_unauthenticated.yaml --tag $RAPIDAST_TAG $GCS_ARGS
@@ -937,7 +953,7 @@ jobs:
       - name: Run DAST Scanner (v2)
         run: |
           GCS_ARGS=""
-          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+          if [ -s "${{ runner.temp }}/gcs-key.json" ]; then
             GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
           fi
           ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v2_unauthenticated.yaml --tag $RAPIDAST_TAG $GCS_ARGS
@@ -954,7 +970,7 @@ jobs:
       - name: Run DAST Scanner (ccompat v7)
         run: |
           GCS_ARGS=""
-          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+          if [ -s "${{ runner.temp }}/gcs-key.json" ]; then
             GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
           fi
           ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config ccompat_v7_unauthenticated.yaml --tag $RAPIDAST_TAG $GCS_ARGS
@@ -1701,7 +1717,7 @@ jobs:
       - name: Run DAST Scanner (v3)
         run: |
           GCS_ARGS=""
-          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+          if [ -s "${{ runner.temp }}/gcs-key.json" ]; then
             GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
           fi
           ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v3_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true $GCS_ARGS
@@ -1718,7 +1734,7 @@ jobs:
       - name: Run DAST Scanner (v2)
         run: |
           GCS_ARGS=""
-          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+          if [ -s "${{ runner.temp }}/gcs-key.json" ]; then
             GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
           fi
           ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config registry_v2_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true $GCS_ARGS
@@ -1735,7 +1751,7 @@ jobs:
       - name: Run DAST Scanner (ccompat v7)
         run: |
           GCS_ARGS=""
-          if [ -f "${{ runner.temp }}/gcs-key.json" ]; then
+          if [ -s "${{ runner.temp }}/gcs-key.json" ]; then
             GCS_ARGS="--gcsKeyFile ${{ runner.temp }}/gcs-key.json"
           fi
           ./run-dast-scan.sh --cluster $CLUSTER_NAME --namespace $NAMESPACE --config ccompat_v7_authenticated.yaml --tag $RAPIDAST_TAG --authEnabled true $GCS_ARGS
@@ -2075,7 +2091,8 @@ jobs:
     name: OpenShift 4.16
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    if: ${{ inputs.skipClusterInstall != 'true' && inputs.smokeOnly != 'true' }}
+    needs: validate-secrets
+    if: ${{ !cancelled() && (needs.validate-secrets.result == 'success' || needs.validate-secrets.result == 'skipped') && inputs.skipClusterInstall != 'true' && inputs.smokeOnly != 'true' }}
 
     env:
       OPENSHIFT_PULL_SECRET: ${{ secrets.OPENSHIFT_PULL_SECRET }}
