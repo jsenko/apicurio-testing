@@ -2,14 +2,15 @@
 FROM eclipse-temurin:17-jre AS downloader
 
 ARG APICURIO_VERSION=3.0.7.Final
+ARG MAVEN_REPO_URL=https://repo1.maven.org/maven2
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /converter && \
     cd /tmp && \
-    echo "Downloading Apicurio Registry Connect Converter v${APICURIO_VERSION}..." && \
+    echo "Downloading Apicurio Registry Connect Converter v${APICURIO_VERSION} from ${MAVEN_REPO_URL}..." && \
     curl -L -f -o converter.tar.gz \
-      "https://repo1.maven.org/maven2/io/apicurio/apicurio-registry-distro-connect-converter/${APICURIO_VERSION}/apicurio-registry-distro-connect-converter-${APICURIO_VERSION}-converter.tar.gz" && \
+      "${MAVEN_REPO_URL}/io/apicurio/apicurio-registry-distro-connect-converter/${APICURIO_VERSION}/apicurio-registry-distro-connect-converter-${APICURIO_VERSION}-converter.tar.gz" && \
     tar -xzf converter.tar.gz -C /converter && \
     rm converter.tar.gz && \
     echo "Converter contents:" && \

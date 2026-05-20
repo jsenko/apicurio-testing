@@ -10,6 +10,7 @@
 #   ./run-converter-test.sh --interactive                # Pause between steps
 #   ./run-converter-test.sh --kafka-version 3.8.1        # Test specific Kafka version
 #   ./run-converter-test.sh --apicurio-version 3.0.7.Final  # Test specific Registry version
+#   ./run-converter-test.sh --maven-repo-url https://maven.repository.redhat.com/ga  # Use Red Hat Maven repo
 
 set -e
 
@@ -30,6 +31,7 @@ PAUSE_BETWEEN_STEPS=false
 KAFKA_VERSION=""
 APICURIO_VERSION=""
 REGISTRY_IMAGE=""
+MAVEN_REPO_URL=""
 SKIP_JAVA_TEST=false
 
 while [[ $# -gt 0 ]]; do
@@ -50,13 +52,17 @@ while [[ $# -gt 0 ]]; do
             REGISTRY_IMAGE="$2"
             shift 2
             ;;
+        --maven-repo-url)
+            MAVEN_REPO_URL="$2"
+            shift 2
+            ;;
         --skip-java-test)
             SKIP_JAVA_TEST=true
             shift
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--interactive] [--kafka-version VERSION] [--apicurio-version VERSION] [--registry-image IMAGE] [--skip-java-test]"
+            echo "Usage: $0 [--interactive] [--kafka-version VERSION] [--apicurio-version VERSION] [--registry-image IMAGE] [--maven-repo-url URL] [--skip-java-test]"
             exit 1
             ;;
     esac
@@ -78,6 +84,11 @@ if [ -n "$REGISTRY_IMAGE" ]; then
     sed -i.bak "s|^REGISTRY_IMAGE=.*|REGISTRY_IMAGE=$REGISTRY_IMAGE|" "$ENV_FILE"
     rm -f "$ENV_FILE.bak"
     log "Using Registry image: $REGISTRY_IMAGE"
+fi
+if [ -n "$MAVEN_REPO_URL" ]; then
+    sed -i.bak "s|^MAVEN_REPO_URL=.*|MAVEN_REPO_URL=$MAVEN_REPO_URL|" "$ENV_FILE"
+    rm -f "$ENV_FILE.bak"
+    log "Using Maven repo: $MAVEN_REPO_URL"
 fi
 
 # Read current versions from .env
@@ -102,6 +113,7 @@ log "Configuration:"
 log "  Kafka Version: ${KAFKA_VERSION:-default}"
 log "  Apicurio Version: ${APICURIO_VERSION:-default}"
 log "  Registry Image: ${REGISTRY_IMAGE:-default}"
+log "  Maven Repo: ${MAVEN_REPO_URL:-default}"
 log ""
 log "Test Steps:"
 log "  A. Deploy Kafka"
