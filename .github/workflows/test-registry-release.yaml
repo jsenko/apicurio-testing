@@ -924,8 +924,9 @@ jobs:
 
       - name: Write GCS key file
         if: inputs.isDownstream == 'true'
-        run: |
-          echo "${{ secrets.GCS_SA_KEY }}" > ${{ runner.temp }}/gcs-key.json
+        run: printenv GCS_SA_KEY > ${{ runner.temp }}/gcs-key.json
+        env:
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
 
       - name: Restore cluster state
         if: always()
@@ -1705,8 +1706,9 @@ jobs:
 
       - name: Write GCS key file
         if: inputs.isDownstream == 'true'
-        run: |
-          echo "${{ secrets.GCS_SA_KEY }}" > ${{ runner.temp }}/gcs-key.json
+        run: printenv GCS_SA_KEY > ${{ runner.temp }}/gcs-key.json
+        env:
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
 
       - name: Restore cluster state
         if: always()
