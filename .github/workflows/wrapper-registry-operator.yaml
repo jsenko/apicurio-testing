@@ -39,6 +39,10 @@ on:
         description: Release tracker issue number in apicurio/rhboar-releases
         required: true
         type: string
+      testsTag:
+        description: Git ref to use when checking out the testsuite sources (defaults to the release version)
+        required: false
+        type: string
       stepId:
         description: Release step ID
         required: false
@@ -51,7 +55,7 @@ jobs:
     uses: ./.github/workflows/test-registry-operator.yaml
     with:
       release-version: ${{ inputs.version }}
-      tests-tag: ${{ inputs.version }}
+      tests-tag: ${{ inputs.testsTag || inputs.version }}
       operatorImage: ${{ inputs.operatorImage }}
       appImage: ${{ inputs.appImage }}
       uiImage: ${{ inputs.uiImage }}
