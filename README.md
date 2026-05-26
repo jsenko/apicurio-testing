@@ -363,7 +363,7 @@ When adding new test configurations:
 
 ## Support
 
-- **Issues:** Report issues in the [GitHub Issues](https://github.com/Apicurio/apicurio-testing/issues)
+- **Issues:** Report issues in the [GitHub Issues](https://github.com/ApicurioTesting/apicurio-testing/issues)
 - **Discussions:** Use GitHub Discussions for questions
 - **Slack:** #apicurio on CNCF Slack
 
