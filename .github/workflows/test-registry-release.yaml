@@ -162,9 +162,9 @@ jobs:
   validate-secrets:
     name: Validate Secrets
     runs-on: ubuntu-latest
-    if: inputs.isDownstream == 'true'
     steps:
       - name: Check GCS_SA_KEY secret
+        if: inputs.isDownstream == 'true'
         run: |
           if [ -z "$GCS_SA_KEY" ]; then
             echo "::error::GCS_SA_KEY secret is empty or not configured (required when isDownstream is true)"
@@ -257,6 +257,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: os420
+    if: always()
 
     env:
       CLUSTER_NAME: ci420
