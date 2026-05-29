@@ -57,6 +57,7 @@ jobs:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       DOCKER_EMAIL: ${{ secrets.DOCKER_EMAIL }}
+      GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
 
   report-results:
     name: Report Results to Release Issue
