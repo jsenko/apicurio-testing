@@ -103,6 +103,8 @@ on:
         required: true
       DOCKER_EMAIL:
         required: true
+      GCS_SA_KEY:
+        required: true
 
 jobs:
   initialize-globals:
