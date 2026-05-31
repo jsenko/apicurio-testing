@@ -28,7 +28,7 @@ jobs:
     name: Cleanup expired clusters
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    if: github.repository_owner == 'Apicurio'
+    if: github.repository_owner == 'ApicurioTesting'
     steps:
 
       - name: Checkout ${{ github.ref }}
