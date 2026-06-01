@@ -7,7 +7,7 @@ on:
       release-version:
         description: Upstream version that the release was based on.
         required: true
-      tests-tag:
+      tests-ref:
         description: Git ref to use when checking out the testsuite sources. Should either be the same as the upstream version, or `main`.
         required: true
         default: main
@@ -51,7 +51,7 @@ on:
       release-version:
         type: string
         required: true
-      tests-tag:
+      tests-ref:
         type: string
         required: true
         default: main
@@ -106,7 +106,7 @@ jobs:
         run: |
           echo "📋 Workflow Input Parameters:"
           echo "  release-version: ${{ inputs.release-version }}"
-          echo "  tests-tag: ${{ inputs.tests-tag }}"
+          echo "  tests-ref: ${{ inputs.tests-ref }}"
           echo "  operatorImage: ${{ inputs.operatorImage }}"
           echo "  appImage: ${{ inputs.appImage }}"
           echo "  uiImage: ${{ inputs.uiImage }}"
@@ -207,7 +207,7 @@ jobs:
       skip-provision-cluster: false
       cluster-version: ${{ matrix.cluster-version }}
       release-version: ${{ inputs.release-version }}
-      tests-tag: ${{ inputs.tests-tag }}
+      tests-ref: ${{ inputs.tests-ref }}
       operatorImage: ${{ inputs.operatorImage }}
       appImage: ${{ inputs.appImage }}
       uiImage: ${{ inputs.uiImage }}

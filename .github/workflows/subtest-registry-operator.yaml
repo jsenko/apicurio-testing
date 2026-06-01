@@ -28,7 +28,7 @@ on:
         type: string
         description: Upstream version that the release was based on.
         required: true
-      tests-tag:
+      tests-ref:
         type: string
         description: Git ref to use when checking out the testsuite sources. Should either be the same as the upstream version, or `main`.
         required: true
@@ -91,7 +91,7 @@ on:
       release-version:
         type: string
         required: true
-      tests-tag:
+      tests-ref:
         type: string
         required: true
       operatorImage:
@@ -159,7 +159,7 @@ jobs:
           echo "  skip-provision-cluster: ${{ inputs.skip-provision-cluster }}"
           echo "  cluster-version: ${{ inputs.cluster-version }}"
           echo "  release-version: ${{ inputs.release-version }}"
-          echo "  tests-tag: ${{ inputs.tests-tag }}"
+          echo "  tests-ref: ${{ inputs.tests-ref }}"
           echo "  operatorImage: ${{ inputs.operatorImage }}"
           echo "  appImage: ${{ inputs.appImage }}"
           echo "  uiImage: ${{ inputs.uiImage }}"
@@ -296,7 +296,7 @@ jobs:
 
       - name: Checkout Registry
         run: |
-          git clone --branch ${{ inputs.tests-tag }} --depth 1 https://github.com/Apicurio/apicurio-registry.git
+          git clone --branch ${{ inputs.tests-ref }} --depth 1 https://github.com/Apicurio/apicurio-registry.git
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4

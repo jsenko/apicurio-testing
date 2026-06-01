@@ -34,15 +34,35 @@ on:
         default: qe-registry-aws
 
 jobs:
+  resolve-tests-ref:
+    name: Resolve Tests Ref
+    runs-on: ubuntu-latest
+    outputs:
+      testsRef: ${{ steps.resolve.outputs.testsRef }}
+    steps:
+      - name: Resolve tests tag
+        id: resolve
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          if git ls-remote --heads https://github.com/Apicurio/apicurio-registry.git "$VERSION-testing" | grep -q .; then
+            echo "Found $VERSION-testing branch, using it"
+            echo "testsRef=$VERSION-testing" >> $GITHUB_OUTPUT
+          else
+            echo "No $VERSION-testing branch found, using version tag: $VERSION"
+            echo "testsRef=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
   run-qe-tests:
     name: Run QE Registry Tests
+    needs: resolve-tests-ref
     uses: ./.github/workflows/test-registry-release.yaml
     with:
       releaseVersion: ${{ inputs.version }}
       operatorImage: ${{ inputs.operatorImage }}
       appImage: ${{ inputs.appImage }}
       uiImage: ${{ inputs.uiImage }}
-      testsTag: ${{ inputs.version }}
+      testsRef: ${{ needs.resolve-tests-ref.outputs.testsRef }}
       isDownstream: 'true'
       skipClusterInstall: 'false'
       smokeOnly: ${{ inputs.smokeOnly && 'true' || 'false' }}

@@ -50,12 +50,36 @@ on:
         default: qe-operator-aws
 
 jobs:
+  resolve-tests-ref:
+    name: Resolve Tests Ref
+    runs-on: ubuntu-latest
+    outputs:
+      testsRef: ${{ steps.resolve.outputs.testsRef }}
+    steps:
+      - name: Resolve tests tag
+        id: resolve
+        run: |
+          VERSION="${{ inputs.version }}"
+          EXPLICIT_TAG="${{ inputs.testsTag }}"
+
+          if git ls-remote --heads https://github.com/Apicurio/apicurio-registry.git "$VERSION-testing" | grep -q .; then
+            echo "Found $VERSION-testing branch, using it"
+            echo "testsRef=$VERSION-testing" >> $GITHUB_OUTPUT
+          elif [[ -n "$EXPLICIT_TAG" ]]; then
+            echo "Using explicitly provided testsTag: $EXPLICIT_TAG"
+            echo "testsRef=$EXPLICIT_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "No $VERSION-testing branch found, using version tag: $VERSION"
+            echo "testsRef=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
   run-operator-tests:
     name: Run Operator Tests
+    needs: resolve-tests-ref
     uses: ./.github/workflows/test-registry-operator.yaml
     with:
       release-version: ${{ inputs.version }}
-      tests-tag: ${{ inputs.testsTag || inputs.version }}
+      tests-ref: ${{ needs.resolve-tests-ref.outputs.testsRef }}
       operatorImage: ${{ inputs.operatorImage }}
       appImage: ${{ inputs.appImage }}
       uiImage: ${{ inputs.uiImage }}
