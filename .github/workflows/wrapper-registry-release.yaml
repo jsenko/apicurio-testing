@@ -151,7 +151,7 @@ jobs:
             ${command}`;
 
             await github.rest.issues.createComment({
-              owner: 'apicurio',
+              owner: 'ApicurioTesting',
               repo: 'rhboar-releases',
               issue_number: ${{ inputs.issueNumber }},
               body: commentBody
