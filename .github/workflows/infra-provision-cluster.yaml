@@ -83,7 +83,7 @@ jobs:
   provision-cluster:
     name: Provision OCP ${{ inputs.cluster-version }} cluster ${{ inputs.cluster-name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
 
       - name: Print workflow parameters
@@ -122,6 +122,7 @@ jobs:
               --computeNodes ${{ inputs.compute-nodes }} \
               --log-level warn \
               --created-by "${{ github.actor }}" \
+              --max-retries 3 \
               $INSTALL_ARGS \
               $EXPIRATION_ARGS
 

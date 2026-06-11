@@ -98,6 +98,7 @@ usage() {
     echo -e "  --force                     Force deletion of existing cluster directory. ${LIGHT_PURPLE}Might delete live cluster metadata.${NO_COLOR}"
     echo    "  --expiration <hours>         Set cluster expiration time in hours from now. A timestamp will be saved to the cluster directory."
     echo    "  --created-by <username>      Record who created the cluster (e.g. GitHub actor). Defaults to \$USER."
+    echo    "  --max-retries <count>        Maximum number of install attempts (default: 1, i.e. no retry)."
     echo    "  -h, --help                   Show this help message"
     exit 1
 }
@@ -113,6 +114,7 @@ LOG_LEVEL="info"
 FORCE="false"
 EXPIRATION_HOURS=""
 CREATED_BY="$USER"
+MAX_RETRIES=1
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -157,6 +159,10 @@ while [[ $# -gt 0 ]]; do
             CREATED_BY=$(echo "$2" | tr -cd 'a-zA-Z0-9_-')
             shift 2
             ;;
+        --max-retries)
+            MAX_RETRIES="$2"
+            shift 2
+            ;;
         -h|--help)
             usage
             ;;
@@ -190,6 +196,11 @@ fi
 
 if [[ ! "$CONTROL_PLANE_NODES" =~ ^[0-9]+$ ]] || [[ "$CONTROL_PLANE_NODES" -lt 1 ]]; then
     echo "Error: --controlPlaneNodes must be a positive integer (minimum 1)"
+    exit 1
+fi
+
+if [[ ! "$MAX_RETRIES" =~ ^[0-9]+$ ]] || [[ "$MAX_RETRIES" -lt 1 ]]; then
+    echo "Error: --max-retries must be a positive integer (minimum 1)"
     exit 1
 fi
 
@@ -235,20 +246,7 @@ if [[ -d "$CLUSTER_DIR" ]]; then
     fi
 fi
 
-# Create a work directory for installing the OCP cluster
-mkdir -p $CLUSTER_DIR
-cd $CLUSTER_DIR || exit 1
-
-# Write cluster metadata
-echo -n "$CREATED_BY" > "$CLUSTER_DIR/created-by"
-if [[ -n "$EXPIRATION_HOURS" ]]; then
-    CREATED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-    EXPIRATION=$(date -u -d "+${EXPIRATION_HOURS} hours" +%Y-%m-%dT%H:%M:%SZ)
-    echo -n "$CREATED_AT" > "$CLUSTER_DIR/created-at"
-    echo -n "$EXPIRATION" > "$CLUSTER_DIR/expiration"
-    echo "Cluster will expire at $EXPIRATION (in $EXPIRATION_HOURS hours)"
-fi
-
+# Download the openshift-install binary (only needs to happen once)
 "$BASE_DIR/download-ocp-installer.sh" --version "$OCP_VERSION"
 if [[ $? -ne 0 ]]; then
     echo "Error: Failed to download openshift-install for OCP version $OCP_VERSION."
@@ -256,27 +254,77 @@ if [[ $? -ne 0 ]]; then
 fi
 OPENSHIFT_INSTALLER="$BIN_DIR/$OCP_VERSION/openshift-install"
 
-# Create the install-config.yaml file (from template)
-echo "Creating install-config.yaml from template with environment variable substitution"
+# Export variables needed for install-config.yaml template substitution
 export CLUSTER_NAME
 export REGION
 export COMPUTE_NODES
 export CONTROL_PLANE_NODES
 export BASE_DOMAIN
-envsubst < $BASE_DIR/templates/ocp/$OCP_VERSION/install-config.yaml > $CLUSTER_DIR/install-config.yaml
-
-echo -n "$OCP_VERSION" > "$CLUSTER_DIR/version"
 
 unset SSH_AUTH_SOCK
 
-# Install the cluster
-$OPENSHIFT_INSTALLER create cluster --log-level="$LOG_LEVEL"
+# Retry loop for cluster installation
+INSTALL_SUCCESS=false
+for ATTEMPT in $(seq 1 "$MAX_RETRIES"); do
+    echo ""
+    echo "=========================================="
+    echo "INSTALL ATTEMPT $ATTEMPT of $MAX_RETRIES"
+    echo "=========================================="
+    echo ""
+
+    # Prepare the cluster directory
+    mkdir -p "$CLUSTER_DIR"
+    cd "$CLUSTER_DIR" || exit 1
+
+    # Write cluster metadata
+    echo -n "$CREATED_BY" > "$CLUSTER_DIR/created-by"
+    if [[ -n "$EXPIRATION_HOURS" ]]; then
+        CREATED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        EXPIRATION=$(date -u -d "+${EXPIRATION_HOURS} hours" +%Y-%m-%dT%H:%M:%SZ)
+        echo -n "$CREATED_AT" > "$CLUSTER_DIR/created-at"
+        echo -n "$EXPIRATION" > "$CLUSTER_DIR/expiration"
+        echo "Cluster will expire at $EXPIRATION (in $EXPIRATION_HOURS hours)"
+    fi
+
+    # Create the install-config.yaml file (consumed by openshift-install, must be regenerated each attempt)
+    echo "Creating install-config.yaml from template with environment variable substitution"
+    envsubst < "$BASE_DIR/templates/ocp/$OCP_VERSION/install-config.yaml" > "$CLUSTER_DIR/install-config.yaml"
+
+    echo -n "$OCP_VERSION" > "$CLUSTER_DIR/version"
+
+    # Attempt the install
+    if $OPENSHIFT_INSTALLER create cluster --log-level="$LOG_LEVEL"; then
+        INSTALL_SUCCESS=true
+        break
+    fi
+
+    # Install failed
+    error "Cluster install attempt $ATTEMPT of $MAX_RETRIES failed."
+
+    if [[ "$ATTEMPT" -lt "$MAX_RETRIES" ]]; then
+        echo "Cleaning up failed install before retrying..."
+
+        # Destroy partial AWS resources (best-effort)
+        $OPENSHIFT_INSTALLER destroy cluster --log-level=info || warning "Destroy of partial install returned non-zero (this may be expected)."
+
+        # Remove the cluster directory so we start fresh
+        cd "$BASE_DIR" || exit 1
+        rm -rf "$CLUSTER_DIR"
+
+        echo "Cleanup complete. Retrying..."
+    fi
+done
+
+if [[ "$INSTALL_SUCCESS" != "true" ]]; then
+    error "All $MAX_RETRIES install attempt(s) failed."
+    exit 1
+fi
 
 extract_console_password
 
 # Generate a TLS cert for the cluster
-cd $BASE_DIR || exit 1
-./install-tls-cert.sh --cluster $CLUSTER_NAME
+cd "$BASE_DIR" || exit 1
+./install-tls-cert.sh --cluster "$CLUSTER_NAME"
 
 # Verify cluster is reachable and display information
 echo ""
